@@ -4,7 +4,8 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon -r dotenv/config --experimental-json-modules server.js"
+    "dev": "nodemon -r dotenv/config --experimental-json-modules server.js",
+    "seed:admin": "node -r dotenv/config src/utils/seedAdmin.js"
   },
   "author": "",
   "license": "ISC",

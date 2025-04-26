@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaAngleDown, FaUserCircle } from "react-icons/fa";
+import { useAuth } from "../../context/AuthContext";
 
 const DesktopNav = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { currentUser, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
 
   const studyMaterials = [
@@ -120,10 +121,92 @@ const DesktopNav = () => {
 
           {/* Auth Buttons */}
           <div className="flex items-center space-x-4">
-            {isLoggedIn ? (
-              <button className="p-2 rounded-full hover:bg-[#f0f0f0] transition-colors duration-300">
-                <FaUserCircle className="text-2xl text-[#00bcd4]" />
-              </button>
+            {isAuthenticated ? (
+              <div className="flex items-center space-x-4">
+                <div className="text-[#6c6c6c]">
+                  Welcome, {currentUser?.fullName?.split(' ')[0]}
+                </div>
+                <div className="relative group">
+                  <button className="p-2 rounded-full hover:bg-[#f0f0f0] transition-colors duration-300">
+                    {currentUser?.avatar ? (
+                      <img
+                        src={currentUser.avatar}
+                        alt="Profile"
+                        className="w-8 h-8 rounded-full object-cover"
+                      />
+                    ) : (
+                      <FaUserCircle className="text-2xl text-[#00bcd4]" />
+                    )}
+                  </button>
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-10 hidden group-hover:block">
+                    <div className="px-4 py-2 text-sm text-gray-500 border-b border-gray-100">
+                      Role: {currentUser?.role?.charAt(0).toUpperCase() + currentUser?.role?.slice(1)}
+                    </div>
+                    <Link
+                      to="/profile"
+                      className="block px-4 py-2 text-gray-800 hover:bg-gray-100"
+                    >
+                      My Profile
+                    </Link>
+                    <Link
+                      to="/my-courses"
+                      className="block px-4 py-2 text-gray-800 hover:bg-gray-100"
+                    >
+                      My Courses
+                    </Link>
+
+                    {/* Admin-specific links */}
+                    {currentUser?.role === "admin" && (
+                      <Link
+                        to="/admin/dashboard"
+                        className="block px-4 py-2 text-gray-800 hover:bg-gray-100 bg-purple-50"
+                      >
+                        Admin Dashboard
+                      </Link>
+                    )}
+
+                    {/* Tutor-specific links */}
+                    {currentUser?.role === "tutor" && (
+                      <Link
+                        to="/tutor/dashboard"
+                        className="block px-4 py-2 text-gray-800 hover:bg-gray-100 bg-blue-50"
+                      >
+                        Tutor Dashboard
+                      </Link>
+                    )}
+
+                    {/* Learner-specific links */}
+                    {currentUser?.role === "learner" && currentUser?.tutorStatus === "none" && (
+                      <Link
+                        to="/become-tutor"
+                        className="block px-4 py-2 text-gray-800 hover:bg-gray-100 bg-green-50"
+                      >
+                        Become a Tutor
+                      </Link>
+                    )}
+
+                    {/* Application status link */}
+                    {currentUser?.role === "learner" && currentUser?.tutorStatus === "pending" && (
+                      <Link
+                        to="/become-tutor"
+                        className="block px-4 py-2 text-gray-800 hover:bg-gray-100 bg-yellow-50"
+                      >
+                        Application Status
+                      </Link>
+                    )}
+
+                    <button
+                      onClick={() => {
+                        logout();
+                        navigate('/');
+                      }}
+                      className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              </div>
             ) : (
               <div className="flex items-center space-x-4">
                 <button

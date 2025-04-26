@@ -1,23 +1,69 @@
 import express from "express";
-import cors from "cors"
-import cookieParser from "cookie-parser"
+import cors from "cors";
+import cookieParser from "cookie-parser";
+import { ApiError } from "./utils/ApiError.js";
+import { ApiResponse } from "./utils/ApiResponse.js";
 
+const app = express();
 
-const app = express()
+// Configure CORS
 app.use(cors({
-    origin: process.env.CORS_ORIGIN,
-    credential: true
-}))
-app.use(express.json({ limit: "16kb" }))
-app.use(express.urlencoded({ extended: true, limit: "16kb" }))
-app.use(express.static("public"))
-app.use(cookieParser())
+    origin: process.env.CORS_ORIGIN || "http://localhost:5174",
+    credentials: true
+}));
+
+// Parse JSON request body
+app.use(express.json({ limit: "16kb" }));
+
+// Parse URL-encoded request body
+app.use(express.urlencoded({ extended: true, limit: "16kb" }));
+
+// Serve static files
+app.use(express.static("public"));
+
+// Parse cookies
+app.use(cookieParser());
+
+// Health check endpoint
+app.get("/api/v1/health", (req, res) => {
+    res.status(200).json(new ApiResponse(200, { status: "ok" }, "Server is running"));
+});
 
 
-import userRouter from "./routes/user.routes.js"
+import userRouter from "./routes/user.routes.js";
+import tutorApplicationRouter from "./routes/tutorApplication.routes.js";
+import adminRouter from "./routes/admin.routes.js";
 
 // Routes declaration
-app.use("/api/v1/users", userRouter)
+app.use("/api/v1/users", userRouter);
+app.use("/api/v1/tutor-applications", tutorApplicationRouter);
+app.use("/api/v1/admin", adminRouter);
 
-// https://localhost:5000/api/v1/user/register
-export { app }
+// 404 handler
+app.use((req, res) => {
+    return res.status(404).json(
+        new ApiResponse(404, null, `Route ${req.originalUrl} not found`)
+    );
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error("ERROR:", err);
+
+    if (err instanceof ApiError) {
+        return res.status(err.statusCode).json({
+            success: false,
+            message: err.message,
+            errors: err.errors,
+            stack: process.env.NODE_ENV === "development" ? err.stack : undefined
+        });
+    }
+
+    return res.status(500).json({
+        success: false,
+        message: "Something went wrong",
+        stack: process.env.NODE_ENV === "development" ? err.stack : undefined
+    });
+});
+
+export { app };

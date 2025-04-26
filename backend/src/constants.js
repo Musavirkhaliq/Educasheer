@@ -1,1 +1,1 @@
-export const DB_NAME="EduCasheer"
+export const DB_NAME="educasheer"

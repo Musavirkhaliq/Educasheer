@@ -1,5 +1,7 @@
 import React, { Suspense } from "react";
 import Home from "../pages/Home";
+import TutorApplication from "../pages/TutorApplication";
+import AdminDashboard from "../pages/AdminDashboard";
 
 export const homeRoutes = [
   {
@@ -10,21 +12,28 @@ export const homeRoutes = [
       </Suspense>
     ),
   },
-  //   {
-  //     element: (
-  //       <Suspense fallback={<Loader />}>
-  //         <About />
-  //       </Suspense>
-  //     ),
-  //     path: "/about",
-  //   },
-  // Contact
-  //   {
-  //     element: (
-  //       <Suspense fallback={<Loader />}>
-  //         <Contact />
-  //       </Suspense>
-  //     ),
-  //     path: "/contact",
-  //   },
+  {
+    path: "become-tutor",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <TutorApplication />
+      </Suspense>
+    ),
+  },
+  {
+    path: "admin",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <AdminDashboard />
+      </Suspense>
+    ),
+  },
+  {
+    path: "admin/dashboard",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <AdminDashboard />
+      </Suspense>
+    ),
+  },
 ];
