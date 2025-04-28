@@ -55,6 +55,12 @@ const DesktopNav = () => {
               Home
             </Link>
             <Link
+              to="/videos"
+              className="text-[#6c6c6c] hover:text-[#00bcd4] transition-colors duration-300"
+            >
+              Videos
+            </Link>
+            <Link
               to="/home/courses"
               className="text-[#6c6c6c] hover:text-[#00bcd4] transition-colors duration-300"
             >
