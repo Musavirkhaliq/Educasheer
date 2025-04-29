@@ -2,9 +2,11 @@ import { Router } from "express";
 import {
     addVideoComment,
     addCourseComment,
+    addBlogComment,
     addReply,
     getVideoComments,
     getCourseComments,
+    getBlogComments,
     updateComment,
     deleteComment,
     likeComment
@@ -20,6 +22,10 @@ router.route("/video/:videoId").post(varifyJWT, addVideoComment);
 // Course comments
 router.route("/course/:courseId").get(getCourseComments);
 router.route("/course/:courseId").post(varifyJWT, addCourseComment);
+
+// Blog comments
+router.route("/blog/:blogId").get(getBlogComments);
+router.route("/blog/:blogId").post(varifyJWT, addBlogComment);
 
 // Replies
 router.route("/reply/:commentId").post(varifyJWT, addReply);
