@@ -25,27 +25,27 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    
+
     // If the error is 401 and we haven't already tried to refresh the token
     if (error.response.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      
+
       try {
         // Try to refresh the token
         const refreshToken = localStorage.getItem('refreshToken');
         if (!refreshToken) {
           throw new Error('No refresh token available');
         }
-        
+
         const response = await axios.post('/api/v1/users/refresh-token', { refreshToken });
-        
+
         // Store the new tokens
         localStorage.setItem('accessToken', response.data.data.accessToken);
         localStorage.setItem('refreshToken', response.data.data.refreshToken);
-        
+
         // Update the authorization header
         originalRequest.headers.Authorization = `Bearer ${response.data.data.accessToken}`;
-        
+
         // Retry the original request
         return api(originalRequest);
       } catch (refreshError) {
@@ -53,13 +53,13 @@ api.interceptors.response.use(
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
         localStorage.removeItem('user');
-        
+
         // Redirect to login page
         window.location.href = '/login';
         return Promise.reject(refreshError);
       }
     }
-    
+
     return Promise.reject(error);
   }
 );
@@ -70,6 +70,24 @@ export const authAPI = {
   register: (userData) => api.post('/users/register', userData),
   logout: () => api.post('/users/logout'),
   getCurrentUser: () => api.get('/users/get-current-user'),
+};
+
+// Profile API functions
+export const profileAPI = {
+  updateAccountDetails: (data) => api.patch('/users/update-account-details', data),
+  changePassword: (data) => api.post('/users/change-password', data),
+  updateAvatar: (formData) => api.post('/users/update-user-avatar', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  }),
+  updateCoverImage: (formData) => api.patch('/users/update-user-cover-image', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  }),
+  getWatchHistory: () => api.get('/users/watch-history'),
+  getUserChannel: (username) => api.get(`/users/channel/${username}`),
 };
 
 // Export the api instance for other API services

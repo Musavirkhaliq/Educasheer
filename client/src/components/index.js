@@ -17,3 +17,9 @@ export {default as VideoEditForm} from "./VideoEditForm";
 export {default as CourseList} from "./CourseList";
 export {default as CourseDetail} from "./CourseDetail";
 export {default as CourseForm} from "./CourseForm";
+
+// Profile components
+export {default as ProfileHeader} from "./profile/ProfileHeader";
+export {default as ProfileTabs} from "./profile/ProfileTabs";
+export {default as AccountSettings} from "./profile/AccountSettings";
+export {default as WatchHistory} from "./profile/WatchHistory";

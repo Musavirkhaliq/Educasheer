@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }) => {
     const checkAuthStatus = async () => {
       const user = localStorage.getItem('user');
       const token = localStorage.getItem('accessToken');
-      
+
       if (user && token) {
         try {
           setCurrentUser(JSON.parse(user));
@@ -31,10 +31,10 @@ export const AuthProvider = ({ children }) => {
           localStorage.removeItem('refreshToken');
         }
       }
-      
+
       setLoading(false);
     };
-    
+
     checkAuthStatus();
   }, []);
 
@@ -42,15 +42,15 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const response = await authAPI.login({ email, password });
       const { user, accessToken, refreshToken } = response.data.data;
-      
+
       localStorage.setItem('accessToken', accessToken);
       localStorage.setItem('refreshToken', refreshToken);
       localStorage.setItem('user', JSON.stringify(user));
-      
+
       setCurrentUser(user);
       return user;
     } catch (error) {
@@ -65,7 +65,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const response = await authAPI.register(userData);
       return response.data;
@@ -80,7 +80,7 @@ export const AuthProvider = ({ children }) => {
   // Logout function
   const logout = async () => {
     setLoading(true);
-    
+
     try {
       await authAPI.logout();
     } catch (error) {
@@ -114,6 +114,7 @@ export const AuthProvider = ({ children }) => {
   // Context value
   const value = {
     currentUser,
+    setCurrentUser,
     loading,
     error,
     login,

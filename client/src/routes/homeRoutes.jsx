@@ -11,6 +11,7 @@ import CourseCreatePage from "../pages/CourseCreatePage";
 import CourseDetailPage from "../pages/CourseDetailPage";
 import CourseEditPage from "../pages/CourseEditPage";
 import CourseVideoPlayerPage from "../pages/CourseVideoPlayerPage";
+import ProfilePage from "../pages/ProfilePage";
 
 export const homeRoutes = [
   {
@@ -116,6 +117,15 @@ export const homeRoutes = [
     element: (
       <Suspense fallback={<h1>Loading</h1>}>
         <CourseVideoPlayerPage />
+      </Suspense>
+    ),
+  },
+  // Profile route
+  {
+    path: "profile",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <ProfilePage />
       </Suspense>
     ),
   },
