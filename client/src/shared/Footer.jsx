@@ -1,71 +1,131 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import {
   FaFacebook,
   FaTwitter,
   FaLinkedin,
   FaGithub,
   FaAngleUp,
-} from "react-icons/fa6";
+  FaMapMarkerAlt,
+  FaPhoneAlt,
+  FaEnvelope,
+  FaGraduationCap,
+} from "react-icons/fa";
+import { motion } from "framer-motion";
 
 const Footer = () => {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const quickLinks = [
+    { name: "Home", path: "/" },
+    { name: "Videos", path: "/videos" },
+    { name: "Courses", path: "/courses" },
+    { name: "Categories", path: "/videos" },
+    { name: "Study Material", path: "/" },
+    { name: "Contact Us", path: "/contact" },
+  ];
+
+  const socialLinks = [
+    { icon: FaFacebook, name: "Facebook", url: "#", color: "hover:bg-blue-600" },
+    { icon: FaTwitter, name: "Twitter", url: "#", color: "hover:bg-sky-500" },
+    { icon: FaLinkedin, name: "LinkedIn", url: "#", color: "hover:bg-blue-700" },
+    { icon: FaGithub, name: "GitHub", url: "#", color: "hover:bg-gray-800" },
+  ];
+
+  const contactInfo = [
+    {
+      icon: FaMapMarkerAlt,
+      content: "123 Education Street, Learning City, 10001",
+      url: "https://maps.google.com"
+    },
+    {
+      icon: FaPhoneAlt,
+      content: "+1 (555) 123-4567",
+      url: "tel:+15551234567"
+    },
+    {
+      icon: FaEnvelope,
+      content: "info@educasheer.com",
+      url: "mailto:info@educasheer.com"
+    },
+  ];
+
   return (
-    <footer className="bg-[var(--footer)] text-[var(--pure)] pt-12 pb-6 ">
-      <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
-          {/* Logo Section */}
-          <div className="md:col-span-4 flex flex-col items-center md:items-start">
-            <img src="" alt="Company Logo" className="h-12 mb-4" />
-            <p className="text-[var(--heaven)]  max-w-md text-center md:text-left ">
+    <footer className="relative bg-gradient-to-br from-[#01427a] to-[#0a2540] text-white pt-16 pb-8 overflow-hidden">
+      {/* Background decorations */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
+        <div className="absolute top-10 right-10 w-64 h-64 bg-[#00bcd4]/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-10 left-10 w-64 h-64 bg-[#00bcd4]/5 rounded-full blur-3xl"></div>
+      </div>
+
+      <div className="container mx-auto px-6 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10">
+          {/* Logo and About Section */}
+          <div className="lg:col-span-4">
+            <div className="flex items-center mb-6">
+              <div className="bg-gradient-to-r from-[#00bcd4] to-[#01427a]/80 text-white font-bold text-2xl px-3 py-1 rounded-lg mr-2">EC</div>
+              <span className="text-xl font-bold text-white">EduCasheer</span>
+            </div>
+
+            <p className="text-gray-300 mb-6 max-w-md">
               Empowering learners worldwide with quality educational content and
-              comprehensive study materials.
+              comprehensive study materials. Join our community of educators and students.
             </p>
+
+            <div className="flex space-x-3">
+              {socialLinks.map((social, index) => (
+                <a
+                  key={index}
+                  href={social.url}
+                  aria-label={social.name}
+                  className={`w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:text-white ${social.color} transition-all duration-300`}
+                >
+                  <social.icon />
+                </a>
+              ))}
+            </div>
           </div>
 
           {/* Quick Links */}
-          <div className="md:col-span-3">
-            <h3 className="text-[var(--primary)] mb-4">Quick Links</h3>
-            <ul className="space-y-2">
-              {[
-                "Home",
-                "Study Material",
-                "Courses",
-                "Categories",
-                "Road Maps",
-                "Contact Us",
-              ].map((item) => (
-                <li key={item}>
-                  <a
-                    href={`#${item.toLowerCase().replace(" ", "-")}`}
-                    className="text-[#f0f0f0] hover:text-[var(--primary)] transition-colors duration-300 text-sm"
+          <div className="lg:col-span-3">
+            <h3 className="text-lg font-semibold text-white mb-6 flex items-center">
+              <span className="w-8 h-0.5 bg-[#00bcd4] mr-3"></span>
+              Quick Links
+            </h3>
+            <ul className="space-y-3">
+              {quickLinks.map((link, index) => (
+                <li key={index}>
+                  <Link
+                    to={link.path}
+                    className="text-gray-300 hover:text-[#00bcd4] transition-colors duration-300 flex items-center"
                   >
-                    {item}
-                  </a>
+                    <span className="mr-2">→</span>
+                    {link.name}
+                  </Link>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Connect With Us */}
-          <div className="md:col-span-3">
-            <h3 className="text-[var(--primary)] mb-4">Connect With Us</h3>
-            <ul className="space-y-3">
-              {[
-                { icon: FaFacebook, name: "Facebook" },
-                { icon: FaTwitter, name: "Twitter" },
-                { icon: FaLinkedin, name: "LinkedIn" },
-                { icon: FaGithub, name: "GitHub" },
-              ].map((social) => (
-                <li key={social.name}>
+          {/* Contact Information */}
+          <div className="lg:col-span-3">
+            <h3 className="text-lg font-semibold text-white mb-6 flex items-center">
+              <span className="w-8 h-0.5 bg-[#00bcd4] mr-3"></span>
+              Contact Us
+            </h3>
+            <ul className="space-y-4">
+              {contactInfo.map((info, index) => (
+                <li key={index}>
                   <a
-                    href="#"
-                    className="flex items-center space-x-2 text-[#f0f0f0] hover:text-[#00bcd4] transition-colors duration-300"
+                    href={info.url}
+                    className="flex items-start text-gray-300 hover:text-[#00bcd4] transition-colors duration-300"
                   >
-                    <social.icon className="text-lg" />
-                    <span className="text-sm">{social.name}</span>
+                    <span className="mr-3 mt-1 text-[#00bcd4]">
+                      <info.icon />
+                    </span>
+                    <span>{info.content}</span>
                   </a>
                 </li>
               ))}
@@ -73,30 +133,54 @@ const Footer = () => {
           </div>
 
           {/* Newsletter Section */}
-          <div className="md:col-span-2">
-            <h3 className="text-[var(--primary)] mb-4">Newsletter</h3>
+          <div className="lg:col-span-2">
+            <h3 className="text-lg font-semibold text-white mb-6 flex items-center">
+              <span className="w-8 h-0.5 bg-[#00bcd4] mr-3"></span>
+              Newsletter
+            </h3>
+            <p className="text-gray-300 mb-4 text-sm">
+              Subscribe to our newsletter for the latest updates and educational resources.
+            </p>
             <div className="flex flex-col space-y-3">
-              <input
-                type="email"
-                placeholder="Your email"
-                className="px-4 py-2 bg-[#2a4452] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#00bcd4]"
-              />
-              <button className="bg-[#00bcd4] text-white px-4 py-2 rounded-md text-sm hover:bg-[#01427a] transition-colors duration-300">
-                Subscribe
-              </button>
+              <div className="relative">
+                <input
+                  type="email"
+                  placeholder="Your email"
+                  className="w-full px-4 py-3 bg-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#00bcd4] transition-all duration-300"
+                />
+                <button className="absolute right-1 top-1 bg-gradient-to-r from-[#00bcd4] to-[#01427a] text-white p-2 rounded-lg hover:shadow-lg transition-all duration-300">
+                  <FaEnvelope />
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
+        {/* Divider */}
+        <div className="h-px bg-gradient-to-r from-transparent via-gray-500/30 to-transparent my-10"></div>
+
         {/* Bottom Section */}
-        <div className="mt-12 pt-6 border-t border-[#2a4452]">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-[#6c6c6c] ">© 2024 All rights reserved</p>
+        <div className="flex flex-col md:flex-row justify-between items-center">
+          <div className="flex items-center mb-4 md:mb-0">
+            <FaGraduationCap className="text-[#00bcd4] mr-2" />
+            <p className="text-gray-400 text-sm">
+              © {new Date().getFullYear()} EduCasheer. All rights reserved.
+            </p>
+          </div>
+
+          <div className="flex space-x-6">
+            <Link to="/privacy" className="text-gray-400 hover:text-[#00bcd4] text-sm transition-colors duration-300">
+              Privacy Policy
+            </Link>
+            <Link to="/terms" className="text-gray-400 hover:text-[#00bcd4] text-sm transition-colors duration-300">
+              Terms of Service
+            </Link>
             <button
               onClick={scrollToTop}
-              className="mt-4 md:mt-0 bg-[#2a4452] p-3 rounded-full hover:bg-[#00bcd4] transition-colors duration-300"
+              aria-label="Scroll to top"
+              className="bg-white/10 p-2 rounded-full hover:bg-[#00bcd4] transition-all duration-300 ml-2"
             >
-              <FaAngleUp className="text-lg" />
+              <FaAngleUp className="text-white" />
             </button>
           </div>
         </div>

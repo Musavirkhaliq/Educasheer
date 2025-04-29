@@ -5,15 +5,15 @@ import Footer from "../shared/Footer";
 
 const HomeOutlet = () => {
   return (
-    <>
-        <ScrollRestoration />
-        <Header />
-      <div className="container mx-auto p-8 m-8">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-white to-gray-50">
+      <ScrollRestoration />
+      <Header />
+      <main className="flex-grow">
         <Outlet />
-      </div>
-        <Footer />
-    </>
+      </main>
+      <Footer />
+    </div>
   );
 };
-// export const useHomeLayoutContext = () => useContext(homeLayoutContext);
+
 export default HomeOutlet;
