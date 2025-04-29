@@ -57,6 +57,9 @@ const VideoUploadForm = () => {
         throw new Error('Invalid YouTube URL');
       }
 
+      // Show a message that we're fetching video details
+      setSuccess('Fetching video details from YouTube...');
+
       const response = await axios.post(
         '/api/v1/videos',
         formData,
@@ -67,7 +70,7 @@ const VideoUploadForm = () => {
         }
       );
 
-      setSuccess('Video added successfully!');
+      setSuccess('Video added successfully! The details were automatically fetched from YouTube.');
       setFormData({
         videoUrl: '',
         title: '',
@@ -76,6 +79,12 @@ const VideoUploadForm = () => {
         tags: ''
       });
       setVideoPreview(null);
+
+      // After a short delay, redirect to the videos page
+      setTimeout(() => {
+        window.location.href = '/videos';
+      }, 2000);
+
     } catch (error) {
       setError(
         error.response?.data?.message ||
@@ -102,8 +111,19 @@ const VideoUploadForm = () => {
     <div className="bg-white p-8 rounded-lg shadow-lg">
       <h2 className="text-2xl font-bold text-gray-800 mb-4">Add a New Video</h2>
       <p className="text-gray-600 mb-6">
-        Add a YouTube video by providing the URL. The system will automatically fetch the title, description, and thumbnail.
+        Add a YouTube video by providing the URL. The system will automatically fetch the title, description, thumbnail, and duration from YouTube.
       </p>
+
+      <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-4">
+        <p className="font-bold">Automatic YouTube Data Fetching</p>
+        <p>When you submit a YouTube URL, the system will:</p>
+        <ul className="list-disc ml-5 mt-2">
+          <li>Extract the video ID from the URL</li>
+          <li>Fetch the video title, description, and thumbnail from YouTube</li>
+          <li>Store all the information in the database</li>
+        </ul>
+        <p className="mt-2">You can optionally provide your own title and description if you want to override the YouTube data.</p>
+      </div>
 
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">

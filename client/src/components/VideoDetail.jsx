@@ -34,14 +34,14 @@ const VideoDetail = () => {
     if (!window.confirm('Are you sure you want to delete this video?')) {
       return;
     }
-    
+
     try {
       await axios.delete(`/api/v1/videos/${videoId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`
         }
       });
-      
+
       navigate('/videos');
     } catch (error) {
       console.error('Error deleting video:', error);
@@ -52,13 +52,13 @@ const VideoDetail = () => {
   // Check if user can edit/delete the video
   const canManageVideo = () => {
     if (!currentUser || !video) return false;
-    
+
     // Admin can manage all videos
     if (currentUser.role === 'admin') return true;
-    
+
     // Video owner can manage their videos
     if (video.owner && video.owner._id === currentUser._id) return true;
-    
+
     return false;
   };
 
@@ -100,22 +100,22 @@ const VideoDetail = () => {
             allowFullScreen
           ></iframe>
         </div>
-        
+
         <div className="p-6">
           <div className="flex justify-between items-start">
             <h1 className="text-2xl font-bold text-gray-800 mb-2">
               {video.title}
             </h1>
-            
+
             {canManageVideo() && (
               <div className="flex space-x-2">
-                <Link 
+                <Link
                   to={`/videos/edit/${video._id}`}
                   className="p-2 text-blue-600 hover:bg-blue-50 rounded"
                 >
                   <FaEdit />
                 </Link>
-                <button 
+                <button
                   onClick={handleDeleteVideo}
                   className="p-2 text-red-600 hover:bg-red-50 rounded"
                 >
@@ -124,7 +124,7 @@ const VideoDetail = () => {
               </div>
             )}
           </div>
-          
+
           <div className="flex items-center text-sm text-gray-500 mb-4">
             <div className="flex items-center mr-4">
               <FaEye className="mr-1" />
@@ -137,13 +137,25 @@ const VideoDetail = () => {
             <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">
               {video.category}
             </span>
+            <a
+              href={video.videoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ml-4 text-blue-500 hover:text-blue-700 text-xs underline"
+            >
+              Open on YouTube
+            </a>
           </div>
-          
+
+          <div className="bg-gray-50 p-2 rounded text-xs text-gray-500 mb-4">
+            Video ID: {video.videoId} • Added on {new Date(video.createdAt).toLocaleDateString()}
+          </div>
+
           {video.owner && (
             <div className="flex items-center mb-4">
               <div className="w-10 h-10 rounded-full overflow-hidden mr-3">
-                <img 
-                  src={video.owner.avatar || 'https://via.placeholder.com/40'} 
+                <img
+                  src={video.owner.avatar || 'https://via.placeholder.com/40'}
                   alt={video.owner.fullName || video.owner.username}
                   className="w-full h-full object-cover"
                 />
@@ -158,20 +170,20 @@ const VideoDetail = () => {
               </div>
             </div>
           )}
-          
+
           <div className="mt-4">
             <h2 className="text-lg font-semibold text-gray-800 mb-2">Description</h2>
             <p className="text-gray-600 whitespace-pre-line">
               {video.description}
             </p>
           </div>
-          
+
           {video.tags && video.tags.length > 0 && (
             <div className="mt-4">
               <h2 className="text-lg font-semibold text-gray-800 mb-2">Tags</h2>
               <div className="flex flex-wrap gap-2">
                 {video.tags.map((tag, index) => (
-                  <span 
+                  <span
                     key={index}
                     className="text-xs px-3 py-1 bg-gray-100 rounded-full text-gray-700"
                   >

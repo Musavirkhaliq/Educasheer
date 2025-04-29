@@ -15,28 +15,28 @@ const VideoList = ({ category, limit, showOwner = true, userId = null, showContr
       try {
         let url = '/api/v1/videos';
         const params = {};
-        
+
         if (category) {
           params.category = category;
         }
-        
+
         if (limit) {
           params.limit = limit;
         }
-        
+
         if (userId) {
           url = `/api/v1/videos/user/${userId}`;
         } else if (showControls) {
           url = '/api/v1/videos/my/videos';
         }
-        
-        const response = await axios.get(url, { 
+
+        const response = await axios.get(url, {
           params,
           headers: showControls ? {
             Authorization: `Bearer ${localStorage.getItem('accessToken')}`
           } : {}
         });
-        
+
         setVideos(response.data.data.videos || response.data.data);
       } catch (error) {
         console.error('Error fetching videos:', error);
@@ -53,14 +53,14 @@ const VideoList = ({ category, limit, showOwner = true, userId = null, showContr
     if (!window.confirm('Are you sure you want to delete this video?')) {
       return;
     }
-    
+
     try {
       await axios.delete(`/api/v1/videos/${videoId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`
         }
       });
-      
+
       // Remove the deleted video from the list
       setVideos(videos.filter(video => video._id !== videoId));
     } catch (error) {
@@ -98,30 +98,30 @@ const VideoList = ({ category, limit, showOwner = true, userId = null, showContr
       {videos.map((video) => (
         <div key={video._id} className="bg-white rounded-lg shadow-md overflow-hidden">
           <div className="relative">
-            <img 
-              src={video.thumbnail} 
-              alt={video.title} 
+            <img
+              src={video.thumbnail}
+              alt={video.title}
               className="w-full h-48 object-cover"
             />
             <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300">
-              <Link 
-                to={`/videos/${video._id}`} 
+              <Link
+                to={`/videos/${video._id}`}
                 className="bg-[#00bcd4] text-white p-3 rounded-full"
               >
                 <FaPlay />
               </Link>
             </div>
           </div>
-          
+
           <div className="p-4">
             <h3 className="text-lg font-semibold text-gray-800 mb-2 line-clamp-2">
               {video.title}
             </h3>
-            
+
             <p className="text-gray-600 text-sm mb-3 line-clamp-2">
               {video.description}
             </p>
-            
+
             <div className="flex items-center justify-between text-sm text-gray-500">
               <div className="flex items-center space-x-4">
                 {showOwner && video.owner && (
@@ -134,22 +134,30 @@ const VideoList = ({ category, limit, showOwner = true, userId = null, showContr
                   <FaEye className="mr-1" />
                   <span>{video.views} views</span>
                 </div>
+                <div className="text-xs text-gray-400">
+                  {new Date(video.createdAt).toLocaleDateString()}
+                </div>
               </div>
-              
-              <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">
-                {video.category}
-              </span>
+
+              <div className="flex items-center space-x-2">
+                <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">
+                  {video.category}
+                </span>
+                <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">
+                  {video.duration}
+                </span>
+              </div>
             </div>
-            
+
             {showControls && (
               <div className="mt-4 flex justify-end space-x-2">
-                <Link 
+                <Link
                   to={`/videos/edit/${video._id}`}
                   className="p-2 text-blue-600 hover:bg-blue-50 rounded"
                 >
                   <FaEdit />
                 </Link>
-                <button 
+                <button
                   onClick={() => handleDeleteVideo(video._id)}
                   className="p-2 text-red-600 hover:bg-red-50 rounded"
                 >
