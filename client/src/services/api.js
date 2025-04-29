@@ -90,5 +90,27 @@ export const profileAPI = {
   getUserChannel: (username) => api.get(`/users/channel/${username}`),
 };
 
+// Blog API functions
+export const blogAPI = {
+  getAllBlogs: (params) => api.get('/blogs', { params }),
+  getBlogBySlug: (slug) => api.get(`/blogs/slug/${slug}`),
+  getBlogById: (id) => api.get(`/blogs/${id}`),
+  createBlog: (formData) => api.post('/blogs', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  }),
+  updateBlog: (id, formData) => api.patch(`/blogs/${id}`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  }),
+  deleteBlog: (id) => api.delete(`/blogs/${id}`),
+  getMyBlogs: (params) => api.get('/blogs/my/blogs', { params }),
+  getBlogsByAuthor: (userId, params) => api.get(`/blogs/author/${userId}`, { params }),
+  getBlogComments: (blogId, params) => api.get(`/comments/blog/${blogId}`, { params }),
+  addBlogComment: (blogId, data) => api.post(`/comments/blog/${blogId}`, data),
+};
+
 // Export the api instance for other API services
 export default api;

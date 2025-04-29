@@ -12,6 +12,10 @@ import CourseDetailPage from "../pages/CourseDetailPage";
 import CourseEditPage from "../pages/CourseEditPage";
 import CourseVideoPlayerPage from "../pages/CourseVideoPlayerPage";
 import ProfilePage from "../pages/ProfilePage";
+import BlogsPage from "../pages/BlogsPage";
+import BlogDetailPage from "../pages/BlogDetailPage";
+import BlogCreatePage from "../pages/BlogCreatePage";
+import BlogEditPage from "../pages/BlogEditPage";
 
 export const homeRoutes = [
   {
@@ -126,6 +130,39 @@ export const homeRoutes = [
     element: (
       <Suspense fallback={<h1>Loading</h1>}>
         <ProfilePage />
+      </Suspense>
+    ),
+  },
+  // Blog routes
+  {
+    path: "blogs",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <BlogsPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: "blogs/create",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <BlogCreatePage />
+      </Suspense>
+    ),
+  },
+  {
+    path: "blogs/:slug",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <BlogDetailPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: "blogs/edit/:blogId",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <BlogEditPage />
       </Suspense>
     ),
   },
