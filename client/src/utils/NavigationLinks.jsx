@@ -1,4 +1,4 @@
-import { FaCar, FaHotel } from "react-icons/fa6";
+import { FaCar, FaHotel, FaVideo, FaGraduationCap } from "react-icons/fa6";
 import { GiMountainRoad } from "react-icons/gi";
 import {
   MapPin,
@@ -8,6 +8,7 @@ import {
   FileEdit,
   PenTool,
   ShoppingBag,
+  BookOpen,
 } from "lucide-react";
 import { FaHome } from "react-icons/fa";
 import { MdNotifications } from "react-icons/md";
@@ -19,24 +20,24 @@ const navLinks = [
     icon: <FaHome />,
   },
   {
+    name: "Videos",
+    address: "/videos",
+    icon: <FaVideo />,
+  },
+  {
+    name: "Courses",
+    address: "/courses",
+    icon: <FaGraduationCap />,
+  },
+  {
+    name: "Categories",
+    address: "/videos",
+    icon: <BookOpen />,
+  },
+  {
     name: "Study Material",
     address: "/",
     icon: <FaHotel />,
-  },
-  {
-    name: "Courses ",
-    address: "/",
-    icon: <GiMountainRoad />,
-  },
-  {
-    name: "catagories",
-    address: "/",
-    icon: <FaCar />,
-  },
-  {
-    name: "Road Maps",
-    address: "/",
-    icon: <FaCar />,
   },
   {
     name: "Contact Us",
@@ -65,38 +66,39 @@ const quickLinks = [
 ];
 const adminLinks = [
   {
-    name: "Notifications",
-    address: "notifications",
+    name: "Dashboard",
+    address: "dashboard",
     icon: <MdNotifications />,
   },
   {
-    name: "Add Destination",
-    address: "add-destination",
+    name: "Manage Users",
+    address: "users",
     icon: <MapPin />,
   },
   {
-    name: "Add Hotel",
-    address: "add-hotel",
-    icon: <Building2 />,
+    name: "Manage Videos",
+    address: "videos",
+    icon: <FaVideo />,
   },
   {
-    name: "Add Cab",
-    address: "add-cab",
-    icon: <Car />,
+    name: "Manage Courses",
+    address: "courses",
+    icon: <FaGraduationCap />,
   },
   {
-    name: "Add Cab Pricing",
-    address: "add-cab-pricing",
-    icon: <DollarSign />,
-  },
-  {
-    name: "Add Blog",
-    address: "add-blog",
+    name: "Tutor Applications",
+    address: "tutor-applications",
     icon: <FileEdit />,
   },
   {
-    name: "Add Tour Package",
-    address: "add-tour-package",
+    name: "Add Video",
+    address: "/videos/upload",
+    icon: <FaVideo />,
+  },
+  {
+    name: "Create Course",
+    address: "/courses/create",
+    icon: <FaGraduationCap />,
   },
 ];
 

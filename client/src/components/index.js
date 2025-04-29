@@ -12,3 +12,8 @@ export {default as VideoList} from "./VideoList";
 export {default as VideoDetail} from "./VideoDetail";
 export {default as VideoUploadForm} from "./VideoUploadForm";
 export {default as VideoEditForm} from "./VideoEditForm";
+
+// Course components
+export {default as CourseList} from "./CourseList";
+export {default as CourseDetail} from "./CourseDetail";
+export {default as CourseForm} from "./CourseForm";

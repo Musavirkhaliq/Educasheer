@@ -1,0 +1,447 @@
+import { asyncHandler } from "../utils/asyncHandler.js";
+import { ApiError } from "../utils/ApiError.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
+import { Course } from "../models/course.model.js";
+import { Video } from "../models/video.model.js";
+import { generateUniqueSlug } from "../utils/slugify.js";
+import mongoose from "mongoose";
+
+// Create a new course (admin and tutor only)
+const createCourse = asyncHandler(async (req, res) => {
+    try {
+        const { title, description, category, level, price, originalPrice, videoIds, tags } = req.body;
+
+        // Check if user is admin or tutor
+        if (req.user.role !== "admin" && req.user.role !== "tutor") {
+            throw new ApiError(403, "Only admins and tutors can create courses");
+        }
+
+        // Validate input
+        if (!title || !description) {
+            throw new ApiError(400, "Title and description are required");
+        }
+
+        if (!videoIds || !Array.isArray(videoIds) || videoIds.length === 0) {
+            throw new ApiError(400, "At least one video is required for a course");
+        }
+
+        // Verify all videos exist and user has access to them
+        const videos = await Video.find({
+            _id: { $in: videoIds }
+        });
+
+        if (videos.length !== videoIds.length) {
+            throw new ApiError(400, "One or more videos not found");
+        }
+
+        // If user is not admin, check if they own all the videos
+        if (req.user.role !== "admin") {
+            const hasAccess = videos.every(video =>
+                video.owner.toString() === req.user._id.toString()
+            );
+
+            if (!hasAccess) {
+                throw new ApiError(403, "You can only include videos that you own");
+            }
+        }
+
+        // Use the first video's thumbnail as the course thumbnail
+        const thumbnail = videos[0].thumbnail;
+
+        // Log the received data for debugging
+        console.log("Creating course with data:", {
+            title,
+            description,
+            thumbnail: thumbnail ? thumbnail.substring(0, 30) + "..." : null,
+            videoIds: videoIds ? videoIds.length : 0,
+            creator: req.user._id,
+            category,
+            level,
+            price,
+            originalPrice,
+            tags
+        });
+
+        // Process tags - handle different formats
+        let processedTags = [];
+        if (tags) {
+            if (typeof tags === 'string') {
+                processedTags = tags.split(",").map(tag => tag.trim()).filter(tag => tag.length > 0);
+            } else if (Array.isArray(tags)) {
+                processedTags = tags.map(tag => tag.trim()).filter(tag => tag.length > 0);
+            }
+        }
+
+        // Process price and originalPrice
+        const processedPrice = parseFloat(price) || 0;
+        const processedOriginalPrice = parseFloat(originalPrice) || processedPrice || 0;
+
+        // Generate a unique slug from the title
+        const slug = generateUniqueSlug(title);
+        console.log("Generated slug:", slug);
+
+        // Create course
+        const course = await Course.create({
+            title,
+            slug,
+            description,
+            thumbnail,
+            videos: videoIds,
+            creator: req.user._id,
+            category: category || "Uncategorized",
+            level: level || "Mixed",
+            price: processedPrice,
+            originalPrice: processedOriginalPrice,
+            tags: processedTags
+        });
+
+        return res.status(201).json(
+            new ApiResponse(201, course, "Course created successfully")
+        );
+    } catch (error) {
+        console.error("Error creating course:", error);
+
+        if (error instanceof ApiError) {
+            throw error;
+        }
+
+        // Check for MongoDB validation errors
+        if (error.name === 'ValidationError') {
+            const validationErrors = Object.values(error.errors).map(err => err.message);
+            throw new ApiError(400, `Validation error: ${validationErrors.join(', ')}`);
+        }
+
+        // Check for MongoDB cast errors (invalid ObjectId)
+        if (error.name === 'CastError') {
+            throw new ApiError(400, `Invalid ${error.path}: ${error.value}`);
+        }
+
+        throw new ApiError(500, `Something went wrong while creating course: ${error.message}`);
+    }
+});
+
+// Get all published courses
+const getAllCourses = asyncHandler(async (req, res) => {
+    try {
+        const { page = 1, limit = 10, category, level, search } = req.query;
+
+        const options = {
+            page: parseInt(page, 10),
+            limit: parseInt(limit, 10),
+            sort: { createdAt: -1 }
+        };
+
+        const filters = { isPublished: true };
+
+        // Add category filter if provided
+        if (category) {
+            filters.category = category;
+        }
+
+        // Add level filter if provided
+        if (level) {
+            filters.level = level;
+        }
+
+        // Add search filter if provided
+        if (search) {
+            filters.$or = [
+                { title: { $regex: search, $options: "i" } },
+                { description: { $regex: search, $options: "i" } }
+            ];
+        }
+
+        const courses = await Course.find(filters)
+            .populate("creator", "fullName username avatar")
+            .populate("videos", "title thumbnail duration views")
+            .skip((options.page - 1) * options.limit)
+            .limit(options.limit)
+            .sort(options.sort);
+
+        const totalCourses = await Course.countDocuments(filters);
+
+        return res.status(200).json(
+            new ApiResponse(200, {
+                courses,
+                totalCourses,
+                currentPage: options.page,
+                totalPages: Math.ceil(totalCourses / options.limit)
+            }, "Courses fetched successfully")
+        );
+    } catch (error) {
+        throw new ApiError(500, "Something went wrong while fetching courses");
+    }
+});
+
+// Get course by ID
+const getCourseById = asyncHandler(async (req, res) => {
+    try {
+        const { courseId } = req.params;
+
+        if (!courseId) {
+            throw new ApiError(400, "Course ID is required");
+        }
+
+        const course = await Course.findById(courseId)
+            .populate("creator", "fullName username avatar")
+            .populate("videos", "title thumbnail duration views videoId description");
+
+        if (!course) {
+            throw new ApiError(404, "Course not found");
+        }
+
+        // If course is not published, only allow creator or admin to view it
+        if (!course.isPublished &&
+            course.creator._id.toString() !== req.user?._id?.toString() &&
+            req.user?.role !== "admin") {
+            throw new ApiError(403, "This course is not published yet");
+        }
+
+        return res.status(200).json(
+            new ApiResponse(200, course, "Course fetched successfully")
+        );
+    } catch (error) {
+        if (error instanceof ApiError) {
+            throw error;
+        }
+        throw new ApiError(500, "Something went wrong while fetching course");
+    }
+});
+
+// Update course (admin and creator only)
+const updateCourse = asyncHandler(async (req, res) => {
+    try {
+        const { courseId } = req.params;
+        const {
+            title,
+            description,
+            category,
+            level,
+            price,
+            originalPrice,
+            videoIds,
+            tags,
+            isPublished
+        } = req.body;
+
+        if (!courseId) {
+            throw new ApiError(400, "Course ID is required");
+        }
+
+        const course = await Course.findById(courseId);
+
+        if (!course) {
+            throw new ApiError(404, "Course not found");
+        }
+
+        // Check if user is admin or course creator
+        if (req.user.role !== "admin" && course.creator.toString() !== req.user._id.toString()) {
+            throw new ApiError(403, "You don't have permission to update this course");
+        }
+
+        // If videoIds is provided, verify all videos exist and user has access to them
+        if (videoIds && Array.isArray(videoIds) && videoIds.length > 0) {
+            const videos = await Video.find({
+                _id: { $in: videoIds }
+            });
+
+            if (videos.length !== videoIds.length) {
+                throw new ApiError(400, "One or more videos not found");
+            }
+
+            // If user is not admin, check if they own all the videos
+            if (req.user.role !== "admin") {
+                const hasAccess = videos.every(video =>
+                    video.owner.toString() === req.user._id.toString()
+                );
+
+                if (!hasAccess) {
+                    throw new ApiError(403, "You can only include videos that you own");
+                }
+            }
+
+            // Update course thumbnail if videos are changed
+            if (videos.length > 0) {
+                course.thumbnail = videos[0].thumbnail;
+            }
+
+            course.videos = videoIds;
+        }
+
+        // Update other fields if provided
+        if (title) {
+            course.title = title;
+            // Update slug when title changes
+            course.slug = generateUniqueSlug(title);
+        }
+        if (description) course.description = description;
+        if (category) course.category = category;
+        if (level) course.level = level;
+        if (price !== undefined) course.price = parseFloat(price) || 0;
+        if (originalPrice !== undefined) course.originalPrice = parseFloat(originalPrice) || course.price || 0;
+        if (isPublished !== undefined) course.isPublished = isPublished;
+
+        // Process tags
+        if (tags) {
+            if (typeof tags === 'string') {
+                course.tags = tags.split(",").map(tag => tag.trim()).filter(tag => tag.length > 0);
+            } else if (Array.isArray(tags)) {
+                course.tags = tags.map(tag => tag.trim()).filter(tag => tag.length > 0);
+            }
+        }
+
+        await course.save();
+
+        return res.status(200).json(
+            new ApiResponse(200, course, "Course updated successfully")
+        );
+    } catch (error) {
+        if (error instanceof ApiError) {
+            throw error;
+        }
+        throw new ApiError(500, "Something went wrong while updating course");
+    }
+});
+
+// Delete course (admin and creator only)
+const deleteCourse = asyncHandler(async (req, res) => {
+    try {
+        const { courseId } = req.params;
+
+        if (!courseId) {
+            throw new ApiError(400, "Course ID is required");
+        }
+
+        const course = await Course.findById(courseId);
+
+        if (!course) {
+            throw new ApiError(404, "Course not found");
+        }
+
+        // Check if user is admin or course creator
+        if (req.user.role !== "admin" && course.creator.toString() !== req.user._id.toString()) {
+            throw new ApiError(403, "You don't have permission to delete this course");
+        }
+
+        await Course.findByIdAndDelete(courseId);
+
+        return res.status(200).json(
+            new ApiResponse(200, {}, "Course deleted successfully")
+        );
+    } catch (error) {
+        if (error instanceof ApiError) {
+            throw error;
+        }
+        throw new ApiError(500, "Something went wrong while deleting course");
+    }
+});
+
+// Get courses by creator
+const getCoursesByCreator = asyncHandler(async (req, res) => {
+    try {
+        const { userId } = req.params;
+
+        if (!userId) {
+            throw new ApiError(400, "User ID is required");
+        }
+
+        const courses = await Course.find({
+            creator: userId,
+            isPublished: true
+        })
+            .populate("creator", "fullName username avatar")
+            .populate("videos", "title thumbnail duration views")
+            .sort({ createdAt: -1 });
+
+        return res.status(200).json(
+            new ApiResponse(200, courses, "Courses fetched successfully")
+        );
+    } catch (error) {
+        throw new ApiError(500, "Something went wrong while fetching courses");
+    }
+});
+
+// Get my courses (for logged in user)
+const getMyCourses = asyncHandler(async (req, res) => {
+    try {
+        const courses = await Course.find({ creator: req.user._id })
+            .populate("videos", "title thumbnail duration views")
+            .sort({ createdAt: -1 });
+
+        return res.status(200).json(
+            new ApiResponse(200, courses, "Your courses fetched successfully")
+        );
+    } catch (error) {
+        throw new ApiError(500, "Something went wrong while fetching your courses");
+    }
+});
+
+// Enroll in a course
+const enrollInCourse = asyncHandler(async (req, res) => {
+    try {
+        const { courseId } = req.params;
+
+        if (!courseId) {
+            throw new ApiError(400, "Course ID is required");
+        }
+
+        const course = await Course.findById(courseId);
+
+        if (!course) {
+            throw new ApiError(404, "Course not found");
+        }
+
+        if (!course.isPublished) {
+            throw new ApiError(400, "Cannot enroll in an unpublished course");
+        }
+
+        // Check if user is already enrolled
+        if (course.enrolledStudents.includes(req.user._id)) {
+            throw new ApiError(400, "You are already enrolled in this course");
+        }
+
+        // Add user to enrolled students
+        course.enrolledStudents.push(req.user._id);
+        await course.save();
+
+        return res.status(200).json(
+            new ApiResponse(200, course, "Enrolled in course successfully")
+        );
+    } catch (error) {
+        if (error instanceof ApiError) {
+            throw error;
+        }
+        throw new ApiError(500, "Something went wrong while enrolling in course");
+    }
+});
+
+// Get enrolled courses
+const getEnrolledCourses = asyncHandler(async (req, res) => {
+    try {
+        const courses = await Course.find({
+            enrolledStudents: req.user._id,
+            isPublished: true
+        })
+            .populate("creator", "fullName username avatar")
+            .populate("videos", "title thumbnail duration views")
+            .sort({ createdAt: -1 });
+
+        return res.status(200).json(
+            new ApiResponse(200, courses, "Enrolled courses fetched successfully")
+        );
+    } catch (error) {
+        throw new ApiError(500, "Something went wrong while fetching enrolled courses");
+    }
+});
+
+export {
+    createCourse,
+    getAllCourses,
+    getCourseById,
+    updateCourse,
+    deleteCourse,
+    getCoursesByCreator,
+    getMyCourses,
+    enrollInCourse,
+    getEnrolledCourses
+};
