@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { FaUser, FaEye, FaClock, FaEdit, FaTrash } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
+import { CommentSection } from './comments';
 
 const VideoDetail = () => {
   const { videoId } = useParams();
@@ -195,6 +196,9 @@ const VideoDetail = () => {
           )}
         </div>
       </div>
+
+      {/* Comment Section */}
+      <CommentSection videoId={video._id} type="video" />
     </div>
   );
 };

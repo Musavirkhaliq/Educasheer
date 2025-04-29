@@ -5,6 +5,7 @@ import { BiTime, BiCategory } from 'react-icons/bi';
 import { FiVideo } from 'react-icons/fi';
 import { FaEdit, FaPlay, FaChalkboardTeacher, FaSignal, FaLock } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
+import { CommentSection } from './comments';
 
 const CourseDetail = () => {
   const { courseId } = useParams();
@@ -362,6 +363,11 @@ const CourseDetail = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Comment Section */}
+      <div className="mt-8">
+        <CommentSection courseId={course._id} type="course" />
       </div>
     </div>
   );

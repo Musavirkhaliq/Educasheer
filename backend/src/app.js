@@ -35,6 +35,7 @@ import tutorApplicationRouter from "./routes/tutorApplication.routes.js";
 import adminRouter from "./routes/admin.routes.js";
 import videoRouter from "./routes/video.routes.js";
 import courseRouter from "./routes/course.routes.js";
+import commentRouter from "./routes/comment.routes.js";
 import debugRouter from "./routes/debug.routes.js";
 
 // Routes declaration
@@ -43,6 +44,7 @@ app.use("/api/v1/tutor-applications", tutorApplicationRouter);
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/videos", videoRouter);
 app.use("/api/v1/courses", courseRouter);
+app.use("/api/v1/comments", commentRouter);
 app.use("/api/v1/debug", debugRouter);
 
 // 404 handler

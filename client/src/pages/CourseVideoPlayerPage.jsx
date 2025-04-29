@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
-import { FaArrowLeft, FaList, FaPlay, FaCheck, FaLock } from 'react-icons/fa';
+import { FaArrowLeft, FaList, FaPlay, FaCheck, FaLock, FaComment } from 'react-icons/fa';
 import { BiTime } from 'react-icons/bi';
 import { useAuth } from '../context/AuthContext';
+import { CommentSection } from '../components/comments';
 // Using default YouTube embed instead of custom VideoPlayer
 
 const CourseVideoPlayerPage = () => {
@@ -239,6 +240,15 @@ const CourseVideoPlayerPage = () => {
                   </div>
 
                   <p className="text-gray-300 leading-relaxed">{currentVideo.description}</p>
+
+                  {/* Comments Section */}
+                  <div className="mt-8 border-t border-white/10 pt-6">
+                    <div className="flex items-center gap-2 text-white mb-4">
+                      <FaComment className="w-5 h-5" />
+                      <h3 className="text-xl font-semibold">Video Comments</h3>
+                    </div>
+                    <CommentSection videoId={currentVideo._id} type="video" />
+                  </div>
 
                   {/* Navigation Buttons */}
                   <div className="flex flex-col sm:flex-row justify-between gap-3 mt-6">
