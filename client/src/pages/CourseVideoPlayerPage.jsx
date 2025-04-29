@@ -152,21 +152,21 @@ const CourseVideoPlayerPage = () => {
   }
 
   return (
-    <div className="bg-gradient-to-b from-gray-900 to-gray-800 min-h-screen">
+    <div className="bg-gray-100 min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Header with Glass Effect */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 bg-white/5 backdrop-blur-lg p-4 rounded-xl">
+        {/* Course Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 bg-white p-4 rounded-lg shadow-sm">
           <div className="flex items-center gap-4 mb-4 sm:mb-0">
             <Link
               to={`/courses/${courseId}`}
-              className="text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transition-all"
+              className="text-gray-700 hover:bg-gray-100 p-2 rounded-full transition-all"
               aria-label="Back to course"
             >
               <FaArrowLeft className="w-5 h-5" />
             </Link>
             <div>
-              <h1 className="text-xl font-bold text-white">{course.title}</h1>
-              <p className="text-gray-400 text-sm hidden sm:block">
+              <h1 className="text-xl font-bold text-gray-800">{course.title}</h1>
+              <p className="text-gray-500 text-sm hidden sm:block">
                 {currentVideoIndex + 1} of {course.videos.length} • {calculateCompletionPercentage()}% completed
               </p>
             </div>
@@ -174,9 +174,9 @@ const CourseVideoPlayerPage = () => {
 
           <div className="flex items-center gap-3 w-full sm:w-auto">
             <div className="w-full sm:w-auto flex-grow sm:flex-grow-0 mr-2 sm:mr-0">
-              <div className="h-2 bg-gray-700 rounded-full w-full sm:w-32 md:w-48">
+              <div className="h-2 bg-gray-200 rounded-full w-full sm:w-32 md:w-48">
                 <div
-                  className="h-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full"
+                  className="h-2 bg-[#00bcd4] rounded-full"
                   style={{ width: `${calculateCompletionPercentage()}%` }}
                 ></div>
               </div>
@@ -184,7 +184,7 @@ const CourseVideoPlayerPage = () => {
 
             <button
               onClick={() => setShowSidebar(!showSidebar)}
-              className="text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transition-all"
+              className="text-gray-700 hover:bg-gray-100 p-2 rounded-full transition-all"
               aria-label={showSidebar ? "Hide sidebar" : "Show sidebar"}
             >
               <FaList className="w-5 h-5" />
@@ -197,11 +197,11 @@ const CourseVideoPlayerPage = () => {
           {/* Video Player Section */}
           <div className={`${showSidebar ? 'lg:w-2/3 xl:w-3/4' : 'w-full'} transition-all duration-300`}>
             {currentVideo ? (
-              <div className="bg-black/30 backdrop-blur-sm rounded-xl overflow-hidden shadow-2xl">
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
                 {/* Video Player */}
-                <div className="aspect-w-16 aspect-h-9">
+                <div className="aspect-video w-full">
                   <iframe
-                    src={`https://www.youtube.com/embed/${currentVideo.videoId}?autoplay=1&rel=0&color=white&modestbranding=1`}
+                    src={`https://www.youtube.com/embed/${currentVideo.videoId}?rel=0&color=white&modestbranding=1`}
                     title={currentVideo.title}
                     frameBorder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -212,15 +212,15 @@ const CourseVideoPlayerPage = () => {
 
                 {/* Video Info */}
                 <div className="p-6">
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
-                    <h2 className="text-2xl font-bold text-white">{currentVideo.title}</h2>
+                  <div className="flex justify-between items-start">
+                    <h2 className="text-2xl font-bold text-gray-800 mb-2">{currentVideo.title}</h2>
 
                     <button
                       onClick={() => markAsCompleted(currentVideo._id)}
-                      className={`px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 transition-all ${
+                      className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-all ${
                         completedVideos.includes(currentVideo._id)
-                          ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white'
-                          : 'bg-white/10 text-white hover:bg-white/20'
+                          ? 'bg-green-500 text-white'
+                          : 'border border-[#00bcd4] text-[#00bcd4] hover:bg-[#00bcd4] hover:text-white'
                       }`}
                     >
                       {completedVideos.includes(currentVideo._id) ? (
@@ -234,44 +234,57 @@ const CourseVideoPlayerPage = () => {
                     </button>
                   </div>
 
-                  <div className="flex items-center gap-2 text-gray-400 text-sm mb-4">
-                    <BiTime className="w-4 h-4" />
-                    <span>{currentVideo.duration}</span>
+                  <div className="flex items-center text-sm text-gray-500 mb-4">
+                    <div className="flex items-center mr-4">
+                      <BiTime className="mr-1" />
+                      <span>{currentVideo.duration}</span>
+                    </div>
+                    <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">
+                      Video {currentVideoIndex + 1} of {course.videos.length}
+                    </span>
+                    <a
+                      href={`https://www.youtube.com/watch?v=${currentVideo.videoId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ml-4 text-blue-500 hover:text-blue-700 text-xs underline"
+                    >
+                      Open on YouTube
+                    </a>
                   </div>
 
-                  <p className="text-gray-300 leading-relaxed">{currentVideo.description}</p>
+                  <div className="bg-gray-50 p-2 rounded text-xs text-gray-500 mb-4">
+                    Video ID: {currentVideo.videoId} • Part of course: {course.title}
+                  </div>
 
-                  {/* Comments Section */}
-                  <div className="mt-8 border-t border-white/10 pt-6">
-                    <div className="flex items-center gap-2 text-white mb-4">
-                      <FaComment className="w-5 h-5" />
-                      <h3 className="text-xl font-semibold">Video Comments</h3>
-                    </div>
-                    <CommentSection videoId={currentVideo._id} type="video" />
+                  <div className="mt-4">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-2">Description</h3>
+                    <p className="text-gray-600 whitespace-pre-line">
+                      {currentVideo.description}
+                    </p>
                   </div>
 
                   {/* Navigation Buttons */}
-                  <div className="flex flex-col sm:flex-row justify-between gap-3 mt-6">
+                  <div className="flex flex-col sm:flex-row justify-between gap-3 mt-6 border-t border-gray-100 pt-4">
                     <button
                       onClick={handlePreviousVideo}
                       disabled={currentVideoIndex === 0}
-                      className={`px-4 py-3 rounded-xl flex items-center justify-center sm:justify-start gap-2 transition-all ${
+                      className={`px-4 py-2 rounded-lg flex items-center justify-center sm:justify-start gap-2 transition-all ${
                         currentVideoIndex === 0
-                          ? 'bg-white/5 text-gray-500 cursor-not-allowed'
-                          : 'bg-white/10 text-white hover:bg-white/20'
+                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                     >
                       <FaArrowLeft className="w-4 h-4" />
-                      <span className="hidden sm:inline">Previous Video</span>
+                      <span>Previous Video</span>
                     </button>
 
                     <button
                       onClick={handleNextVideo}
                       disabled={currentVideoIndex === course.videos.length - 1}
-                      className={`px-4 py-3 rounded-xl flex items-center justify-center sm:justify-start gap-2 transition-all ${
+                      className={`px-4 py-2 rounded-lg flex items-center justify-center sm:justify-start gap-2 transition-all ${
                         currentVideoIndex === course.videos.length - 1
-                          ? 'bg-white/5 text-gray-500 cursor-not-allowed'
-                          : 'bg-gradient-to-r from-blue-600 to-indigo-700 text-white hover:from-blue-700 hover:to-indigo-800'
+                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                          : 'bg-[#00bcd4] text-white hover:bg-[#01427a]'
                       }`}
                     >
                       <span>Next Video</span>
@@ -281,86 +294,95 @@ const CourseVideoPlayerPage = () => {
                 </div>
               </div>
             ) : (
-              <div className="bg-black/30 backdrop-blur-sm p-8 rounded-xl text-center">
-                <p className="text-white">No videos available in this course.</p>
+              <div className="bg-white p-8 rounded-lg shadow-md text-center">
+                <p className="text-gray-600">No videos available in this course.</p>
+              </div>
+            )}
+
+            {/* Comment Section */}
+            {currentVideo && (
+              <div className="mt-6">
+                <CommentSection videoId={currentVideo._id} type="video" />
               </div>
             )}
           </div>
 
           {/* Sidebar */}
           <div
-            className={`lg:w-1/3 xl:w-1/4 bg-black/30 backdrop-blur-sm rounded-xl overflow-hidden transition-all duration-300 ${
+            className={`lg:w-1/3 xl:w-1/4 transition-all duration-300 ${
               showSidebar ? 'opacity-100 max-h-[2000px]' : 'lg:opacity-0 lg:max-h-0 lg:overflow-hidden'
             }`}
           >
-            <div className="p-5">
-              <h3 className="text-white font-bold text-lg mb-4 flex items-center">
-                <span className="bg-gradient-to-r from-blue-500 to-indigo-600 w-1 h-6 rounded mr-2 inline-block"></span>
-                Course Content
-              </h3>
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div className="p-5">
+                <h3 className="text-gray-800 font-bold text-lg mb-4 flex items-center">
+                  <span className="bg-[#00bcd4] w-1 h-6 rounded mr-2 inline-block"></span>
+                  Course Content
+                </h3>
 
-              <div className="mb-4 px-2">
-                <p className="text-gray-300 text-sm mb-2">Your Progress</p>
-                <div className="w-full bg-gray-700 rounded-full h-2.5 mb-1">
-                  <div
-                    className="bg-gradient-to-r from-blue-500 to-indigo-600 h-2.5 rounded-full"
-                    style={{ width: `${calculateCompletionPercentage()}%` }}
-                  ></div>
+                <div className="mb-4 px-2">
+                  <p className="text-gray-700 text-sm mb-2">Your Progress</p>
+                  <div className="w-full bg-gray-200 rounded-full h-2.5 mb-1">
+                    <div
+                      className="bg-[#00bcd4] h-2.5 rounded-full"
+                      style={{ width: `${calculateCompletionPercentage()}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-gray-500 text-xs">
+                    {completedVideos.length} of {course.videos.length} videos completed
+                  </p>
                 </div>
-                <p className="text-gray-400 text-xs">
-                  {completedVideos.length} of {course.videos.length} videos completed
-                </p>
-              </div>
 
-              <div className="max-h-[calc(100vh-250px)] overflow-y-auto pr-2 custom-scrollbar">
-                <ul className="divide-y divide-white/10">
-                  {course.videos.map((video, index) => (
-                    <li key={video._id} className="py-3">
-                      <button
-                        onClick={() => handleVideoSelect(video, index)}
-                        className={`flex items-start w-full text-left rounded-lg p-2 transition-all ${
-                          currentVideoIndex === index
-                            ? 'bg-white/10 text-white'
-                            : 'hover:bg-white/5 text-gray-300'
-                        }`}
-                      >
-                        <div className="flex-shrink-0 mt-1 mr-3 relative">
-                          {completedVideos.includes(video._id) ? (
-                            <div className="bg-green-500 rounded-full p-1">
-                              <FaCheck className="w-3 h-3 text-white" />
-                            </div>
-                          ) : (
-                            <div className={`rounded-full p-1 ${currentVideoIndex === index ? 'bg-blue-500' : 'bg-white/20'}`}>
-                              <FaPlay className="w-3 h-3 text-white" />
-                            </div>
-                          )}
-                          {index !== course.videos.length - 1 && (
-                            <div className={`absolute top-6 bottom-0 left-1/2 w-0.5 -translate-x-1/2 ${
-                              completedVideos.includes(video._id) ? 'bg-green-500/50' : 'bg-white/10'
-                            }`}></div>
-                          )}
-                        </div>
-
-                        <div className="flex-1">
-                          <p className={`font-medium text-sm ${
-                            currentVideoIndex === index ? 'text-white' : 'text-gray-300'
-                          }`}>
-                            {video.title}
-                          </p>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="text-xs text-gray-500">{video.duration}</span>
-                            {completedVideos.includes(video._id) && (
-                              <span className="text-xs bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded-sm">Completed</span>
+                <div className="max-h-[calc(100vh-250px)] overflow-y-auto pr-2 custom-scrollbar">
+                  <ul className="divide-y divide-gray-100">
+                    {course.videos.map((video, index) => (
+                      <li key={video._id} className="py-3">
+                        <button
+                          onClick={() => handleVideoSelect(video, index)}
+                          className={`flex items-start w-full text-left rounded-lg p-2 transition-all ${
+                            currentVideoIndex === index
+                              ? 'bg-gray-100 text-gray-900'
+                              : 'hover:bg-gray-50 text-gray-700'
+                          }`}
+                        >
+                          <div className="flex-shrink-0 mt-1 mr-3 relative">
+                            {completedVideos.includes(video._id) ? (
+                              <div className="bg-green-500 rounded-full p-1">
+                                <FaCheck className="w-3 h-3 text-white" />
+                              </div>
+                            ) : (
+                              <div className={`rounded-full p-1 ${currentVideoIndex === index ? 'bg-[#00bcd4]' : 'bg-gray-200'}`}>
+                                <FaPlay className="w-3 h-3 text-white" />
+                              </div>
                             )}
-                            {currentVideoIndex === index && !completedVideos.includes(video._id) && (
-                              <span className="text-xs bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded-sm">Current</span>
+                            {index !== course.videos.length - 1 && (
+                              <div className={`absolute top-6 bottom-0 left-1/2 w-0.5 -translate-x-1/2 ${
+                                completedVideos.includes(video._id) ? 'bg-green-500/50' : 'bg-gray-200'
+                              }`}></div>
                             )}
                           </div>
-                        </div>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
+
+                          <div className="flex-1">
+                            <p className={`font-medium text-sm ${
+                              currentVideoIndex === index ? 'text-gray-900' : 'text-gray-700'
+                            }`}>
+                              {video.title}
+                            </p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="text-xs text-gray-500">{video.duration}</span>
+                              {completedVideos.includes(video._id) && (
+                                <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded-sm">Completed</span>
+                              )}
+                              {currentVideoIndex === index && !completedVideos.includes(video._id) && (
+                                <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-sm">Current</span>
+                              )}
+                            </div>
+                          </div>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
