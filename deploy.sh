@@ -7,7 +7,7 @@ echo "Starting deployment of Educasheer..."
 
 # Update the repository
 echo "Pulling latest changes..."
-# git pull
+git pull
 
 # Install root dependencies
 echo "Installing root dependencies..."
@@ -19,6 +19,18 @@ cd client
 npm install
 npm run build
 cd ..
+
+# Ensure the target directory exists
+echo "Creating target directory if it doesn't exist..."
+sudo mkdir -p /var/www/educasheer/client
+
+# Clear the existing files to prevent stale content
+echo "Clearing existing files..."
+sudo rm -rf /var/www/educasheer/client/*
+
+# Copy the new build files
+echo "Copying new build files..."
+sudo cp -r client/dist/* /var/www/educasheer/client/
 
 # Install and configure backend
 echo "Setting up backend..."
@@ -34,5 +46,9 @@ pm2 start ecosystem.config.js --env production
 # Save PM2 configuration to start on system boot
 echo "Saving PM2 configuration..."
 pm2 save
+
+# Restart Nginx to ensure it picks up new files
+echo "Restarting Nginx..."
+sudo systemctl restart nginx
 
 echo "Deployment completed successfully!"
