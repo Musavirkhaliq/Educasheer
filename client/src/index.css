@@ -1,13 +1,23 @@
 @import url("https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100,200,300,400,500,600,700,800,900;1,100..900&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Colors Scheme Lookups used  */
+/* Modern Color Scheme */
 
 :root {
+  /* Primary Colors */
   --primary: #00bcd4;
+  --primary-light: #4dd0e1;
+  --primary-dark: #0097a7;
+
+  /* Secondary Colors */
   --secondary: #01427a;
+  --secondary-light: #1976d2;
+  --secondary-dark: #01427a;
+
+  /* Neutral Colors */
   --ternary: #6c6c6c;
   --danger: #e14177;
   --pure: #fefefe;
@@ -17,7 +27,26 @@
   --black: #0c0c0d;
   --logo: #ff5757;
 
-  /* Varient Colors */
+  /* Glass Effect Variables */
+  --glass-bg: rgba(255, 255, 255, 0.15);
+  --glass-bg-dark: rgba(0, 0, 0, 0.15);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --glass-border-dark: rgba(0, 0, 0, 0.2);
+  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  --glass-blur: 10px;
+
+  /* Gradient Variables */
+  --gradient-primary: linear-gradient(135deg, #00bcd4, #01427a);
+  --gradient-primary-light: linear-gradient(135deg, #4dd0e1, #1976d2);
+  --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05));
+  --gradient-glass-dark: linear-gradient(135deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.05));
+
+  /* Animation Variables */
+  --transition-fast: 0.3s ease;
+  --transition-medium: 0.5s ease;
+  --transition-slow: 0.8s ease;
+
+  /* Legacy Variant Colors */
   --selective-yellow: hsl(42, 94%, 55%);
   --light-gray: #555;
   --isabelline: hsl(36, 33%, 94%);
@@ -32,24 +61,27 @@
   --radical-red: hsla(11, 62%, 53%, 0.634);
 }
 
-/* General html page css  ////////////////
-//////////////////////////////////////////*/
+/* General html page css */
 * {
   padding: 0;
   margin: 0;
   box-sizing: border-box;
   text-decoration: none;
   list-style-type: none;
-  font-family: "Raleway-Black";
+  font-family: "Poppins", "Raleway", sans-serif;
   scroll-behavior: smooth;
 }
 
 body {
   scrollbar-width: 6px;
   -webkit-font-smoothing: antialiased;
-  font-family: "Raleway-samibold";
+  font-family: "Poppins", "Raleway", sans-serif;
   position: relative;
   width: 100%;
+  overflow-x: hidden;
+  background-color: #fafafa;
+  background-image: var(--hero-pattern, none);
+  background-attachment: fixed;
 }
 
 html {
@@ -170,16 +202,221 @@ p {
 
 /* Glass morphism effects */
 .glass-effect {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--glass-bg, rgba(255, 255, 255, 0.15));
+  backdrop-filter: blur(var(--glass-blur, 10px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 10px));
+  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.2));
+  box-shadow: var(--glass-shadow, 0 8px 32px 0 rgba(31, 38, 135, 0.37));
+  transition: all var(--transition-medium, 0.5s ease);
+}
+
+.glass-effect:hover {
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.47);
 }
 
 .glass-effect-dark {
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--glass-bg-dark, rgba(0, 0, 0, 0.15));
+  backdrop-filter: blur(var(--glass-blur, 10px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 10px));
+  border: 1px solid var(--glass-border-dark, rgba(0, 0, 0, 0.2));
+  box-shadow: var(--glass-shadow, 0 8px 32px 0 rgba(31, 38, 135, 0.37));
+  transition: all var(--transition-medium, 0.5s ease);
 }
 
+.glass-effect-dark:hover {
+  background: rgba(0, 0, 0, 0.25);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.47);
+}
+
+/* Modern UI Components */
+.glass-card {
+  @apply rounded-xl overflow-hidden relative;
+  background: var(--glass-bg, rgba(255, 255, 255, 0.15));
+  backdrop-filter: blur(var(--glass-blur, 10px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 10px));
+  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.2));
+  box-shadow: var(--glass-shadow, 0 8px 32px 0 rgba(31, 38, 135, 0.37));
+  transition: all var(--transition-medium, 0.5s ease);
+  touch-action: manipulation; /* Improve touch behavior */
+  -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+}
+
+.glass-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px 0 rgba(31, 38, 135, 0.5);
+}
+
+/* Active state for touch devices */
+@media (hover: none) {
+  .glass-card:active {
+    transform: scale(0.98);
+    box-shadow: 0 5px 15px 0 rgba(31, 38, 135, 0.4);
+  }
+}
+
+.glass-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -50%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transform: skewX(-25deg);
+  transition: all 0.75s ease;
+  opacity: 0;
+}
+
+.glass-card:hover::before {
+  left: 125%;
+  opacity: 0.7;
+}
+
+.neon-text {
+  color: var(--primary);
+  text-shadow: 0 0 5px rgba(0, 188, 212, 0.5), 0 0 10px rgba(0, 188, 212, 0.2);
+  transition: text-shadow var(--transition-medium, 0.5s ease);
+}
+
+.neon-text:hover {
+  text-shadow: 0 0 10px rgba(0, 188, 212, 0.8), 0 0 20px rgba(0, 188, 212, 0.5);
+}
+
+.neon-border {
+  border: 1px solid var(--primary);
+  box-shadow: 0 0 5px rgba(0, 188, 212, 0.5), 0 0 10px rgba(0, 188, 212, 0.2);
+  transition: box-shadow var(--transition-medium, 0.5s ease);
+}
+
+.neon-border:hover {
+  box-shadow: 0 0 10px rgba(0, 188, 212, 0.8), 0 0 20px rgba(0, 188, 212, 0.5);
+}
+
+/* Modern Buttons */
+.btn-glass {
+  @apply px-6 py-3 rounded-full font-medium relative overflow-hidden;
+  background: var(--glass-bg, rgba(255, 255, 255, 0.15));
+  backdrop-filter: blur(var(--glass-blur, 10px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 10px));
+  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.2));
+  transition: all var(--transition-fast, 0.3s ease);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.btn-glass:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Active state for touch devices */
+@media (hover: none) {
+  .btn-glass:active {
+    transform: scale(0.95);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+    background: var(--glass-bg-dark, rgba(0, 0, 0, 0.1));
+  }
+}
+
+.btn-glass::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transform: skewX(-25deg);
+  transition: all 0.75s ease;
+}
+
+.btn-glass:hover::before {
+  left: 100%;
+}
+
+/* Gradient text */
+.gradient-text {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  display: inline-block;
+}
+
+/* Animated background */
+.animated-bg {
+  background-size: 400% 400%;
+  animation: gradientBG 15s ease infinite;
+}
+
+@keyframes gradientBG {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Mobile touch feedback */
+.touch-ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.touch-ripple::after {
+  content: '';
+  display: block;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.3) 10%, transparent 10.01%);
+  background-repeat: no-repeat;
+  background-position: 50%;
+  transform: scale(10, 10);
+  opacity: 0;
+  transition: transform 0.5s, opacity 0.8s;
+}
+
+.touch-ripple:active::after {
+  transform: scale(0, 0);
+  opacity: 0.3;
+  transition: 0s;
+}
+
+/* Swipe indicators */
+.swipe-indicator {
+  position: relative;
+}
+
+.swipe-indicator::after {
+  content: '';
+  position: absolute;
+  bottom: 0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 3rem;
+  height: 0.25rem;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 1rem;
+}
+
+.swipe-indicator::before {
+  content: '';
+  position: absolute;
+  bottom: 0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1rem;
+  height: 0.25rem;
+  background: var(--primary);
+  border-radius: 1rem;
+  animation: swipeHint 1.5s ease-in-out infinite;
+}
+
+@keyframes swipeHint {
+  0%, 100% { transform: translateX(-1rem); }
+  50% { transform: translateX(1rem); }
+}

@@ -49,20 +49,27 @@ const DesktopNav = () => {
 
   return (
     <header
-      className={`hidden lg:flex py-2 h-16 w-full z-50 sticky top-0 transition-all duration-300 ${
+      className={`hidden lg:flex py-2 h-16 w-full z-50 sticky top-0 transition-all duration-500 ${
         scrolled
-          ? 'bg-white/95 backdrop-blur-md shadow-sm'
-          : 'bg-transparent'
+          ? 'glass-effect shadow-glass-sm translate-y-0'
+          : 'bg-transparent -translate-y-1'
       }`}
     >
       <nav className="container mx-auto px-6">
         <div className="flex items-center justify-between h-full">
           {/* Logo */}
-          <Link to="/" className="flex-shrink-0 flex items-center">
-            <div className="flex items-center">
-              <div className="bg-gradient-to-r from-[#00bcd4] to-[#01427a] text-white font-bold text-2xl px-3 py-1 rounded-lg mr-2">EC</div>
-              <span className="text-xl font-bold text-gray-800">EduCasheer</span>
-            </div>
+          <Link 
+            to="/" 
+            className="flex-shrink-0 flex items-center group"
+          >
+            <motion.div 
+              className="flex items-center"
+              whileHover={{ scale: 1.05 }}
+              transition={{ type: "spring", stiffness: 400, damping: 10 }}
+            >
+              <div className="bg-gradient-to-r from-primary to-secondary text-white font-bold text-2xl px-3 py-1 rounded-lg mr-2 shadow-neon group-hover:shadow-neon-lg transition-all duration-300">EC</div>
+              <span className="text-xl font-bold gradient-text">EduCasheer</span>
+            </motion.div>
           </Link>
 
           {/* Navigation Links */}
@@ -72,16 +79,21 @@ const DesktopNav = () => {
               to="/"
               className={`relative flex items-center space-x-2 font-medium transition-all duration-300 py-1 ${
                 location.pathname === '/'
-                  ? 'text-[#00bcd4]'
-                  : 'text-gray-700 hover:text-[#00bcd4]'
+                  ? 'neon-text'
+                  : 'text-gray-700 hover:text-primary'
               }`}
             >
-              <FaGraduationCap className="text-[#00bcd4]" />
+              <motion.div
+                whileHover={{ scale: 1.2, rotate: 5 }}
+                transition={{ type: "spring", stiffness: 400, damping: 10 }}
+              >
+                <FaGraduationCap className={`${location.pathname === '/' ? 'text-primary animate-pulse-slow' : 'text-primary'}`} />
+              </motion.div>
               <span>Home</span>
               {location.pathname === '/' && (
                 <motion.div
                   layoutId="navbar-indicator"
-                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-[#00bcd4] rounded-full"
+                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-primary to-secondary rounded-full shadow-neon"
                   transition={{ type: 'spring', duration: 0.5 }}
                 />
               )}
@@ -91,16 +103,21 @@ const DesktopNav = () => {
               to="/videos"
               className={`relative flex items-center space-x-2 font-medium transition-all duration-300 py-1 ${
                 location.pathname.startsWith('/videos')
-                  ? 'text-[#00bcd4]'
-                  : 'text-gray-700 hover:text-[#00bcd4]'
+                  ? 'neon-text'
+                  : 'text-gray-700 hover:text-primary'
               }`}
             >
-              <FaVideo className="text-[#00bcd4]" />
+              <motion.div
+                whileHover={{ scale: 1.2, rotate: 5 }}
+                transition={{ type: "spring", stiffness: 400, damping: 10 }}
+              >
+                <FaVideo className={`${location.pathname.startsWith('/videos') ? 'text-primary animate-pulse-slow' : 'text-primary'}`} />
+              </motion.div>
               <span>Videos</span>
               {location.pathname.startsWith('/videos') && (
                 <motion.div
                   layoutId="navbar-indicator"
-                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-[#00bcd4] rounded-full"
+                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-primary to-secondary rounded-full shadow-neon"
                   transition={{ type: 'spring', duration: 0.5 }}
                 />
               )}
@@ -110,16 +127,21 @@ const DesktopNav = () => {
               to="/courses"
               className={`relative flex items-center space-x-2 font-medium transition-all duration-300 py-1 ${
                 location.pathname.startsWith('/courses')
-                  ? 'text-[#00bcd4]'
-                  : 'text-gray-700 hover:text-[#00bcd4]'
+                  ? 'neon-text'
+                  : 'text-gray-700 hover:text-primary'
               }`}
             >
-              <FaGraduationCap className="text-[#00bcd4]" />
+              <motion.div
+                whileHover={{ scale: 1.2, rotate: 5 }}
+                transition={{ type: "spring", stiffness: 400, damping: 10 }}
+              >
+                <FaGraduationCap className={`${location.pathname.startsWith('/courses') ? 'text-primary animate-pulse-slow' : 'text-primary'}`} />
+              </motion.div>
               <span>Courses</span>
               {location.pathname.startsWith('/courses') && (
                 <motion.div
                   layoutId="navbar-indicator"
-                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-[#00bcd4] rounded-full"
+                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-primary to-secondary rounded-full shadow-neon"
                   transition={{ type: 'spring', duration: 0.5 }}
                 />
               )}
@@ -129,16 +151,21 @@ const DesktopNav = () => {
               to="/programs"
               className={`relative flex items-center space-x-2 font-medium transition-all duration-300 py-1 ${
                 location.pathname.startsWith('/programs')
-                  ? 'text-[#00bcd4]'
-                  : 'text-gray-700 hover:text-[#00bcd4]'
+                  ? 'neon-text'
+                  : 'text-gray-700 hover:text-primary'
               }`}
             >
-              <FaLayerGroup className="text-[#00bcd4]" />
+              <motion.div
+                whileHover={{ scale: 1.2, rotate: 5 }}
+                transition={{ type: "spring", stiffness: 400, damping: 10 }}
+              >
+                <FaLayerGroup className={`${location.pathname.startsWith('/programs') ? 'text-primary animate-pulse-slow' : 'text-primary'}`} />
+              </motion.div>
               <span>Programs</span>
               {location.pathname.startsWith('/programs') && (
                 <motion.div
                   layoutId="navbar-indicator"
-                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-[#00bcd4] rounded-full"
+                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-primary to-secondary rounded-full shadow-neon"
                   transition={{ type: 'spring', duration: 0.5 }}
                 />
               )}
@@ -147,17 +174,27 @@ const DesktopNav = () => {
             {/* Resources Dropdown - Combined Study Materials and Categories */}
             <div className="relative group">
               <button className={`flex items-center space-x-2 font-medium transition-all duration-300 py-1 ${
-                scrolled ? 'text-gray-700 hover:text-[#00bcd4]' : 'text-gray-700 hover:text-[#00bcd4]'
+                scrolled ? 'text-gray-700 hover:text-primary' : 'text-gray-700 hover:text-primary'
               }`}>
-                <FaBook className="text-[#00bcd4]" />
+                <motion.div
+                  whileHover={{ scale: 1.2, rotate: 5 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                >
+                  <FaBook className="text-primary" />
+                </motion.div>
                 <span>Resources</span>
                 <FaAngleDown className="group-hover:rotate-180 transition-transform duration-300" />
               </button>
               <div className="absolute left-0 top-full hidden group-hover:block pt-2 z-50">
-                <div className="bg-white rounded-xl shadow-lg border border-gray-100 w-72 overflow-hidden">
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="glass-card w-72 overflow-hidden"
+                >
                   {resources.map((section, sectionIndex) => (
-                    <div key={sectionIndex} className={sectionIndex > 0 ? "border-t border-gray-100" : ""}>
-                      <div className="px-4 py-2 font-medium text-gray-500 text-sm bg-gray-50">
+                    <div key={sectionIndex} className={sectionIndex > 0 ? "border-t border-white/10" : ""}>
+                      <div className="px-4 py-2 font-medium text-primary/80 text-sm bg-white/10 backdrop-blur-sm">
                         {section.title}
                       </div>
                       <ul className="py-1">
@@ -167,9 +204,15 @@ const DesktopNav = () => {
                               href={item.link}
                               target="_blank"
                               rel="noreferrer"
-                              className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-[#00bcd4] transition-colors duration-300"
+                              className="flex items-center px-4 py-2 text-gray-700 hover:bg-white/20 hover:text-primary transition-colors duration-300"
                             >
-                              <span className="mr-3">{item.icon}</span>
+                              <motion.span 
+                                className="mr-3"
+                                whileHover={{ rotate: 15 }}
+                                transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                              >
+                                {item.icon}
+                              </motion.span>
                               {item.title}
                             </a>
                           </li>
@@ -177,7 +220,7 @@ const DesktopNav = () => {
                       </ul>
                     </div>
                   ))}
-                </div>
+                </motion.div>
               </div>
             </div>
 
@@ -185,16 +228,21 @@ const DesktopNav = () => {
               to="/blogs"
               className={`relative flex items-center space-x-2 font-medium transition-all duration-300 py-1 ${
                 location.pathname.startsWith('/blogs')
-                  ? 'text-[#00bcd4]'
-                  : 'text-gray-700 hover:text-[#00bcd4]'
+                  ? 'neon-text'
+                  : 'text-gray-700 hover:text-primary'
               }`}
             >
-              <FaEdit className="text-[#00bcd4]" />
+              <motion.div
+                whileHover={{ scale: 1.2, rotate: 5 }}
+                transition={{ type: "spring", stiffness: 400, damping: 10 }}
+              >
+                <FaEdit className={`${location.pathname.startsWith('/blogs') ? 'text-primary animate-pulse-slow' : 'text-primary'}`} />
+              </motion.div>
               <span>Blogs</span>
               {location.pathname.startsWith('/blogs') && (
                 <motion.div
                   layoutId="navbar-indicator"
-                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-[#00bcd4] rounded-full"
+                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-primary to-secondary rounded-full shadow-neon"
                   transition={{ type: 'spring', duration: 0.5 }}
                 />
               )}
@@ -204,16 +252,21 @@ const DesktopNav = () => {
               to="/contact"
               className={`relative flex items-center space-x-2 font-medium transition-all duration-300 py-1 ${
                 location.pathname.startsWith('/contact')
-                  ? 'text-[#00bcd4]'
-                  : 'text-gray-700 hover:text-[#00bcd4]'
+                  ? 'neon-text'
+                  : 'text-gray-700 hover:text-primary'
               }`}
             >
-              <FaHeadset className="text-[#00bcd4]" />
+              <motion.div
+                whileHover={{ scale: 1.2, rotate: 5 }}
+                transition={{ type: "spring", stiffness: 400, damping: 10 }}
+              >
+                <FaHeadset className={`${location.pathname.startsWith('/contact') ? 'text-primary animate-pulse-slow' : 'text-primary'}`} />
+              </motion.div>
               <span>Contact</span>
               {location.pathname.startsWith('/contact') && (
                 <motion.div
                   layoutId="navbar-indicator"
-                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-[#00bcd4] rounded-full"
+                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-primary to-secondary rounded-full shadow-neon"
                   transition={{ type: 'spring', duration: 0.5 }}
                 />
               )}
@@ -224,37 +277,56 @@ const DesktopNav = () => {
           <div className="flex items-center space-x-4">
             {isAuthenticated ? (
               <div className="relative group">
-                <button className="flex items-center space-x-2 p-1.5 rounded-full hover:bg-gray-50 transition-all duration-300">
+                <motion.button 
+                  className="flex items-center space-x-2 p-1.5 rounded-full glass-effect hover:bg-white/20 transition-all duration-300"
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                >
                   {currentUser?.avatar ? (
                     <img
                       src={currentUser.avatar}
                       alt="Profile"
-                      className="w-8 h-8 rounded-full object-cover border-2 border-[#00bcd4]"
+                      className="w-8 h-8 rounded-full object-cover border-2 border-primary shadow-neon"
                     />
                   ) : (
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-[#00bcd4] to-[#01427a] flex items-center justify-center text-white">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center text-white shadow-neon">
                       {currentUser?.fullName?.charAt(0) || <FaUserCircle className="text-lg" />}
                     </div>
                   )}
                   <span className="text-sm font-medium text-gray-700 mr-1">{currentUser?.fullName?.split(' ')[0]}</span>
                   <FaAngleDown className="text-gray-500 group-hover:rotate-180 transition-transform duration-300" />
-                </button>
+                </motion.button>
 
                 <div className="absolute right-0 top-full hidden group-hover:block pt-2 z-50">
-                  <div className="bg-white rounded-xl shadow-lg border border-gray-100 w-56 overflow-hidden">
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="glass-card w-56 overflow-hidden"
+                  >
                     <div className="py-1">
                       <Link
                         to="/profile"
-                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#00bcd4] transition-all duration-200"
+                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-white/30 hover:text-primary transition-all duration-200"
                       >
-                        <FaUserCircle className="mr-3 text-[#00bcd4]" />
+                        <motion.div
+                          whileHover={{ rotate: 15 }}
+                          transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                        >
+                          <FaUserCircle className="mr-3 text-primary" />
+                        </motion.div>
                         My Profile
                       </Link>
                       <Link
                         to="/my-courses"
-                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#00bcd4] transition-all duration-200"
+                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-white/30 hover:text-primary transition-all duration-200"
                       >
-                        <FaGraduationCap className="mr-3 text-[#00bcd4]" />
+                        <motion.div
+                          whileHover={{ rotate: 15 }}
+                          transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                        >
+                          <FaGraduationCap className="mr-3 text-primary" />
+                        </motion.div>
                         My Courses
                       </Link>
                     </div>
@@ -262,13 +334,18 @@ const DesktopNav = () => {
                     {/* Role-specific links - Only show if user has a special role */}
                     {(currentUser?.role === "admin" || currentUser?.role === "tutor" ||
                       (currentUser?.role === "learner" && currentUser?.tutorStatus)) && (
-                      <div className="py-1 border-t border-gray-100">
+                      <div className="py-1 border-t border-white/10">
                         {currentUser?.role === "admin" && (
                           <Link
                             to="/admin/dashboard"
-                            className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#00bcd4] transition-all duration-200"
+                            className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-white/30 hover:text-purple-500 transition-all duration-200"
                           >
-                            <FaUserCircle className="mr-3 text-purple-500" />
+                            <motion.div
+                              whileHover={{ rotate: 15 }}
+                              transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                            >
+                              <FaUserCircle className="mr-3 text-purple-500" />
+                            </motion.div>
                             Admin Dashboard
                           </Link>
                         )}
@@ -276,9 +353,14 @@ const DesktopNav = () => {
                         {currentUser?.role === "tutor" && (
                           <Link
                             to="/tutor/dashboard"
-                            className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#00bcd4] transition-all duration-200"
+                            className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-white/30 hover:text-blue-500 transition-all duration-200"
                           >
-                            <FaUserCircle className="mr-3 text-blue-500" />
+                            <motion.div
+                              whileHover={{ rotate: 15 }}
+                              transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                            >
+                              <FaUserCircle className="mr-3 text-blue-500" />
+                            </motion.div>
                             Tutor Dashboard
                           </Link>
                         )}
@@ -286,9 +368,14 @@ const DesktopNav = () => {
                         {currentUser?.role === "learner" && currentUser?.tutorStatus === "none" && (
                           <Link
                             to="/become-tutor"
-                            className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#00bcd4] transition-all duration-200"
+                            className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-white/30 hover:text-green-500 transition-all duration-200"
                           >
-                            <FaUserCircle className="mr-3 text-green-500" />
+                            <motion.div
+                              whileHover={{ rotate: 15 }}
+                              transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                            >
+                              <FaUserCircle className="mr-3 text-green-500" />
+                            </motion.div>
                             Become a Tutor
                           </Link>
                         )}
@@ -296,46 +383,60 @@ const DesktopNav = () => {
                         {currentUser?.role === "learner" && currentUser?.tutorStatus === "pending" && (
                           <Link
                             to="/become-tutor"
-                            className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#00bcd4] transition-all duration-200"
+                            className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-white/30 hover:text-yellow-500 transition-all duration-200"
                           >
-                            <FaUserCircle className="mr-3 text-yellow-500" />
+                            <motion.div
+                              whileHover={{ rotate: 15 }}
+                              transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                            >
+                              <FaUserCircle className="mr-3 text-yellow-500" />
+                            </motion.div>
                             Application Status
                           </Link>
                         )}
                       </div>
                     )}
 
-                    <div className="py-1 border-t border-gray-100">
+                    <div className="py-1 border-t border-white/10">
                       <button
                         onClick={() => {
                           logout();
                           navigate('/');
                         }}
-                        className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500 transition-all duration-200"
+                        className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-white/30 hover:text-red-500 transition-all duration-200"
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-3 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                        </svg>
+                        <motion.div
+                          whileHover={{ rotate: 15 }}
+                          transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-3 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                          </svg>
+                        </motion.div>
                         Logout
                       </button>
                     </div>
-                  </div>
+                  </motion.div>
                 </div>
               </div>
             ) : (
               <div className="flex items-center space-x-3">
-                <button
+                <motion.button
                   onClick={() => navigate("/login")}
-                  className="text-[#00bcd4] border border-[#00bcd4] px-5 py-1.5 rounded-full text-sm font-medium hover:bg-[#00bcd4] hover:text-white transition-all duration-300"
+                  className="btn-glass text-primary neon-border px-5 py-1.5 rounded-full text-sm font-medium hover:text-white hover:bg-gradient-to-r hover:from-primary hover:to-secondary transition-all duration-300"
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
                 >
                   Login
-                </button>
-                <button
+                </motion.button>
+                <motion.button
                   onClick={() => navigate("/signup")}
-                  className="bg-gradient-to-r from-[#00bcd4] to-[#01427a] text-white px-5 py-1.5 rounded-full text-sm font-medium hover:shadow-md transition-all duration-300"
+                  className="bg-gradient-to-r from-primary to-secondary text-white px-5 py-1.5 rounded-full text-sm font-medium shadow-neon hover:shadow-neon-lg transition-all duration-300"
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
                 >
                   Register
-                </button>
+                </motion.button>
               </div>
             )}
           </div>

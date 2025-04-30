@@ -1,4 +1,5 @@
 export {default as DesktopNav} from "./navbar/DesktopNav";
+export {default as MobileNav} from "./navbar/MobileNav";
 
 // Home components
 export {default as Hero} from "./homeComponents/Hero";
