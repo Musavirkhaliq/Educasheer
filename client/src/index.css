@@ -1,5 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100,200,300,400,500,600,700,800,900;1,100..900&display=swap");
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+/* Fonts are now loaded in index.html with optimized loading strategy */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -82,10 +81,30 @@ body {
   background-color: #fafafa;
   background-image: var(--hero-pattern, none);
   background-attachment: fixed;
+  text-rendering: optimizeSpeed; /* Optimize text rendering for speed */
 }
 
 html {
   scroll-behavior: smooth;
+}
+
+/* Performance optimizations for mobile */
+@media (max-width: 768px) {
+  /* Use content-visibility to improve rendering performance for off-screen content */
+  section, footer {
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 1000px; /* Approximate size to prevent layout shifts */
+  }
+
+  /* Reduce animation complexity on mobile */
+  .animated-bg {
+    animation-duration: 30s; /* Slower animations on mobile */
+  }
+
+  /* Optimize paint performance */
+  .glass-card, .glass-effect, .btn-glass {
+    will-change: transform;
+  }
 }
 /* Updated heading styles */
 h1,
@@ -357,33 +376,45 @@ p {
   100% { background-position: 0% 50%; }
 }
 
-/* Mobile touch feedback */
+/* Mobile touch feedback - optimized for performance */
 .touch-ripple {
   position: relative;
   overflow: hidden;
+  -webkit-tap-highlight-color: transparent; /* Remove default mobile tap highlight */
 }
 
-.touch-ripple::after {
-  content: '';
-  display: block;
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  pointer-events: none;
-  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.3) 10%, transparent 10.01%);
-  background-repeat: no-repeat;
-  background-position: 50%;
-  transform: scale(10, 10);
-  opacity: 0;
-  transition: transform 0.5s, opacity 0.8s;
+/* Only apply complex ripple effect on non-mobile devices */
+@media (hover: hover) {
+  .touch-ripple::after {
+    content: '';
+    display: block;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.3) 10%, transparent 10.01%);
+    background-repeat: no-repeat;
+    background-position: 50%;
+    transform: scale(10, 10);
+    opacity: 0;
+    transition: transform 0.5s, opacity 0.8s;
+  }
+
+  .touch-ripple:active::after {
+    transform: scale(0, 0);
+    opacity: 0.3;
+    transition: 0s;
+  }
 }
 
-.touch-ripple:active::after {
-  transform: scale(0, 0);
-  opacity: 0.3;
-  transition: 0s;
+/* Simplified feedback for mobile devices */
+@media (hover: none) {
+  .touch-ripple:active {
+    background-color: rgba(0, 0, 0, 0.05);
+    transform: scale(0.98);
+  }
 }
 
 /* Logo styling */

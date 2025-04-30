@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { FaSearch, FaGraduationCap, FaUsers, FaStar, FaArrowRight, FaPlay } from "react-icons/fa";
 import { motion, useAnimation } from "framer-motion";
 
@@ -7,6 +7,25 @@ const Hero = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [currentStat, setCurrentStat] = useState(0);
   const controls = useAnimation();
+
+  // Detect if device is mobile for conditional rendering
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Check if the device is mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    // Initial check
+    checkMobile();
+
+    // Add event listener for window resize
+    window.addEventListener('resize', checkMobile);
+
+    // Cleanup
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     setIsVisible(true);
@@ -33,56 +52,69 @@ const Hero = () => {
     <div className="relative overflow-hidden py-12 sm:py-16 md:py-24">
       {/* Background Elements */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
-        {/* Animated gradient background */}
+        {/* Static gradient background */}
         <div className="absolute inset-0 bg-gradient-to-br from-white via-blue-50 to-cyan-50 opacity-80"></div>
 
-        {/* Animated blobs */}
-        <motion.div
-          className="absolute top-0 right-0 bg-gradient-to-bl from-primary/10 to-transparent w-1/2 h-1/2 rounded-full blur-3xl"
-          animate={{
-            scale: [1, 1.2, 1],
-            x: [0, 30, 0],
-            y: [0, -30, 0],
-          }}
-          transition={{
-            duration: 15,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        ></motion.div>
+        {/* Conditional rendering based on device type */}
+        {!isMobile ? (
+          // Desktop animations - full experience
+          <>
+            {/* Animated blobs */}
+            <motion.div
+              className="absolute top-0 right-0 bg-gradient-to-bl from-primary/10 to-transparent w-1/2 h-1/2 rounded-full blur-3xl"
+              animate={{
+                scale: [1, 1.2, 1],
+                x: [0, 30, 0],
+                y: [0, -30, 0],
+              }}
+              transition={{
+                duration: 15,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            ></motion.div>
 
-        <motion.div
-          className="absolute bottom-0 left-0 bg-gradient-to-tr from-secondary/10 to-transparent w-1/2 h-1/2 rounded-full blur-3xl"
-          animate={{
-            scale: [1, 1.3, 1],
-            x: [0, -30, 0],
-            y: [0, 30, 0],
-          }}
-          transition={{
-            duration: 18,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        ></motion.div>
+            <motion.div
+              className="absolute bottom-0 left-0 bg-gradient-to-tr from-secondary/10 to-transparent w-1/2 h-1/2 rounded-full blur-3xl"
+              animate={{
+                scale: [1, 1.3, 1],
+                x: [0, -30, 0],
+                y: [0, 30, 0],
+              }}
+              transition={{
+                duration: 18,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            ></motion.div>
 
-        {/* Decorative circles */}
-        <motion.div
-          className="absolute top-20 left-10 w-64 h-64 border border-primary/20 rounded-full"
-          animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.8, 0.5] }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-        ></motion.div>
+            {/* Decorative circles */}
+            <motion.div
+              className="absolute top-20 left-10 w-64 h-64 border border-primary/20 rounded-full"
+              animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.8, 0.5] }}
+              transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+            ></motion.div>
 
-        <motion.div
-          className="absolute bottom-20 right-10 w-40 h-40 border border-secondary/20 rounded-full"
-          animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-        ></motion.div>
+            <motion.div
+              className="absolute bottom-20 right-10 w-40 h-40 border border-secondary/20 rounded-full"
+              animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
+              transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+            ></motion.div>
 
-        <motion.div
-          className="absolute top-40 right-20 w-20 h-20 border border-primary/30 rounded-full"
-          animate={{ scale: [1, 1.3, 1], opacity: [0.4, 0.7, 0.4] }}
-          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-        ></motion.div>
+            <motion.div
+              className="absolute top-40 right-20 w-20 h-20 border border-primary/30 rounded-full"
+              animate={{ scale: [1, 1.3, 1], opacity: [0.4, 0.7, 0.4] }}
+              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+            ></motion.div>
+          </>
+        ) : (
+          // Mobile - simplified static elements for better performance
+          <>
+            <div className="absolute top-0 right-0 bg-gradient-to-bl from-primary/10 to-transparent w-1/2 h-1/2 rounded-full blur-3xl"></div>
+            <div className="absolute bottom-0 left-0 bg-gradient-to-tr from-secondary/10 to-transparent w-1/2 h-1/2 rounded-full blur-3xl"></div>
+            <div className="absolute top-20 left-10 w-64 h-64 border border-primary/20 rounded-full"></div>
+          </>
+        )}
 
         {/* Glass shine effect */}
         <div className="absolute inset-0 bg-glass-shine opacity-10"></div>
@@ -280,112 +312,159 @@ const Hero = () => {
             <motion.div
               className="relative rounded-2xl overflow-hidden shadow-glass-lg glass-card"
               whileTap={{ scale: 0.98 }}
-              drag
-              dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
-              dragElastic={0.1}
-              dragTransition={{ bounceStiffness: 600, bounceDamping: 20 }}
+              // Only enable drag on desktop for better performance
+              {...(!isMobile && {
+                drag: true,
+                dragConstraints: { left: 0, right: 0, top: 0, bottom: 0 },
+                dragElastic: 0.1,
+                dragTransition: { bounceStiffness: 600, bounceDamping: 20 }
+              })}
             >
               <img
                 src="https://cdn.prod.website-files.com/5f46c318c843828732a6f8e2/6502da06dd3676099cf24de0_Top-educational-software.webp"
                 alt="Learning Environment"
                 className="w-full h-full object-cover"
+                loading="lazy"
+                srcSet="
+                  https://cdn.prod.website-files.com/5f46c318c843828732a6f8e2/6502da06dd3676099cf24de0_Top-educational-software.webp 1200w,
+                  https://cdn.prod.website-files.com/5f46c318c843828732a6f8e2/6502da06dd3676099cf24de0_Top-educational-software.webp?width=800 800w,
+                  https://cdn.prod.website-files.com/5f46c318c843828732a6f8e2/6502da06dd3676099cf24de0_Top-educational-software.webp?width=500 500w
+                "
+                sizes="(max-width: 768px) 100vw, 50vw"
+                width="800"
+                height="600"
               />
               <div className="absolute inset-0 bg-gradient-to-r from-secondary/70 to-primary/30" />
 
-              {/* Floating Badges */}
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: isVisible ? 1 : 0, x: isVisible ? 0 : -20 }}
-                transition={{ duration: 0.6, delay: 0.9 }}
-                className="absolute top-6 left-6"
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <span className="glass-effect px-4 py-2 rounded-full text-sm font-medium shadow-glass flex items-center">
+              {/* Conditional rendering for badges based on device */}
+              {!isMobile ? (
+                // Desktop - full animations
+                <>
+                  {/* Floating Badges */}
                   <motion.div
-                    animate={{ rotate: [0, 360] }}
-                    transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: isVisible ? 1 : 0, x: isVisible ? 0 : -20 }}
+                    transition={{ duration: 0.6, delay: 0.9 }}
+                    className="absolute top-6 left-6"
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
                   >
-                    <FaStar className="mr-2 text-primary" />
+                    <span className="glass-effect px-4 py-2 rounded-full text-sm font-medium shadow-glass flex items-center">
+                      <motion.div
+                        animate={{ rotate: [0, 360] }}
+                        transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+                      >
+                        <FaStar className="mr-2 text-primary" />
+                      </motion.div>
+                      <span className="neon-text">Learn Anytime, Anywhere</span>
+                    </span>
                   </motion.div>
-                  <span className="neon-text">Learn Anytime, Anywhere</span>
-                </span>
-              </motion.div>
 
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: isVisible ? 1 : 0, x: isVisible ? 0 : -20 }}
-                transition={{ duration: 0.6, delay: 1.1 }}
-                className="absolute top-20 left-10"
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <span className="glass-effect px-4 py-2 rounded-full text-sm font-medium shadow-glass flex items-center">
                   <motion.div
-                    animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ duration: 2, repeat: Infinity }}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: isVisible ? 1 : 0, x: isVisible ? 0 : -20 }}
+                    transition={{ duration: 0.6, delay: 1.1 }}
+                    className="absolute top-20 left-10"
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
                   >
-                    <FaGraduationCap className="mr-2 text-primary" />
+                    <span className="glass-effect px-4 py-2 rounded-full text-sm font-medium shadow-glass flex items-center">
+                      <motion.div
+                        animate={{ scale: [1, 1.2, 1] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                      >
+                        <FaGraduationCap className="mr-2 text-primary" />
+                      </motion.div>
+                      <span className="neon-text">10,000+ Videos Available</span>
+                    </span>
                   </motion.div>
-                  <span className="neon-text">10,000+ Videos Available</span>
-                </span>
-              </motion.div>
 
-              {/* Additional floating element */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 20 }}
-                transition={{ duration: 0.6, delay: 1.3 }}
-                className="absolute bottom-6 right-6"
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <div className="glass-effect px-4 py-3 rounded-xl text-sm font-medium shadow-glass">
-                  <div className="flex items-center space-x-2">
-                    <motion.div
-                      className="w-3 h-3 bg-green-500 rounded-full"
-                      animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                    ></motion.div>
-                    <span className="text-secondary font-semibold neon-text">Live Classes Available</span>
+                  {/* Additional floating element */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 20 }}
+                    transition={{ duration: 0.6, delay: 1.3 }}
+                    className="absolute bottom-6 right-6"
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <div className="glass-effect px-4 py-3 rounded-xl text-sm font-medium shadow-glass">
+                      <div className="flex items-center space-x-2">
+                        <motion.div
+                          className="w-3 h-3 bg-green-500 rounded-full"
+                          animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                        ></motion.div>
+                        <span className="text-secondary font-semibold neon-text">Live Classes Available</span>
+                      </div>
+                      <p className="text-gray-600 text-xs mt-1">Join expert-led sessions today</p>
+                    </div>
+                  </motion.div>
+                </>
+              ) : (
+                // Mobile - simplified badges with minimal animations
+                <>
+                  {/* Single badge for mobile */}
+                  <div className="absolute top-4 left-4">
+                    <span className="glass-effect px-3 py-1 rounded-full text-xs font-medium shadow-glass flex items-center">
+                      <FaStar className="mr-1 text-primary" />
+                      <span>Learn Anytime, Anywhere</span>
+                    </span>
                   </div>
-                  <p className="text-gray-600 text-xs mt-1">Join expert-led sessions today</p>
-                </div>
-              </motion.div>
 
-              {/* Play button overlay */}
-              <motion.div
-                className="absolute inset-0 flex items-center justify-center"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1.5, duration: 0.5 }}
-              >
-                <motion.button
-                  className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center shadow-neon border border-white/30"
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <motion.div
-                    animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ duration: 2, repeat: Infinity }}
+                  {/* Simplified live classes badge */}
+                  <div className="absolute bottom-4 right-4">
+                    <div className="glass-effect px-3 py-2 rounded-xl text-xs font-medium shadow-glass">
+                      <div className="flex items-center space-x-1">
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <span className="text-secondary font-semibold">Live Classes</span>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* Play button overlay - simplified for mobile */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                {!isMobile ? (
+                  <motion.button
+                    className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center shadow-neon border border-white/30"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 1.5, duration: 0.5 }}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
                   >
-                    <FaPlay className="text-white text-xl ml-1" />
-                  </motion.div>
-                </motion.button>
-              </motion.div>
+                    <motion.div
+                      animate={{ scale: [1, 1.2, 1] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    >
+                      <FaPlay className="text-white text-xl ml-1" />
+                    </motion.div>
+                  </motion.button>
+                ) : (
+                  <button className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center shadow-neon border border-white/30">
+                    <FaPlay className="text-white text-lg ml-1" />
+                  </button>
+                )}
+              </div>
             </motion.div>
 
-            {/* Decorative elements */}
-            <motion.div
-              className="absolute -bottom-5 -right-5 w-20 h-20 bg-primary/20 rounded-full blur-md"
-              animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0.8, 0.5] }}
-              transition={{ duration: 5, repeat: Infinity }}
-            ></motion.div>
-            <motion.div
-              className="absolute -top-5 -left-5 w-20 h-20 bg-secondary/20 rounded-full blur-md"
-              animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
-              transition={{ duration: 4, repeat: Infinity, delay: 1 }}
-            ></motion.div>
+            {/* Decorative elements - only on desktop */}
+            {!isMobile && (
+              <>
+                <motion.div
+                  className="absolute -bottom-5 -right-5 w-20 h-20 bg-primary/20 rounded-full blur-md"
+                  animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0.8, 0.5] }}
+                  transition={{ duration: 5, repeat: Infinity }}
+                ></motion.div>
+                <motion.div
+                  className="absolute -top-5 -left-5 w-20 h-20 bg-secondary/20 rounded-full blur-md"
+                  animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
+                  transition={{ duration: 4, repeat: Infinity, delay: 1 }}
+                ></motion.div>
+              </>
+            )}
           </motion.div>
         </div>
       </div>

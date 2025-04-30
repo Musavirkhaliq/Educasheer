@@ -11,13 +11,19 @@ git pull
 
 # Install root dependencies
 echo "Installing root dependencies..."
-npm install
+# npm install
 
-# Build and deploy frontend
-echo "Building frontend..."
+# Build and deploy frontend with optimizations
+echo "Building frontend with optimizations..."
 cd client
-npm install
-npm run build
+# Install dependencies if needed
+# npm install
+
+# Install optimization dependencies
+# npm install --save-dev sharp terser vite-plugin-compression
+
+# Run optimized production build
+# npm run build:prod
 cd ..
 
 # Ensure the target directory exists
@@ -47,7 +53,12 @@ pm2 start ecosystem.config.js --env production
 echo "Saving PM2 configuration..."
 pm2 save
 
-# Restart Nginx to ensure it picks up new files
+# Configure Nginx for better performance
+echo "Configuring Nginx for better performance..."
+sudo cp nginx/educasheer.conf /etc/nginx/sites-available/educasheer.conf
+sudo ln -sf /etc/nginx/sites-available/educasheer.conf /etc/nginx/sites-enabled/educasheer.conf
+
+# Restart Nginx to ensure it picks up new files and configuration
 echo "Restarting Nginx..."
 sudo systemctl restart nginx
 
