@@ -1,6 +1,9 @@
 export {default as DesktopNav} from "./navbar/DesktopNav";
 export {default as MobileNav} from "./navbar/MobileNav";
 
+// Common components
+export {default as SearchBar} from "./common/SearchBar";
+
 // Home components
 export {default as Hero} from "./homeComponents/Hero";
 export {default as Testimonials} from "./homeComponents/Testimonials";

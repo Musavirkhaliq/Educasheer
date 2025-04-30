@@ -148,7 +148,8 @@ const CourseList = ({
   showControls = false,
   showCreateButton = false,
   enrolledOnly = false,
-  title = "Courses"
+  title = "Courses",
+  search = ""
 }) => {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -163,6 +164,10 @@ const CourseList = ({
 
         if (limit) {
           params.limit = limit;
+        }
+
+        if (search) {
+          params.search = search;
         }
 
         if (userId) {
@@ -190,7 +195,7 @@ const CourseList = ({
     };
 
     fetchCourses();
-  }, [userId, limit, showControls, enrolledOnly]);
+  }, [userId, limit, showControls, enrolledOnly, search]);
 
   const handleDeleteCourse = async (courseId) => {
     if (!window.confirm('Are you sure you want to delete this course? This action cannot be undone.')) {

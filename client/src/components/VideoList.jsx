@@ -99,7 +99,8 @@ const VideoList = ({
   showControls = false,
   showCreateButton = false,
   title = "Videos",
-  watchedOnly = false
+  watchedOnly = false,
+  search = ""
 }) => {
   const { currentUser } = useAuth();
   const [videos, setVideos] = useState([]);
@@ -118,6 +119,10 @@ const VideoList = ({
 
         if (limit) {
           params.limit = limit;
+        }
+
+        if (search) {
+          params.search = search;
         }
 
         if (userId) {
@@ -146,7 +151,7 @@ const VideoList = ({
     };
 
     fetchVideos();
-  }, [category, limit, userId, showControls, watchedOnly]);
+  }, [category, limit, userId, showControls, watchedOnly, search]);
 
   const handleDeleteVideo = async (videoId) => {
     if (!window.confirm('Are you sure you want to delete this video?')) {

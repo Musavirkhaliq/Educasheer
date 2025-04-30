@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import VideoList from '../components/VideoList';
+import { SearchBar } from '../components';
 import { FaPlus } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 
 const VideosPage = () => {
   const { currentUser } = useAuth();
   const [activeCategory, setActiveCategory] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const categories = [
     'All',
@@ -20,6 +22,11 @@ const VideosPage = () => {
 
   // Check if user can upload videos
   const canUploadVideos = currentUser?.role === 'admin' || currentUser?.role === 'tutor';
+
+  // Handle search
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+  };
 
   return (
     <div className="container mx-auto py-6 sm:py-8 px-4">
@@ -35,6 +42,15 @@ const VideosPage = () => {
             <span>Add Video</span>
           </Link>
         )}
+      </div>
+
+      {/* Search Bar */}
+      <div className="mb-6">
+        <SearchBar
+          onSearch={handleSearch}
+          placeholder="Search for videos..."
+          initialValue={searchQuery}
+        />
       </div>
 
       <div className="mb-6 sm:mb-8 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 pb-1">
@@ -58,6 +74,7 @@ const VideosPage = () => {
       <VideoList
         category={activeCategory === 'All' ? null : activeCategory}
         showOwner={true}
+        search={searchQuery}
       />
     </div>
   );

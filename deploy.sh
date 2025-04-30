@@ -7,7 +7,7 @@ echo "Starting deployment of Educasheer..."
 
 # Update the repository
 echo "Pulling latest changes..."
-git pull
+# git pull
 
 # Install root dependencies
 echo "Installing root dependencies..."

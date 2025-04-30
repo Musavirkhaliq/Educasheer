@@ -1,11 +1,18 @@
 import React, { useState } from 'react';
 import CourseList from '../components/CourseList';
+import { SearchBar } from '../components';
 import { useAuth } from '../context/AuthContext';
 import { FaGraduationCap, FaChalkboardTeacher, FaBookOpen } from 'react-icons/fa';
 
 const CoursesPage = () => {
   const { currentUser } = useAuth();
   const [activeTab, setActiveTab] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Handle search
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+  };
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -20,9 +27,18 @@ const CoursesPage = () => {
       </div>
 
       <div className="container mx-auto px-4 py-6 sm:py-8">
+        {/* Search Bar */}
+        <div className="mb-6 sm:mb-8 bg-white rounded-xl shadow-sm p-4 -mt-6 sm:-mt-8">
+          <SearchBar
+            onSearch={handleSearch}
+            placeholder="Search for courses..."
+            initialValue={searchQuery}
+          />
+        </div>
+
         {/* Tabs Navigation */}
         {currentUser && (
-          <div className="mb-6 sm:mb-8 bg-white rounded-xl shadow-sm p-2 -mt-6 sm:-mt-8 overflow-x-auto">
+          <div className="mb-6 sm:mb-8 bg-white rounded-xl shadow-sm p-2 overflow-x-auto">
             <nav className="flex flex-nowrap min-w-max sm:flex-wrap">
               <button
                 onClick={() => setActiveTab('all')}
@@ -71,6 +87,7 @@ const CoursesPage = () => {
             <CourseList
               showCreateButton={currentUser?.role === 'admin' || currentUser?.role === 'tutor'}
               title="All Courses"
+              search={searchQuery}
             />
           )}
 
@@ -79,6 +96,7 @@ const CoursesPage = () => {
               showControls={true}
               showCreateButton={true}
               title="My Courses"
+              search={searchQuery}
             />
           )}
 
@@ -86,6 +104,7 @@ const CoursesPage = () => {
             <CourseList
               enrolledOnly={true}
               title="Enrolled Courses"
+              search={searchQuery}
             />
           )}
         </div>
