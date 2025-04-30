@@ -58,17 +58,22 @@ const DesktopNav = () => {
       <nav className="container mx-auto px-6">
         <div className="flex items-center justify-between h-full">
           {/* Logo */}
-          <Link 
-            to="/" 
+          <Link
+            to="/"
             className="flex-shrink-0 flex items-center group"
           >
-            <motion.div 
+            <motion.div
               className="flex items-center"
               whileHover={{ scale: 1.05 }}
               transition={{ type: "spring", stiffness: 400, damping: 10 }}
             >
-              <div className="bg-gradient-to-r from-primary to-secondary text-white font-bold text-2xl px-3 py-1 rounded-lg mr-2 shadow-neon group-hover:shadow-neon-lg transition-all duration-300">EC</div>
-              <span className="text-xl font-bold gradient-text">EduCasheer</span>
+              <div className="logo-container">
+                <img
+                  src="/images/logo.png"
+                  alt="EduCasheer Logo"
+                  className="h-10 w-auto logo-white"
+                />
+              </div>
             </motion.div>
           </Link>
 
@@ -186,7 +191,7 @@ const DesktopNav = () => {
                 <FaAngleDown className="group-hover:rotate-180 transition-transform duration-300" />
               </button>
               <div className="absolute left-0 top-full hidden group-hover:block pt-2 z-50">
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.2 }}
@@ -206,7 +211,7 @@ const DesktopNav = () => {
                               rel="noreferrer"
                               className="flex items-center px-4 py-2 text-gray-700 hover:bg-white/20 hover:text-primary transition-colors duration-300"
                             >
-                              <motion.span 
+                              <motion.span
                                 className="mr-3"
                                 whileHover={{ rotate: 15 }}
                                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
@@ -277,7 +282,7 @@ const DesktopNav = () => {
           <div className="flex items-center space-x-4">
             {isAuthenticated ? (
               <div className="relative group">
-                <motion.button 
+                <motion.button
                   className="flex items-center space-x-2 p-1.5 rounded-full glass-effect hover:bg-white/20 transition-all duration-300"
                   whileHover={{ scale: 1.05 }}
                   transition={{ type: "spring", stiffness: 400, damping: 10 }}

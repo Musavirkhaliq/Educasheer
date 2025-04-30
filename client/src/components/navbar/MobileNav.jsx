@@ -100,12 +100,17 @@ const MobileNav = () => {
         <div className="container mx-auto px-4 flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center">
-            <motion.div 
+            <motion.div
               className="flex items-center"
               whileTap={{ scale: 0.95 }}
             >
-              <div className="bg-gradient-to-r from-primary to-secondary text-white font-bold text-xl px-2.5 py-1 rounded-lg mr-2 shadow-neon">EC</div>
-              <span className="text-lg font-bold gradient-text">EduCasheer</span>
+              <div className="logo-container">
+                <img
+                  src="/images/logo.png"
+                  alt="EduCasheer Logo"
+                  className="h-8 w-auto logo-white"
+                />
+              </div>
             </motion.div>
           </Link>
 
@@ -164,8 +169,8 @@ const MobileNav = () => {
                   to={item.path}
                   className="w-full h-full flex flex-col items-center justify-center space-y-1"
                 >
-                  <item.icon 
-                    className={`text-xl ${location.pathname === item.path ? 'text-primary' : 'text-gray-600'}`} 
+                  <item.icon
+                    className={`text-xl ${location.pathname === item.path ? 'text-primary' : 'text-gray-600'}`}
                   />
                   <span className={`text-xs font-medium ${location.pathname === item.path ? 'text-primary' : 'text-gray-600'}`}>
                     {item.name}
@@ -213,8 +218,13 @@ const MobileNav = () => {
               {/* Drawer Header */}
               <div className="flex items-center justify-between p-4 border-b border-white/10">
                 <div className="flex items-center space-x-2">
-                  <div className="bg-gradient-to-r from-primary to-secondary text-white font-bold text-xl px-2.5 py-1 rounded-lg shadow-neon">EC</div>
-                  <span className="text-lg font-bold text-white">EduCasheer</span>
+                  <div className="logo-container">
+                    <img
+                      src="/images/logo.png"
+                      alt="EduCasheer Logo"
+                      className="h-8 w-auto logo-white-dark"
+                    />
+                  </div>
                 </div>
                 <motion.button
                   whileTap={{ scale: 0.9 }}
@@ -248,7 +258,7 @@ const MobileNav = () => {
                       <p className="text-white/70 text-sm">{currentUser?.email || ""}</p>
                     </div>
                   </div>
-                  
+
                   <div className="mt-4 flex space-x-2">
                     <motion.button
                       whileTap={{ scale: 0.95 }}
