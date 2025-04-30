@@ -4,6 +4,9 @@ import axios from 'axios';
 import { BiTime, BiCategory } from 'react-icons/bi';
 import { FiVideo } from 'react-icons/fi';
 import { FaEdit, FaPlay, FaChalkboardTeacher, FaSignal, FaLock, FaMapMarkerAlt, FaCalendarAlt, FaClock, FaBook, FaListUl } from 'react-icons/fa';
+import QRCodeGenerator from './QRCodeGenerator';
+import AttendanceRecords from './AttendanceRecords';
+import StudentAttendance from './StudentAttendance';
 import { useAuth } from '../context/AuthContext';
 import { CommentSection } from './comments';
 import DiscussionForum from './DiscussionForum';
@@ -491,74 +494,23 @@ const CourseDetail = () => {
                       <span className="absolute bottom-0 left-0 w-1/3 h-1 bg-[#00bcd4] rounded-full"></span>
                     </h2>
 
-                    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                      <div className="p-5 border-b border-gray-100">
-                        <h3 className="font-medium text-gray-800 flex items-center gap-2">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[#00bcd4]" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
-                          </svg>
-                          Your Attendance Record
-                        </h3>
+                    {/* Show different attendance components based on user role */}
+                    {canEdit() ? (
+                      <div className="space-y-8">
+                        {/* QR Code Generator for instructors */}
+                        <QRCodeGenerator courseId={course._id} courseName={course.title} />
+
+                        {/* Attendance Records for instructors */}
+                        <AttendanceRecords
+                          courseId={course._id}
+                          courseName={course.title}
+                          enrolledStudents={course.enrolledStudents}
+                        />
                       </div>
-
-                      <div className="p-4">
-                        <div className="flex items-center justify-between mb-4">
-                          <div>
-                            <span className="text-lg font-semibold text-gray-800">85%</span>
-                            <span className="text-sm text-gray-500 ml-2">Attendance Rate</span>
-                          </div>
-                          <div className="text-sm text-gray-600">
-                            <span className="font-medium">6</span> out of <span className="font-medium">7</span> classes attended
-                          </div>
-                        </div>
-
-                        <div className="w-full bg-gray-200 rounded-full h-2.5">
-                          <div className="bg-green-600 h-2.5 rounded-full" style={{ width: '85%' }}></div>
-                        </div>
-
-                        <div className="mt-6 space-y-2">
-                          <div className="flex items-center justify-between py-2 border-b border-gray-100">
-                            <div className="flex items-center gap-2">
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                              </svg>
-                              <span className="text-gray-700">Introduction Class</span>
-                            </div>
-                            <span className="text-sm text-gray-500">Sep 5, 2023</span>
-                          </div>
-
-                          <div className="flex items-center justify-between py-2 border-b border-gray-100">
-                            <div className="flex items-center gap-2">
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                              </svg>
-                              <span className="text-gray-700">Module 1: Fundamentals</span>
-                            </div>
-                            <span className="text-sm text-gray-500">Sep 12, 2023</span>
-                          </div>
-
-                          <div className="flex items-center justify-between py-2 border-b border-gray-100">
-                            <div className="flex items-center gap-2">
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                              </svg>
-                              <span className="text-gray-700">Module 2: Advanced Concepts</span>
-                            </div>
-                            <span className="text-sm text-gray-500">Sep 19, 2023</span>
-                          </div>
-
-                          <div className="flex items-center justify-between py-2 border-b border-gray-100">
-                            <div className="flex items-center gap-2">
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                              </svg>
-                              <span className="text-gray-700">Module 3: Practical Applications</span>
-                            </div>
-                            <span className="text-sm text-gray-500">Sep 26, 2023</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                    ) : (
+                      /* Student Attendance View */
+                      <StudentAttendance courseId={course._id} courseName={course.title} />
+                    )}
                   </div>
                 </>
               )}

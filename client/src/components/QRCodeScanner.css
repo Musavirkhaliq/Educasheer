@@ -1,0 +1,69 @@
+/* QR Code Scanner Styles */
+#qr-reader {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+#qr-reader video {
+  width: 100% !important;
+  height: auto !important;
+  border-radius: 0.5rem;
+}
+
+#qr-reader__scan_region {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.5rem;
+}
+
+#qr-reader__scan_region img {
+  display: none;
+}
+
+#qr-reader__dashboard {
+  padding: 0 !important;
+}
+
+#qr-reader__dashboard_section_swaplink {
+  display: none !important;
+}
+
+#qr-reader__dashboard_section_csr button {
+  display: none !important;
+}
+
+#qr-reader__status_span {
+  display: none !important;
+}
+
+/* Hide the file selection section */
+#qr-reader__dashboard_section_fsr {
+  display: none !important;
+}
+
+/* Custom scan region overlay */
+.scan-region-highlight {
+  border: 2px solid #00bcd4 !important;
+  border-radius: 0.5rem;
+}
+
+/* Custom scan region highlight animation */
+@keyframes scanAnimation {
+  0% {
+    height: 0%;
+    top: 50%;
+  }
+  50% {
+    height: 100%;
+    top: 0%;
+  }
+  100% {
+    height: 0%;
+    top: 50%;
+  }
+}
+
+.scan-region-highlight-svg {
+  animation: scanAnimation 2s infinite;
+}

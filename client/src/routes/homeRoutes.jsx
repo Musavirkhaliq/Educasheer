@@ -21,6 +21,7 @@ import BlogsPage from "../pages/BlogsPage";
 import BlogDetailPage from "../pages/BlogDetailPage";
 import BlogCreatePage from "../pages/BlogCreatePage";
 import BlogEditPage from "../pages/BlogEditPage";
+import QRScannerTestPage from "../pages/QRScannerTestPage";
 
 export const homeRoutes = [
   {
@@ -211,6 +212,15 @@ export const homeRoutes = [
     element: (
       <Suspense fallback={<h1>Loading</h1>}>
         <BlogDetailPage />
+      </Suspense>
+    ),
+  },
+  // QR Code Test route
+  {
+    path: "qr-test",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <QRScannerTestPage />
       </Suspense>
     ),
   },
