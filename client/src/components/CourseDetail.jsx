@@ -16,7 +16,6 @@ const CourseDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [enrolling, setEnrolling] = useState(false);
-  const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
 
   useEffect(() => {
     const fetchCourseDetails = async () => {
@@ -165,16 +164,6 @@ const CourseDetail = () => {
               <FaSignal className="w-5 h-5" />
               <span>Level: {course.level}</span>
             </div>
-
-            <div className="flex items-center gap-2 text-gray-600">
-              <FiVideo className="w-5 h-5" />
-              <span>{course.videos?.length || 0} videos</span>
-            </div>
-
-            <div className="flex items-center gap-2 text-gray-600">
-              <BiTime className="w-5 h-5" />
-              <span>{calculateTotalDuration()}</span>
-            </div>
           </div>
 
           <div className="mb-8">
@@ -238,8 +227,11 @@ const CourseDetail = () => {
               )}
 
               {/* Video List with Locked/Unlocked Status */}
-              <div className="bg-gray-50 rounded-lg p-4 mt-4">
-                <h3 className="font-medium text-gray-700 mb-3">Course Videos ({course.videos.length})</h3>
+              <div className="bg-gray-50 rounded-lg p-4 mt-4 border border-gray-200">
+                <h3 className="font-medium text-gray-700 mb-3 flex items-center gap-2">
+                  <FiVideo className="w-5 h-5 text-blue-600" />
+                  Course Videos ({course.videos.length})
+                </h3>
                 <ul className="divide-y divide-gray-200">
                   {course.videos.map((video, index) => (
                     <li key={video._id} className="py-3">
@@ -251,10 +243,11 @@ const CourseDetail = () => {
                           <div className="flex-shrink-0 mt-1 text-blue-600">
                             <FaPlay className="w-4 h-4" />
                           </div>
-                          <div className="ml-3">
+                          <div className="ml-3 flex-grow">
                             <p className="font-medium text-gray-800">{video.title}</p>
                             <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
                               <span>{video.duration}</span>
+                              <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">Video {index + 1}</span>
                             </div>
                           </div>
                         </Link>
@@ -267,13 +260,17 @@ const CourseDetail = () => {
                               <FaLock className="w-4 h-4" />
                             )}
                           </div>
-                          <div className="ml-3">
+                          <div className="ml-3 flex-grow">
                             <p className={`font-medium ${index === 0 ? 'text-gray-800' : 'text-gray-500'}`}>
                               {video.title}
                             </p>
                             <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
                               <span>{video.duration}</span>
-                              {index !== 0 && <span className="text-xs bg-gray-200 px-2 py-0.5 rounded">Locked</span>}
+                              {index === 0 ? (
+                                <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded">Preview</span>
+                              ) : (
+                                <span className="text-xs bg-gray-200 px-2 py-0.5 rounded">Locked</span>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -335,31 +332,49 @@ const CourseDetail = () => {
             </div>
 
             <div className="mb-6">
-              <h3 className="text-lg font-semibold mb-3">Course Content</h3>
-              <ul className="divide-y divide-gray-200">
-                {course.videos?.map((video, index) => (
-                  <li key={video._id} className="py-3">
-                    <button
-                      onClick={() => setCurrentVideoIndex(index)}
-                      className={`flex items-start w-full text-left ${
-                        currentVideoIndex === index ? 'text-blue-600' : 'text-gray-700'
-                      }`}
-                    >
-                      <div className="flex-shrink-0 mt-1">
-                        <FaPlay className="w-4 h-4" />
-                      </div>
-                      <div className="ml-3">
-                        <p className={`font-medium ${
-                          currentVideoIndex === index ? 'text-blue-600' : 'text-gray-800'
-                        }`}>
-                          {video.title}
-                        </p>
-                        <p className="text-sm text-gray-500 mt-1">{video.duration}</p>
-                      </div>
-                    </button>
-                  </li>
-                ))}
-              </ul>
+              <h3 className="text-lg font-semibold mb-3">Course Information</h3>
+              <div className="space-y-3 bg-white p-4 rounded-lg border border-gray-200">
+                <div className="flex items-center gap-2">
+                  <FiVideo className="w-5 h-5 text-blue-600" />
+                  <span className="text-gray-700">{course.videos?.length || 0} videos</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <BiTime className="w-5 h-5 text-blue-600" />
+                  <span className="text-gray-700">Total duration: {calculateTotalDuration()}</span>
+                </div>
+                {course.enrolledStudents?.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <FaChalkboardTeacher className="w-5 h-5 text-blue-600" />
+                    <span className="text-gray-700">{course.enrolledStudents.length} students enrolled</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-2">
+                  <FaSignal className="w-5 h-5 text-blue-600" />
+                  <span className="text-gray-700">Level: {course.level}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <BiCategory className="w-5 h-5 text-blue-600" />
+                  <span className="text-gray-700">Category: {course.category}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Instructor Information */}
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-3">About the Instructor</h3>
+              <div className="bg-white p-4 rounded-lg border border-gray-200">
+                <div className="flex items-center gap-3 mb-3">
+                  <img
+                    src={course.creator?.avatar}
+                    alt={course.creator?.fullName}
+                    className="w-12 h-12 rounded-full object-cover"
+                  />
+                  <div>
+                    <h4 className="font-medium text-gray-900">{course.creator?.fullName}</h4>
+                    <p className="text-sm text-gray-500">@{course.creator?.username}</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
