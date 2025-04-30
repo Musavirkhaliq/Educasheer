@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FaFileAlt, FaFilePdf, FaFileWord, FaFileExcel, FaFileImage, FaFileArchive, FaDownload, FaTrash, FaPlus } from 'react-icons/fa';
+import {
+  FaFileAlt, FaFilePdf, FaFileWord, FaFileExcel, FaFileImage, FaFileArchive,
+  FaDownload, FaTrash, FaPlus, FaLink, FaExternalLinkAlt, FaAlignLeft
+} from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
+import TextContentModal from './TextContentModal';
 
 const MaterialList = ({ videoId, courseId, showControls = false }) => {
   const [materials, setMaterials] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedMaterial, setSelectedMaterial] = useState(null);
   const { currentUser } = useAuth();
 
   useEffect(() => {
@@ -60,27 +66,38 @@ const MaterialList = ({ videoId, courseId, showControls = false }) => {
     }
   };
 
-  const getFileIcon = (fileType) => {
-    switch (fileType.toLowerCase()) {
-      case 'pdf':
-        return <FaFilePdf className="text-red-500" />;
-      case 'doc':
-      case 'docx':
-        return <FaFileWord className="text-blue-500" />;
-      case 'xls':
-      case 'xlsx':
-        return <FaFileExcel className="text-green-500" />;
-      case 'jpg':
-      case 'jpeg':
-      case 'png':
-      case 'gif':
-        return <FaFileImage className="text-purple-500" />;
-      case 'zip':
-      case 'rar':
-        return <FaFileArchive className="text-yellow-500" />;
-      default:
-        return <FaFileAlt className="text-gray-500" />;
+  const getMaterialIcon = (material) => {
+    // Check material type first
+    if (material.materialType === 'link') {
+      return <FaLink className="text-blue-500" />;
+    } else if (material.materialType === 'text') {
+      return <FaAlignLeft className="text-green-500" />;
+    } else if (material.materialType === 'file') {
+      // For file type, check the file extension
+      switch (material.fileType?.toLowerCase()) {
+        case 'pdf':
+          return <FaFilePdf className="text-red-500" />;
+        case 'doc':
+        case 'docx':
+          return <FaFileWord className="text-blue-500" />;
+        case 'xls':
+        case 'xlsx':
+          return <FaFileExcel className="text-green-500" />;
+        case 'jpg':
+        case 'jpeg':
+        case 'png':
+        case 'gif':
+          return <FaFileImage className="text-purple-500" />;
+        case 'zip':
+        case 'rar':
+          return <FaFileArchive className="text-yellow-500" />;
+        default:
+          return <FaFileAlt className="text-gray-500" />;
+      }
     }
+
+    // Fallback
+    return <FaFileAlt className="text-gray-500" />;
   };
 
   const formatFileSize = (bytes) => {
@@ -109,6 +126,14 @@ const MaterialList = ({ videoId, courseId, showControls = false }) => {
 
   return (
     <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
+      {/* Text Content Modal */}
+      <TextContentModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={selectedMaterial?.title || "Content"}
+        content={selectedMaterial?.content || ""}
+      />
+
       <div className="p-5 border-b border-gray-100">
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-medium text-gray-800">
@@ -144,7 +169,7 @@ const MaterialList = ({ videoId, courseId, showControls = false }) => {
             <li key={material._id} className="p-4 hover:bg-gray-50 transition-colors duration-200">
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center bg-gray-100 rounded-lg">
-                  {getFileIcon(material.fileType)}
+                  {getMaterialIcon(material)}
                 </div>
                 <div className="flex-grow min-w-0">
                   <h4 className="text-gray-800 font-medium truncate">{material.title}</h4>
@@ -152,22 +177,61 @@ const MaterialList = ({ videoId, courseId, showControls = false }) => {
                     <p className="text-gray-500 text-sm mt-1">{material.description}</p>
                   )}
                   <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
-                    <span>{material.fileType.toUpperCase()}</span>
-                    <span>{formatFileSize(material.fileSize)}</span>
+                    {/* Show different info based on material type */}
+                    {material.materialType === 'file' && (
+                      <>
+                        <span>{material.fileType?.toUpperCase()}</span>
+                        <span>{formatFileSize(material.fileSize)}</span>
+                      </>
+                    )}
+                    {material.materialType === 'link' && (
+                      <span className="text-blue-500">External Link</span>
+                    )}
+                    {material.materialType === 'text' && (
+                      <span className="text-green-500">Text Content</span>
+                    )}
                     <span>Added {new Date(material.createdAt).toLocaleDateString()}</span>
                   </div>
                 </div>
                 <div className="flex-shrink-0 flex items-center gap-2">
-                  <a
-                    href={material.fileUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    download={material.fileName}
-                    className="text-[#00bcd4] hover:text-[#01427a] p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
-                    title="Download"
-                  >
-                    <FaDownload className="w-4 h-4" />
-                  </a>
+                  {/* Different actions based on material type */}
+                  {material.materialType === 'file' && (
+                    <a
+                      href={material.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      download={material.fileName}
+                      className="text-[#00bcd4] hover:text-[#01427a] p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
+                      title="Download"
+                    >
+                      <FaDownload className="w-4 h-4" />
+                    </a>
+                  )}
+
+                  {material.materialType === 'link' && (
+                    <a
+                      href={material.linkUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#00bcd4] hover:text-[#01427a] p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
+                      title="Open Link"
+                    >
+                      <FaExternalLinkAlt className="w-4 h-4" />
+                    </a>
+                  )}
+
+                  {material.materialType === 'text' && (
+                    <button
+                      onClick={() => {
+                        setSelectedMaterial(material);
+                        setModalOpen(true);
+                      }}
+                      className="text-[#00bcd4] hover:text-[#01427a] p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
+                      title="View Content"
+                    >
+                      <FaFileAlt className="w-4 h-4" />
+                    </button>
+                  )}
 
                   {showControls && (
                     currentUser?.role === 'admin' ||

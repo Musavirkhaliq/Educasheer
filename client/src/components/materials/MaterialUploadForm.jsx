@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { FaUpload, FaFileAlt, FaFilePdf, FaFileWord, FaFileExcel, FaFileImage, FaFileArchive } from 'react-icons/fa';
+import {
+  FaUpload, FaFileAlt, FaFilePdf, FaFileWord, FaFileExcel, FaFileImage,
+  FaFileArchive, FaLink, FaAlignLeft, FaFile, FaGlobe, FaFont
+} from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 
@@ -13,6 +16,9 @@ const MaterialUploadForm = () => {
     title: '',
     description: '',
     videoId: videoId || '',
+    materialType: 'file', // Default to file type
+    linkUrl: '',
+    content: ''
   });
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -73,8 +79,19 @@ const MaterialUploadForm = () => {
       return;
     }
 
-    if (!file) {
-      setError('File is required');
+    // Validate based on material type
+    if (formData.materialType === 'file' && !file) {
+      setError('File is required for file type material');
+      return;
+    }
+
+    if (formData.materialType === 'link' && !formData.linkUrl) {
+      setError('URL is required for link type material');
+      return;
+    }
+
+    if (formData.materialType === 'text' && !formData.content) {
+      setError('Content is required for text type material');
       return;
     }
 
@@ -82,26 +99,45 @@ const MaterialUploadForm = () => {
     setError('');
     setSuccess('');
 
-    const formDataToSend = new FormData();
-    formDataToSend.append('title', formData.title);
-    formDataToSend.append('description', formData.description);
-    formDataToSend.append('videoId', formData.videoId);
-    formDataToSend.append('material', file);
-
     try {
-      await api.post('/materials/video', formDataToSend, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
+      let response;
 
-      setSuccess('Material uploaded successfully!');
+      if (formData.materialType === 'file') {
+        // For file type, use FormData
+        const formDataToSend = new FormData();
+        formDataToSend.append('title', formData.title);
+        formDataToSend.append('description', formData.description);
+        formDataToSend.append('videoId', formData.videoId);
+        formDataToSend.append('materialType', formData.materialType);
+        formDataToSend.append('material', file);
+
+        response = await api.post('/materials/video', formDataToSend, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+      } else {
+        // For link and text types, use JSON
+        response = await api.post('/materials/video', {
+          title: formData.title,
+          description: formData.description,
+          videoId: formData.videoId,
+          materialType: formData.materialType,
+          linkUrl: formData.materialType === 'link' ? formData.linkUrl : undefined,
+          content: formData.materialType === 'text' ? formData.content : undefined
+        });
+      }
+
+      setSuccess('Material added successfully!');
 
       // Reset form
       setFormData({
         title: '',
         description: '',
         videoId: videoId || (videos.length > 0 ? videos[0]._id : ''),
+        materialType: 'file',
+        linkUrl: '',
+        content: ''
       });
       setFile(null);
 
@@ -114,13 +150,13 @@ const MaterialUploadForm = () => {
         }
       }, 2000);
     } catch (error) {
-      console.error('Error uploading material:', error);
+      console.error('Error adding material:', error);
 
       // Check if it's an authentication error
       if (error.response?.status === 401) {
         setError('Your session has expired. Please refresh the page and try again.');
       } else {
-        setError(error.response?.data?.message || 'Failed to upload material');
+        setError(error.response?.data?.message || 'Failed to add material');
       }
     } finally {
       setLoading(false);
@@ -241,43 +277,150 @@ const MaterialUploadForm = () => {
           </div>
         )}
 
-        <div className="mb-6">
-          <label htmlFor="material" className="block text-gray-700 font-medium mb-2">
-            Material File *
+        <div className="mb-4">
+          <label className="block text-gray-700 font-medium mb-2">
+            Material Type *
           </label>
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-[#00bcd4] transition-colors duration-300">
-            <input
-              type="file"
-              id="material"
-              name="material"
-              onChange={handleFileChange}
-              className="hidden"
-              required
-            />
-            <label
-              htmlFor="material"
-              className="cursor-pointer flex flex-col items-center justify-center py-4"
-            >
-              {getFileIcon()}
+          <div className="flex flex-wrap gap-4">
+            <label className={`flex items-center p-3 border rounded-lg cursor-pointer transition-all ${
+              formData.materialType === 'file'
+                ? 'border-[#00bcd4] bg-[#00bcd4]/5 text-[#00bcd4]'
+                : 'border-gray-300 hover:border-gray-400'
+            }`}>
+              <input
+                type="radio"
+                name="materialType"
+                value="file"
+                checked={formData.materialType === 'file'}
+                onChange={handleChange}
+                className="hidden"
+              />
+              <FaFile className="mr-2" />
+              <span>File</span>
+            </label>
 
-              <span className="mt-2 text-sm font-medium text-gray-700">
-                {file ? file.name : 'Click to upload file'}
-              </span>
+            <label className={`flex items-center p-3 border rounded-lg cursor-pointer transition-all ${
+              formData.materialType === 'link'
+                ? 'border-[#00bcd4] bg-[#00bcd4]/5 text-[#00bcd4]'
+                : 'border-gray-300 hover:border-gray-400'
+            }`}>
+              <input
+                type="radio"
+                name="materialType"
+                value="link"
+                checked={formData.materialType === 'link'}
+                onChange={handleChange}
+                className="hidden"
+              />
+              <FaGlobe className="mr-2" />
+              <span>Link</span>
+            </label>
 
-              {file && (
-                <span className="text-xs text-gray-500 mt-1">
-                  {(file.size / 1024 / 1024).toFixed(2)} MB
-                </span>
-              )}
-
-              {!file && (
-                <span className="text-xs text-gray-500 mt-1">
-                  PDF, Word, Excel, Images, ZIP (max 10MB)
-                </span>
-              )}
+            <label className={`flex items-center p-3 border rounded-lg cursor-pointer transition-all ${
+              formData.materialType === 'text'
+                ? 'border-[#00bcd4] bg-[#00bcd4]/5 text-[#00bcd4]'
+                : 'border-gray-300 hover:border-gray-400'
+            }`}>
+              <input
+                type="radio"
+                name="materialType"
+                value="text"
+                checked={formData.materialType === 'text'}
+                onChange={handleChange}
+                className="hidden"
+              />
+              <FaFont className="mr-2" />
+              <span>Text</span>
             </label>
           </div>
         </div>
+
+        {/* File Upload (for file type) */}
+        {formData.materialType === 'file' && (
+          <div className="mb-6">
+            <label htmlFor="material" className="block text-gray-700 font-medium mb-2">
+              Material File *
+            </label>
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-[#00bcd4] transition-colors duration-300">
+              <input
+                type="file"
+                id="material"
+                name="material"
+                onChange={handleFileChange}
+                className="hidden"
+                required
+              />
+              <label
+                htmlFor="material"
+                className="cursor-pointer flex flex-col items-center justify-center py-4"
+              >
+                {getFileIcon()}
+
+                <span className="mt-2 text-sm font-medium text-gray-700">
+                  {file ? file.name : 'Click to upload file'}
+                </span>
+
+                {file && (
+                  <span className="text-xs text-gray-500 mt-1">
+                    {(file.size / 1024 / 1024).toFixed(2)} MB
+                  </span>
+                )}
+
+                {!file && (
+                  <span className="text-xs text-gray-500 mt-1">
+                    PDF, Word, Excel, Images, ZIP (max 10MB)
+                  </span>
+                )}
+              </label>
+            </div>
+          </div>
+        )}
+
+        {/* URL Input (for link type) */}
+        {formData.materialType === 'link' && (
+          <div className="mb-6">
+            <label htmlFor="linkUrl" className="block text-gray-700 font-medium mb-2">
+              URL *
+            </label>
+            <div className="flex">
+              <span className="inline-flex items-center px-3 text-gray-500 bg-gray-100 border border-r-0 border-gray-300 rounded-l-lg">
+                <FaLink />
+              </span>
+              <input
+                type="url"
+                id="linkUrl"
+                name="linkUrl"
+                value={formData.linkUrl}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-r-lg focus:ring-2 focus:ring-[#00bcd4] focus:border-transparent"
+                placeholder="https://example.com/resource"
+                required
+              />
+            </div>
+            <p className="text-xs text-gray-500 mt-1">
+              Enter the full URL including https:// or http://
+            </p>
+          </div>
+        )}
+
+        {/* Text Content (for text type) */}
+        {formData.materialType === 'text' && (
+          <div className="mb-6">
+            <label htmlFor="content" className="block text-gray-700 font-medium mb-2">
+              Content *
+            </label>
+            <textarea
+              id="content"
+              name="content"
+              value={formData.content}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00bcd4] focus:border-transparent"
+              placeholder="Enter your text content here..."
+              rows="8"
+              required
+            />
+          </div>
+        )}
 
         <div className="flex justify-end">
           <button

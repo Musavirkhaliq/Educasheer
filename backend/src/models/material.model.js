@@ -10,21 +10,49 @@ const materialSchema = new Schema({
         type: String,
         trim: true
     },
+    materialType: {
+        type: String,
+        enum: ["file", "link", "text"],
+        required: true
+    },
+    // For file type
     fileUrl: {
         type: String,
-        required: true
+        required: function() {
+            return this.materialType === "file";
+        }
     },
     fileType: {
         type: String,
-        required: true
+        required: function() {
+            return this.materialType === "file";
+        }
     },
     fileSize: {
         type: Number, // in bytes
-        required: true
+        required: function() {
+            return this.materialType === "file";
+        }
     },
     fileName: {
         type: String,
-        required: true
+        required: function() {
+            return this.materialType === "file";
+        }
+    },
+    // For link type
+    linkUrl: {
+        type: String,
+        required: function() {
+            return this.materialType === "link";
+        }
+    },
+    // For text type
+    content: {
+        type: String,
+        required: function() {
+            return this.materialType === "text";
+        }
     },
     video: {
         type: Schema.Types.ObjectId,

@@ -11,7 +11,7 @@ import path from "path";
 // Add a new material for a video (admin and tutor only)
 const addMaterial = asyncHandler(async (req, res) => {
     try {
-        const { title, description, videoId } = req.body;
+        const { title, description, videoId, materialType, linkUrl, content } = req.body;
         const materialFile = req.file;
 
         // Check if user is admin or tutor
@@ -28,8 +28,21 @@ const addMaterial = asyncHandler(async (req, res) => {
             throw new ApiError(400, "Video ID is required");
         }
 
-        if (!materialFile) {
-            throw new ApiError(400, "Material file is required");
+        if (!materialType || !["file", "link", "text"].includes(materialType)) {
+            throw new ApiError(400, "Valid material type is required (file, link, or text)");
+        }
+
+        // Validate type-specific inputs
+        if (materialType === "file" && !materialFile) {
+            throw new ApiError(400, "File is required for file type material");
+        }
+
+        if (materialType === "link" && !linkUrl) {
+            throw new ApiError(400, "URL is required for link type material");
+        }
+
+        if (materialType === "text" && !content) {
+            throw new ApiError(400, "Content is required for text type material");
         }
 
         // Check if video exists
@@ -43,38 +56,51 @@ const addMaterial = asyncHandler(async (req, res) => {
             throw new ApiError(403, "You don't have permission to add materials to this video");
         }
 
-        // Get file details
-        const fileSize = materialFile.size;
-        const fileName = materialFile.originalname;
-        const fileType = path.extname(fileName).substring(1).toLowerCase();
+        // Create material object with common fields
+        const materialData = {
+            title,
+            description: description || "",
+            materialType,
+            video: videoId,
+            uploader: req.user._id
+        };
 
-        // Upload file to cloudinary
-        let fileUrl;
-        try {
-            const uploadResult = await uploadOnCloudinary(materialFile.path);
-            if (!uploadResult || !uploadResult.url) {
-                throw new Error("Failed to upload file to cloudinary");
+        // Add type-specific fields
+        if (materialType === "file") {
+            // Get file details
+            const fileSize = materialFile.size;
+            const fileName = materialFile.originalname;
+            const fileType = path.extname(fileName).substring(1).toLowerCase();
+
+            // Upload file to cloudinary
+            let fileUrl;
+            try {
+                const uploadResult = await uploadOnCloudinary(materialFile.path);
+                if (!uploadResult || !uploadResult.url) {
+                    throw new Error("Failed to upload file to cloudinary");
+                }
+                fileUrl = uploadResult.url;
+            } catch (error) {
+                console.error("Error uploading to cloudinary:", error);
+
+                // If cloudinary upload fails, use local file path as fallback
+                const localPath = materialFile.path.replace(/\\/g, '/');
+                fileUrl = `/${localPath.replace('public/', '')}`;
             }
-            fileUrl = uploadResult.url;
-        } catch (error) {
-            console.error("Error uploading to cloudinary:", error);
-            
-            // If cloudinary upload fails, use local file path as fallback
-            const localPath = materialFile.path.replace(/\\/g, '/');
-            fileUrl = `/${localPath.replace('public/', '')}`;
+
+            // Add file-specific fields
+            materialData.fileUrl = fileUrl;
+            materialData.fileType = fileType;
+            materialData.fileSize = fileSize;
+            materialData.fileName = fileName;
+        } else if (materialType === "link") {
+            materialData.linkUrl = linkUrl;
+        } else if (materialType === "text") {
+            materialData.content = content;
         }
 
         // Create material
-        const material = await Material.create({
-            title,
-            description: description || "",
-            fileUrl,
-            fileType,
-            fileSize,
-            fileName,
-            video: videoId,
-            uploader: req.user._id
-        });
+        const material = await Material.create(materialData);
 
         return res.status(201).json(
             new ApiResponse(201, material, "Material added successfully")
@@ -84,7 +110,7 @@ const addMaterial = asyncHandler(async (req, res) => {
         if (req.file && req.file.path) {
             fs.unlinkSync(req.file.path);
         }
-        
+
         if (error instanceof ApiError) {
             throw error;
         }
@@ -155,7 +181,7 @@ const getMaterialById = asyncHandler(async (req, res) => {
 const updateMaterial = asyncHandler(async (req, res) => {
     try {
         const { materialId } = req.params;
-        const { title, description } = req.body;
+        const { title, description, materialType, linkUrl, content } = req.body;
         const materialFile = req.file;
 
         if (!materialId) {
@@ -173,7 +199,7 @@ const updateMaterial = asyncHandler(async (req, res) => {
             throw new ApiError(403, "You don't have permission to update this material");
         }
 
-        // Update fields
+        // Update common fields
         if (title) {
             material.title = title;
         }
@@ -182,8 +208,31 @@ const updateMaterial = asyncHandler(async (req, res) => {
             material.description = description;
         }
 
-        // If new file is uploaded, update file details
-        if (materialFile) {
+        // If material type is being changed
+        if (materialType && materialType !== material.materialType) {
+            // Validate the new material type
+            if (!["file", "link", "text"].includes(materialType)) {
+                throw new ApiError(400, "Valid material type is required (file, link, or text)");
+            }
+
+            // Validate type-specific inputs for the new type
+            if (materialType === "file" && !materialFile && material.materialType !== "file") {
+                throw new ApiError(400, "File is required when changing to file type");
+            }
+
+            if (materialType === "link" && !linkUrl) {
+                throw new ApiError(400, "URL is required for link type material");
+            }
+
+            if (materialType === "text" && !content) {
+                throw new ApiError(400, "Content is required for text type material");
+            }
+
+            material.materialType = materialType;
+        }
+
+        // Update type-specific fields
+        if ((materialType === "file" || material.materialType === "file") && materialFile) {
             // Upload new file to cloudinary
             let fileUrl;
             try {
@@ -194,7 +243,7 @@ const updateMaterial = asyncHandler(async (req, res) => {
                 fileUrl = uploadResult.url;
             } catch (error) {
                 console.error("Error uploading to cloudinary:", error);
-                
+
                 // If cloudinary upload fails, use local file path as fallback
                 const localPath = materialFile.path.replace(/\\/g, '/');
                 fileUrl = `/${localPath.replace('public/', '')}`;
@@ -207,6 +256,14 @@ const updateMaterial = asyncHandler(async (req, res) => {
             material.fileName = materialFile.originalname;
         }
 
+        if ((materialType === "link" || material.materialType === "link") && linkUrl) {
+            material.linkUrl = linkUrl;
+        }
+
+        if ((materialType === "text" || material.materialType === "text") && content !== undefined) {
+            material.content = content;
+        }
+
         await material.save();
 
         return res.status(200).json(
@@ -217,7 +274,7 @@ const updateMaterial = asyncHandler(async (req, res) => {
         if (req.file && req.file.path) {
             fs.unlinkSync(req.file.path);
         }
-        
+
         if (error instanceof ApiError) {
             throw error;
         }
