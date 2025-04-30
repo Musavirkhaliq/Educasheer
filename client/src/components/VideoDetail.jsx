@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { FaUser, FaEye, FaClock, FaEdit, FaTrash } from 'react-icons/fa';
+import { FaUser, FaEye, FaClock, FaEdit, FaTrash, FaFileAlt } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { CommentSection } from './comments';
+import { MaterialList } from './';
 
 const VideoDetail = () => {
   const { videoId } = useParams();
@@ -195,6 +196,14 @@ const VideoDetail = () => {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Materials Section */}
+      <div className="mt-8">
+        <MaterialList
+          videoId={video._id}
+          showControls={canManageVideo()}
+        />
       </div>
 
       {/* Comment Section */}

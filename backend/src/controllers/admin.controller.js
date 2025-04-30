@@ -14,7 +14,7 @@ const getAllUsers = asyncHandler(async (req, res) => {
 
         const { role, search } = req.query;
         const filter = {};
-        
+
         // Filter by role if provided
         if (role) {
             filter.role = role;
@@ -90,7 +90,7 @@ const updateUserRole = asyncHandler(async (req, res) => {
 const createAdminUser = asyncHandler(async (req, res) => {
     try {
         const { fullName, username, email, password } = req.body;
-        
+
         // Check if admin user already exists
         const existingAdmin = await User.findOne({ role: "admin" });
         if (existingAdmin) {
@@ -104,7 +104,7 @@ const createAdminUser = asyncHandler(async (req, res) => {
             email: email.toLowerCase(),
             password,
             role: "admin",
-            avatar: "https://res.cloudinary.com/demo/image/upload/v1493119370/avatar-placeholder_qqkj9s.png"
+            avatar: "https://ui-avatars.com/api/?name=Admin&background=0D8ABC&color=fff"
         });
 
         const createdUser = await User.findById(user._id).select("-password -refreshToken");

@@ -12,6 +12,7 @@ import CourseDetailPage from "../pages/CourseDetailPage";
 import CourseEditPage from "../pages/CourseEditPage";
 import CourseVideoPlayerPage from "../pages/CourseVideoPlayerPage";
 import ProgramsPage from "../pages/ProgramsPage";
+import MaterialUploadPage from "../pages/MaterialUploadPage";
 import ProgramCreatePage from "../pages/ProgramCreatePage";
 import ProgramDetailPage from "../pages/ProgramDetailPage";
 import ProgramEditPage from "../pages/ProgramEditPage";
@@ -159,6 +160,23 @@ export const homeRoutes = [
     element: (
       <Suspense fallback={<h1>Loading</h1>}>
         <CourseVideoPlayerPage />
+      </Suspense>
+    ),
+  },
+  // Material routes
+  {
+    path: "videos/:videoId/materials/add",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <MaterialUploadPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: "courses/:courseId/materials/add",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <MaterialUploadPage />
       </Suspense>
     ),
   },

@@ -13,6 +13,10 @@ export {default as VideoDetail} from "./VideoDetail";
 export {default as VideoUploadForm} from "./VideoUploadForm";
 export {default as VideoEditForm} from "./VideoEditForm";
 
+// Material components
+export {default as MaterialList} from "./materials/MaterialList";
+export {default as MaterialUploadForm} from "./materials/MaterialUploadForm";
+
 // Course components
 export {default as CourseList} from "./CourseList";
 export {default as CourseDetail} from "./CourseDetail";

@@ -69,7 +69,7 @@ const seedAdminUser = async () => {
       email: "admin@educasheer.com",
       password: "admin123456", // This will be hashed by the pre-save hook
       role: "admin",
-      avatar: "https://res.cloudinary.com/demo/image/upload/v1493119370/avatar-placeholder_qqkj9s.png",
+      avatar: "https://ui-avatars.com/api/?name=Admin+User&background=0D8ABC&color=fff",
       tutorStatus: "none"
     };
 

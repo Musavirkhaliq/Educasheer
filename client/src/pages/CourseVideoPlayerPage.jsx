@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
-import { FaArrowLeft, FaList, FaPlay, FaCheck, FaLock, FaComment } from 'react-icons/fa';
+import { FaArrowLeft, FaList, FaPlay, FaCheck, FaLock, FaComment, FaFileAlt } from 'react-icons/fa';
 import { BiTime } from 'react-icons/bi';
 import { useAuth } from '../context/AuthContext';
 import { CommentSection } from '../components/comments';
+import { MaterialList } from '../components';
 // Using default YouTube embed instead of custom VideoPlayer
 
 const CourseVideoPlayerPage = () => {
@@ -363,6 +364,17 @@ const CourseVideoPlayerPage = () => {
                 <Link to={`/courses/${courseId}`} className="inline-block bg-[#00bcd4] text-white px-5 py-2.5 rounded-lg hover:bg-[#01427a] transition-all duration-300">
                   Back to Course
                 </Link>
+              </div>
+            )}
+
+            {/* Materials Section */}
+            {currentVideo && (
+              <div className="mt-8">
+                <MaterialList
+                  videoId={currentVideo._id}
+                  courseId={courseId}
+                  showControls={currentUser?.role === 'admin' || course?.creator?._id === currentUser?._id}
+                />
               </div>
             )}
 

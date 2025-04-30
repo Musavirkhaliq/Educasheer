@@ -234,6 +234,25 @@ const DesktopNav = () => {
                 />
               )}
             </Link>
+
+            {isAuthenticated && (
+              <Link
+                to="/profile"
+                className={`flex items-center space-x-2 font-medium transition-colors duration-300 ${
+                  location.pathname.startsWith('/profile') ? 'text-[#00bcd4]' : 'text-gray-700 hover:text-[#00bcd4]'
+                }`}
+              >
+                <FaUserCircle className="text-[#00bcd4]" />
+                <span>My Profile</span>
+                {location.pathname.startsWith('/profile') && (
+                  <motion.div
+                    layoutId="navbar-indicator"
+                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#00bcd4] rounded-full"
+                    transition={{ type: 'spring', duration: 0.5 }}
+                  />
+                )}
+              </Link>
+            )}
           </div>
 
           {/* Auth Buttons */}

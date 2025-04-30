@@ -88,7 +88,7 @@ const registerUser = asyncHandler(async (req, res) => {
     }
 
     // Default avatar URL
-    const defaultAvatarUrl = "https://res.cloudinary.com/demo/image/upload/v1493119370/avatar-placeholder_qqkj9s.png";
+    const defaultAvatarUrl = "https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff";
 
     let avatarUrl = defaultAvatarUrl;
     let coverImageUrl = "";
@@ -109,21 +109,19 @@ const registerUser = asyncHandler(async (req, res) => {
       }
     }
 
-    // Hash the password manually before creating the user
-    const hashedPassword = await bcrypt.hash(password, 10);
-    console.log("Password hashed successfully");
-
-    // Create user with hashed password (learner by default)
+    // Create user with password (will be hashed by pre-save hook)
     const user = await User.create({
       email: email.toLowerCase(),
       fullName,
       avatar: avatarUrl,
       coverImage: coverImageUrl,
-      password: hashedPassword,
+      password, // Let the pre-save hook handle hashing
       username: username.toLowerCase(),
       role: "learner",
       tutorStatus: "none"
     });
+
+    console.log("User created with password");
 
     // Fetch user without sensitive fields
     const createdUser = await User.findById(user._id).select(
@@ -191,8 +189,8 @@ const loginUser = asyncHandler(async (req, res) => {
 
       // Set a password for the user
       try {
-        const hashedPassword = await bcrypt.hash(password, 10);
-        user.password = hashedPassword;
+        // Don't hash the password here, let the pre-save hook handle it
+        user.password = password;
         await user.save();
         console.log("Password set for existing user");
       } catch (updateError) {

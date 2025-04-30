@@ -27,7 +27,7 @@ api.interceptors.response.use(
     const originalRequest = error.config;
 
     // If the error is 401 and we haven't already tried to refresh the token
-    if (error.response.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
       try {
@@ -49,13 +49,26 @@ api.interceptors.response.use(
         // Retry the original request
         return api(originalRequest);
       } catch (refreshError) {
-        // If refresh fails, log out the user
+        console.error('Token refresh failed:', refreshError);
+
+        // For form submissions and file uploads, don't automatically redirect
+        // This allows the component to handle the error gracefully
+        if (originalRequest.headers['Content-Type']?.includes('multipart/form-data')) {
+          // Just clear the tokens but don't redirect
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+          localStorage.removeItem('user');
+          return Promise.reject(error);
+        }
+
+        // Clear tokens but don't redirect
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
         localStorage.removeItem('user');
 
-        // Redirect to login page
-        window.location.href = '/login';
+        // Let the component handle the error
+        // Don't redirect automatically as it breaks the React Router flow
+
         return Promise.reject(refreshError);
       }
     }

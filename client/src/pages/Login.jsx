@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import axios from "axios";
+import { useAuth } from "../context/AuthContext";
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -12,6 +12,19 @@ const Login = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login, isAuthenticated, currentUser } = useAuth();
+
+  // If user is already authenticated, redirect to appropriate page
+  React.useEffect(() => {
+    if (isAuthenticated && currentUser) {
+      console.log("User already authenticated, redirecting...");
+      if (currentUser.role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/profile");
+      }
+    }
+  }, [isAuthenticated, currentUser, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -27,14 +40,8 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post("/api/v1/users/login", formData);
-
-      const { user, accessToken, refreshToken } = response.data.data;
-
-      // Store tokens in localStorage
-      localStorage.setItem("accessToken", accessToken);
-      localStorage.setItem("refreshToken", refreshToken);
-      localStorage.setItem("user", JSON.stringify(user));
+      // Use the login function from AuthContext
+      const user = await login(formData.email, formData.password);
 
       // Show success message with role information
       const successMessage = `Login successful! You are logged in as a ${user.role}.`;
@@ -42,19 +49,20 @@ const Login = () => {
       // Redirect based on role
       if (user.role === "admin") {
         // Admin dashboard
-        navigate("/admin");
+        setTimeout(() => navigate("/admin"), 500);
       } else if (user.role === "tutor") {
         // Tutor dashboard
-        navigate("/tutor");
+        setTimeout(() => navigate("/profile"), 500);
       } else {
-        // Learner dashboard or home page
-        navigate("/");
+        // Learner profile page
+        setTimeout(() => navigate("/profile"), 500);
       }
 
       // Alert the user about their role
       alert(successMessage);
 
     } catch (error) {
+      console.error("Login error:", error);
       setError(
         error.response?.data?.message ||
         "Login failed. Please check your credentials."

@@ -8,12 +8,40 @@ import WatchHistory from '../components/profile/WatchHistory';
 import UserBlogs from '../components/profile/UserBlogs';
 
 const ProfilePage = () => {
-  const { currentUser, isAuthenticated } = useAuth();
+  const { currentUser, isAuthenticated, loading } = useAuth();
   const [activeTab, setActiveTab] = useState('account');
+
+  // Debug log to check user data
+  useEffect(() => {
+    console.log('Profile Page - Current User:', currentUser);
+    console.log('Profile Page - Is Authenticated:', isAuthenticated);
+    console.log('Profile Page - Loading:', loading);
+  }, [currentUser, isAuthenticated, loading]);
+
+  // Show loading indicator while auth state is being determined
+  if (loading) {
+    console.log('Auth state is loading, showing loading indicator');
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#00bcd4]"></div>
+      </div>
+    );
+  }
 
   // Redirect to login if not authenticated
   if (!isAuthenticated) {
+    console.log('Not authenticated, redirecting to login');
     return <Navigate to="/login" />;
+  }
+
+  // Make sure we have user data before rendering the profile
+  if (!currentUser) {
+    console.log('User is authenticated but no user data available');
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#00bcd4]"></div>
+      </div>
+    );
   }
 
   return (

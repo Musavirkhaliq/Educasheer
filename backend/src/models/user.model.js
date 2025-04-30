@@ -74,7 +74,22 @@ userSchema.methods.isPasswordCorrect = async function (password) {
         });
         return false;
     }
-    return await bcrypt.compare(password, this.password);
+
+    try {
+        const result = await bcrypt.compare(password, this.password);
+        if (!result) {
+            console.log("Password verification failed for user:", {
+                userId: this._id,
+                email: this.email,
+                passwordLength: password.length,
+                storedPasswordLength: this.password.length
+            });
+        }
+        return result;
+    } catch (error) {
+        console.error("bcrypt.compare error:", error);
+        throw error;
+    }
 }
 userSchema.methods.generateAccessToken = function () {
     return jwt.sign(
