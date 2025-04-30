@@ -40,7 +40,8 @@ const User = mongoose.model('User', userSchema);
 // Connect to MongoDB
 const connectDB = async () => {
   try {
-    const connectionInstance = await mongoose.connect(`${process.env.MONGO_URL}/${DB_NAME}`);
+    // Use MONGO_URL directly as it already includes the database name
+    const connectionInstance = await mongoose.connect(process.env.MONGO_URL);
     console.log(`MongoDB Connected, DB Host: ${connectionInstance.connection.host}`);
     return connectionInstance;
   } catch (error) {
@@ -67,7 +68,7 @@ const seedAdminUser = async () => {
       fullName: "Admin User",
       username: "admin",
       email: "admin@educasheer.com",
-      password: "admin123456", // This will be hashed by the pre-save hook
+      password: "educasheer@musa123", // This will be hashed by the pre-save hook
       role: "admin",
       avatar: "https://ui-avatars.com/api/?name=Admin+User&background=0D8ABC&color=fff",
       tutorStatus: "none"

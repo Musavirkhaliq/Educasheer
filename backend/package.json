@@ -5,12 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon -r dotenv/config --experimental-json-modules server.js",
-    "seed:admin": "node -r dotenv/config src/utils/seedAdmin.js"
+    "seed:admin": "node -r dotenv/config src/utils/seedAdmin.js",
+    "import:playlist": "node -r dotenv/config src/utils/importPlaylistVideos.js",
+    "import:playlist:direct": "node -r dotenv/config src/utils/importPlaylistVideosDirectly.js"
   },
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "axios": "^1.9.0",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^2.5.1",
