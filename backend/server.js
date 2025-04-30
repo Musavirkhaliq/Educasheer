@@ -1,17 +1,19 @@
 import dotenv from "dotenv";
+
+// Load environment variables first
+dotenv.config();
+
 import connectDB from "./src/db/index.js";
 import { app } from "./src/app.js";
-const port =process.env.PORT || 5000
-dotenv.config({
-    path:"./env"
-});
+
+const port = process.env.PORT || 5000;
 
 
 
 connectDB()
 .then(()=>{
     app.listen(port, () => {
-                console.log(`Server running on port https://localhost:${port}`); 
+                console.log(`Server running on port https://localhost:${port}`);
             });
 })
 .catch(err=>{
@@ -31,7 +33,7 @@ connectDB()
 //         console.log("App error ", error)
 //     })
 //     app.listen(port, () => {
-//         console.log(`Server running on port https://localhost:${port}`); 
+//         console.log(`Server running on port https://localhost:${port}`);
 //     });
 // } catch (error) {
 //     console.error("ERROR", error)
