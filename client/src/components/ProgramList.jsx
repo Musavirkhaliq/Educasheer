@@ -1,71 +1,42 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { BiTime } from 'react-icons/bi';
-import { FiVideo } from 'react-icons/fi';
-import { FaEdit, FaTrash } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
+import { FaEdit, FaTrash, FaChalkboardTeacher } from 'react-icons/fa';
+import { FiVideo } from 'react-icons/fi';
+import { BiTime, BiCategory } from 'react-icons/bi';
 
-const CourseCard = ({ course, showControls, onDelete }) => {
+const ProgramCard = ({ program, showControls, onDelete }) => {
   const { currentUser } = useAuth();
-  const canEdit = showControls && (currentUser?.role === 'admin' || currentUser?._id === course.creator?._id);
-
-  // Calculate total duration of all videos
-  const totalDuration = course.videos?.reduce((total, video) => {
-    // Parse duration in format "H:MM:SS" or "MM:SS"
-    const parts = video.duration?.split(':').map(Number);
-    let seconds = 0;
-
-    if (parts?.length === 3) {
-      // Format: H:MM:SS
-      seconds = parts[0] * 3600 + parts[1] * 60 + parts[2];
-    } else if (parts?.length === 2) {
-      // Format: MM:SS
-      seconds = parts[0] * 60 + parts[1];
-    }
-
-    return total + seconds;
-  }, 0) || 0;
-
-  // Convert seconds to hours and minutes
-  const hours = Math.floor(totalDuration / 3600);
-  const minutes = Math.floor((totalDuration % 3600) / 60);
-
-  // Format duration in a more readable way
-  let formattedDuration;
-  if (hours > 0) {
-    formattedDuration = `${hours}h ${minutes > 0 ? `${minutes}m` : ''}`;
-  } else {
-    formattedDuration = `${minutes}m`;
-  }
-
+  const canEdit = showControls && (currentUser?.role === 'admin' || currentUser?._id === program.creator?._id);
+  
   return (
     <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 group">
-      <Link to={`/courses/${course._id}`} className="block relative">
+      <Link to={`/programs/${program._id}`} className="block relative">
         <div className="overflow-hidden">
-          <img
-            src={course.thumbnail}
-            alt={course.title}
+          <img 
+            src={program.thumbnail} 
+            alt={program.title} 
             className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105"
           />
         </div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
           <div className="p-4 w-full">
             <span className="inline-block bg-white/20 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm">
-              View Course
+              View Program
             </span>
           </div>
         </div>
-
-        {/* Course level badge */}
+        
+        {/* Program level badge */}
         <div className="absolute top-3 left-3">
-          <span className="bg-[#00bcd4]/90 text-white px-3 py-1 rounded-full text-xs backdrop-blur-sm">
-            {course.level}
+          <span className="bg-[#01427a]/90 text-white px-3 py-1 rounded-full text-xs backdrop-blur-sm">
+            {program.level}
           </span>
         </div>
-
+        
         {/* Draft badge */}
-        {!course.isPublished && (
+        {!program.isPublished && (
           <div className="absolute top-3 right-3">
             <span className="bg-yellow-500/90 text-white px-3 py-1 rounded-full text-xs backdrop-blur-sm">
               Draft
@@ -73,64 +44,64 @@ const CourseCard = ({ course, showControls, onDelete }) => {
           </div>
         )}
       </Link>
-
+      
       <div className="p-5">
         <div className="flex items-center gap-2 mb-3">
           <div className="flex items-center text-xs text-gray-500 gap-1 bg-gray-100 px-2 py-1 rounded-full">
-            <FiVideo className="w-3 h-3" />
-            <span>{course.videos?.length || 0} videos</span>
+            <FaChalkboardTeacher className="w-3 h-3" />
+            <span>{program.totalCourses || program.courses?.length || 0} courses</span>
           </div>
           <div className="flex items-center text-xs text-gray-500 gap-1 bg-gray-100 px-2 py-1 rounded-full">
             <BiTime className="w-3 h-3" />
-            <span>{formattedDuration}</span>
+            <span>{program.duration}</span>
           </div>
         </div>
-
-        <Link to={`/courses/${course._id}`}>
-          <h3 className="font-semibold text-lg mb-3 text-gray-800 hover:text-[#00bcd4] transition-colors line-clamp-2">{course.title}</h3>
+        
+        <Link to={`/programs/${program._id}`}>
+          <h3 className="font-semibold text-lg mb-3 text-gray-800 hover:text-[#01427a] transition-colors line-clamp-2">{program.title}</h3>
         </Link>
-
+        
         <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-100">
           <div className="flex items-center gap-2">
-            <img
-              src={course.creator?.avatar}
-              alt={course.creator?.fullName}
+            <img 
+              src={program.creator?.avatar} 
+              alt={program.creator?.fullName} 
               className="w-8 h-8 rounded-full border border-gray-200"
             />
-            <span className="text-sm text-gray-600">{course.creator?.fullName}</span>
+            <span className="text-sm text-gray-600">{program.creator?.fullName}</span>
           </div>
         </div>
-
+        
         <div className="flex items-center justify-between">
           <div>
-            {course.price === 0 ? (
+            {program.price === 0 ? (
               <span className="text-lg font-bold text-green-600">Free</span>
             ) : (
               <>
-                <span className="text-lg font-bold text-[#01427a]">${course.price.toFixed(2)}</span>
-                {course.originalPrice > course.price && (
-                  <span className="text-sm text-gray-400 line-through ml-2">${course.originalPrice.toFixed(2)}</span>
+                <span className="text-lg font-bold text-[#01427a]">${program.price.toFixed(2)}</span>
+                {program.originalPrice > program.price && (
+                  <span className="text-sm text-gray-400 line-through ml-2">${program.originalPrice.toFixed(2)}</span>
                 )}
               </>
             )}
           </div>
-
+          
           {canEdit && (
             <div className="flex gap-2">
-              <Link
-                to={`/courses/edit/${course._id}`}
+              <Link 
+                to={`/programs/edit/${program._id}`}
                 className="bg-[#00bcd4]/10 text-[#00bcd4] p-2 rounded-full hover:bg-[#00bcd4]/20 transition-colors"
-                title="Edit Course"
+                title="Edit Program"
               >
                 <FaEdit className="w-4 h-4" />
               </Link>
-              <button
+              <button 
                 onClick={(e) => {
                   e.preventDefault();
-                  onDelete(course._id);
+                  onDelete(program._id);
                 }}
                 className="bg-red-100 text-red-500 p-2 rounded-full hover:bg-red-200 transition-colors"
-                title="Delete Course"
+                title="Delete Program"
               >
                 <FaTrash className="w-4 h-4" />
               </button>
@@ -142,23 +113,23 @@ const CourseCard = ({ course, showControls, onDelete }) => {
   );
 };
 
-const CourseList = ({
+const ProgramList = ({
   userId,
   limit,
   showControls = false,
   showCreateButton = false,
   enrolledOnly = false,
-  title = "Courses"
+  title = "Programs"
 }) => {
-  const [courses, setCourses] = useState([]);
+  const [programs, setPrograms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const { currentUser } = useAuth();
 
   useEffect(() => {
-    const fetchCourses = async () => {
+    const fetchPrograms = async () => {
       try {
-        let url = '/api/v1/courses';
+        let url = '/api/v1/programs';
         const params = {};
 
         if (limit) {
@@ -166,11 +137,11 @@ const CourseList = ({
         }
 
         if (userId) {
-          url = `/api/v1/courses/creator/${userId}`;
+          url = `/api/v1/programs/creator/${userId}`;
         } else if (showControls) {
-          url = '/api/v1/courses/my/courses';
+          url = '/api/v1/programs/my/programs';
         } else if (enrolledOnly) {
-          url = '/api/v1/courses/my/enrolled';
+          url = '/api/v1/programs/my/enrolled';
         }
 
         const response = await axios.get(url, {
@@ -180,35 +151,34 @@ const CourseList = ({
           }
         });
 
-        setCourses(response.data.data.courses || response.data.data);
+        setPrograms(response.data.data.programs || response.data.data);
       } catch (error) {
-        console.error('Error fetching courses:', error);
-        setError('Failed to load courses. Please try again later.');
+        console.error('Error fetching programs:', error);
+        setError('Failed to load programs. Please try again later.');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchCourses();
+    fetchPrograms();
   }, [userId, limit, showControls, enrolledOnly]);
 
-  const handleDeleteCourse = async (courseId) => {
-    if (!window.confirm('Are you sure you want to delete this course? This action cannot be undone.')) {
+  const handleDeleteProgram = async (programId) => {
+    if (!window.confirm('Are you sure you want to delete this program? This action cannot be undone.')) {
       return;
     }
 
     try {
-      await axios.delete(`/api/v1/courses/${courseId}`, {
+      await axios.delete(`/api/v1/programs/${programId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`
         }
       });
 
-      // Remove the deleted course from the list
-      setCourses(courses.filter(course => course._id !== courseId));
+      setPrograms(programs.filter(program => program._id !== programId));
     } catch (error) {
-      console.error('Error deleting course:', error);
-      alert('Failed to delete course. Please try again.');
+      console.error('Error deleting program:', error);
+      alert('Failed to delete program. Please try again.');
     }
   };
 
@@ -217,12 +187,12 @@ const CourseList = ({
       <div className="flex items-center justify-center py-16">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#00bcd4] mb-4"></div>
-          <p className="text-gray-600">Loading courses...</p>
+          <p className="text-gray-600">Loading programs...</p>
         </div>
       </div>
     );
   }
-
+  
   if (error) {
     return (
       <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-5 rounded-lg shadow-sm" role="alert">
@@ -233,7 +203,7 @@ const CourseList = ({
           <span className="font-medium">Error</span>
         </div>
         <p className="mt-2 text-sm">{error}</p>
-        <button
+        <button 
           onClick={() => window.location.reload()}
           className="mt-3 bg-red-100 hover:bg-red-200 text-red-800 px-4 py-2 rounded-lg text-sm transition-colors duration-200"
         >
@@ -242,54 +212,54 @@ const CourseList = ({
       </div>
     );
   }
-
+  
   return (
     <div>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <h2 className="text-2xl font-bold text-gray-800 relative inline-block">
           {title}
-          <span className="absolute bottom-0 left-0 w-1/3 h-1 bg-[#00bcd4] rounded-full"></span>
+          <span className="absolute bottom-0 left-0 w-1/3 h-1 bg-[#01427a] rounded-full"></span>
         </h2>
-
+        
         {showCreateButton && (currentUser?.role === 'admin' || currentUser?.role === 'tutor') && (
-          <Link
-            to="/courses/create"
-            className="bg-[#00bcd4] text-white px-5 py-2.5 rounded-lg flex items-center gap-2 hover:bg-[#01427a] transition-all duration-300 shadow-sm hover:shadow"
+          <Link 
+            to="/programs/create"
+            className="bg-[#01427a] text-white px-5 py-2.5 rounded-lg flex items-center gap-2 hover:bg-[#01427a]/80 transition-all duration-300 shadow-sm hover:shadow"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
             </svg>
-            Create New Course
+            Create New Program
           </Link>
         )}
       </div>
-
-      {courses.length === 0 ? (
+      
+      {programs.length === 0 ? (
         <div className="text-center py-16 bg-white rounded-xl shadow-sm border border-gray-100">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-gray-300 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
           </svg>
-          <h3 className="text-xl font-medium text-gray-800 mb-2">No courses found</h3>
+          <h3 className="text-xl font-medium text-gray-800 mb-2">No programs found</h3>
           <p className="text-gray-500 mb-6 max-w-md mx-auto">
-            {showCreateButton ? "You haven't created any courses yet." : "There are no courses available at the moment."}
+            {showCreateButton ? "You haven't created any programs yet." : "There are no programs available at the moment."}
           </p>
           {showCreateButton && (currentUser?.role === 'admin' || currentUser?.role === 'tutor') && (
-            <Link
-              to="/courses/create"
-              className="inline-block bg-[#00bcd4] text-white px-6 py-3 rounded-lg hover:bg-[#01427a] transition-all duration-300 shadow-sm hover:shadow"
+            <Link 
+              to="/programs/create"
+              className="inline-block bg-[#01427a] text-white px-6 py-3 rounded-lg hover:bg-[#01427a]/80 transition-all duration-300 shadow-sm hover:shadow"
             >
-              Create Your First Course
+              Create Your First Program
             </Link>
           )}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {courses.map((course) => (
-            <CourseCard
-              key={course._id}
-              course={course}
+          {programs.map((program) => (
+            <ProgramCard 
+              key={program._id} 
+              program={program} 
               showControls={showControls}
-              onDelete={handleDeleteCourse}
+              onDelete={handleDeleteProgram}
             />
           ))}
         </div>
@@ -298,4 +268,4 @@ const CourseList = ({
   );
 };
 
-export default CourseList;
+export default ProgramList;

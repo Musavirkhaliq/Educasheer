@@ -20,6 +20,10 @@ const CommentSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "Blog"
     },
+    program: {
+      type: Schema.Types.ObjectId,
+      ref: "Program"
+    },
     owner: {
       type: Schema.Types.ObjectId,
       ref: "User",

@@ -10,7 +10,7 @@ import {
   ShoppingBag,
   BookOpen,
 } from "lucide-react";
-import { FaHome } from "react-icons/fa";
+import { FaHome, FaLayerGroup } from "react-icons/fa";
 import { MdNotifications } from "react-icons/md";
 
 const navLinks = [
@@ -28,6 +28,11 @@ const navLinks = [
     name: "Courses",
     address: "/courses",
     icon: <FaGraduationCap />,
+  },
+  {
+    name: "Programs",
+    address: "/programs",
+    icon: <FaLayerGroup />,
   },
   {
     name: "Categories",
@@ -86,6 +91,11 @@ const adminLinks = [
     icon: <FaGraduationCap />,
   },
   {
+    name: "Manage Programs",
+    address: "programs",
+    icon: <FaLayerGroup />,
+  },
+  {
     name: "Tutor Applications",
     address: "tutor-applications",
     icon: <FileEdit />,
@@ -99,6 +109,11 @@ const adminLinks = [
     name: "Create Course",
     address: "/courses/create",
     icon: <FaGraduationCap />,
+  },
+  {
+    name: "Create Program",
+    address: "/programs/create",
+    icon: <FaLayerGroup />,
   },
 ];
 

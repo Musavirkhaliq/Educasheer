@@ -3,10 +3,12 @@ import {
     addVideoComment,
     addCourseComment,
     addBlogComment,
+    addProgramComment,
     addReply,
     getVideoComments,
     getCourseComments,
     getBlogComments,
+    getProgramComments,
     updateComment,
     deleteComment,
     likeComment
@@ -26,6 +28,10 @@ router.route("/course/:courseId").post(varifyJWT, addCourseComment);
 // Blog comments
 router.route("/blog/:blogId").get(getBlogComments);
 router.route("/blog/:blogId").post(varifyJWT, addBlogComment);
+
+// Program comments
+router.route("/program/:programId").get(getProgramComments);
+router.route("/program/:programId").post(varifyJWT, addProgramComment);
 
 // Replies
 router.route("/reply/:commentId").post(varifyJWT, addReply);

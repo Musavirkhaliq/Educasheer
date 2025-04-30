@@ -11,6 +11,10 @@ import CourseCreatePage from "../pages/CourseCreatePage";
 import CourseDetailPage from "../pages/CourseDetailPage";
 import CourseEditPage from "../pages/CourseEditPage";
 import CourseVideoPlayerPage from "../pages/CourseVideoPlayerPage";
+import ProgramsPage from "../pages/ProgramsPage";
+import ProgramCreatePage from "../pages/ProgramCreatePage";
+import ProgramDetailPage from "../pages/ProgramDetailPage";
+import ProgramEditPage from "../pages/ProgramEditPage";
 import ProfilePage from "../pages/ProfilePage";
 import BlogsPage from "../pages/BlogsPage";
 import BlogDetailPage from "../pages/BlogDetailPage";
@@ -113,6 +117,40 @@ export const homeRoutes = [
     element: (
       <Suspense fallback={<h1>Loading</h1>}>
         <CourseEditPage />
+      </Suspense>
+    ),
+  },
+
+  // Program routes
+  {
+    path: "programs",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <ProgramsPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: "programs/create",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <ProgramCreatePage />
+      </Suspense>
+    ),
+  },
+  {
+    path: "programs/:programId",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <ProgramDetailPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: "programs/edit/:programId",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <ProgramEditPage />
       </Suspense>
     ),
   },

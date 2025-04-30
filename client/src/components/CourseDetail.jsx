@@ -110,75 +110,138 @@ const CourseDetail = () => {
   };
 
   if (loading) {
-    return <div className="text-center py-10">Loading course details...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#00bcd4] mb-4"></div>
+          <p className="text-gray-600">Loading course details...</p>
+        </div>
+      </div>
+    );
   }
 
   if (error) {
     return (
-      <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-        <span className="block sm:inline">{error}</span>
+      <div className="max-w-2xl mx-auto my-12">
+        <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-5 rounded-lg shadow-sm" role="alert">
+          <div className="flex items-center gap-3">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="font-medium">Error</span>
+          </div>
+          <p className="mt-2 text-sm">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-3 bg-red-100 hover:bg-red-200 text-red-800 px-4 py-2 rounded-lg text-sm transition-colors duration-200"
+          >
+            Try Again
+          </button>
+        </div>
       </div>
     );
   }
 
   if (!course) {
-    return <div className="text-center py-10">Course not found</div>;
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center max-w-md p-8 bg-white rounded-xl shadow-md">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-gray-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <h3 className="text-xl font-medium text-gray-900 mb-2">Course Not Found</h3>
+          <p className="text-gray-600 mb-4">The course you're looking for doesn't exist or has been removed.</p>
+          <Link to="/courses" className="inline-block bg-[#00bcd4] text-white px-5 py-2.5 rounded-lg hover:bg-[#01427a] transition-all duration-300">
+            Browse Courses
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Course Info Section */}
-        <div className="lg:col-span-2 p-6">
-          <div className="flex justify-between items-start mb-4">
-            <h1 className="text-3xl font-bold">{course.title}</h1>
-
-            {canEdit() && (
-              <Link
-                to={`/courses/edit/${course._id}`}
-                className="bg-blue-100 text-blue-600 p-2 rounded-full hover:bg-blue-200"
-              >
-                <FaEdit className="w-5 h-5" />
-              </Link>
-            )}
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 transition-all duration-300 hover:shadow-xl">
+      {/* Course Header with Background Image */}
+      <div className="relative h-48 md:h-64 w-full overflow-hidden">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{
+            backgroundImage: `url(${course.thumbnail})`,
+            filter: 'blur(2px)',
+            transform: 'scale(1.1)'
+          }}
+        ></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black/30"></div>
+        <div className="absolute inset-0 flex items-center justify-between p-6 md:p-8">
+          <div className="max-w-3xl">
+            <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 drop-shadow-md">{course.title}</h1>
+            <div className="flex flex-wrap gap-3 items-center">
+              <span className="bg-[#00bcd4]/90 text-white px-3 py-1 rounded-full text-sm backdrop-blur-sm">
+                {course.level}
+              </span>
+              <span className="bg-white/20 text-white px-3 py-1 rounded-full text-sm backdrop-blur-sm">
+                {course.category}
+              </span>
+            </div>
           </div>
 
+          {canEdit() && (
+            <Link
+              to={`/courses/edit/${course._id}`}
+              className="bg-white/20 text-white p-2 rounded-full hover:bg-white/30 backdrop-blur-sm transition-all duration-300"
+            >
+              <FaEdit className="w-5 h-5" />
+            </Link>
+          )}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-6">
+        {/* Course Info Section */}
+        <div className="lg:col-span-2">
           {!course.isPublished && (
-            <div className="bg-yellow-100 text-yellow-800 px-4 py-2 rounded mb-4">
-              This course is not published yet. Only you can see it.
+            <div className="bg-yellow-50 text-yellow-800 px-4 py-3 rounded-lg mb-6 border border-yellow-200 flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+              <span>This course is not published yet. Only you can see it.</span>
             </div>
           )}
 
-          <div className="flex flex-wrap gap-4 mb-6">
-            <div className="flex items-center gap-2 text-gray-600">
-              <FaChalkboardTeacher className="w-5 h-5" />
-              <span>Instructor: {course.creator?.fullName}</span>
-            </div>
-
-            <div className="flex items-center gap-2 text-gray-600">
-              <BiCategory className="w-5 h-5" />
-              <span>Category: {course.category}</span>
-            </div>
-
-            <div className="flex items-center gap-2 text-gray-600">
-              <FaSignal className="w-5 h-5" />
-              <span>Level: {course.level}</span>
+          <div className="flex items-center gap-4 mb-6 p-4 bg-gray-50 rounded-xl border border-gray-100">
+            <img
+              src={course.creator?.avatar}
+              alt={course.creator?.fullName}
+              className="w-14 h-14 rounded-full object-cover border-2 border-[#00bcd4]"
+            />
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="font-medium text-gray-900">{course.creator?.fullName}</h3>
+                <span className="bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full text-xs">Instructor</span>
+              </div>
+              <p className="text-sm text-gray-500">@{course.creator?.username}</p>
             </div>
           </div>
 
           <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-2">About This Course</h2>
-            <p className="text-gray-700 whitespace-pre-line">{course.description}</p>
+            <h2 className="text-xl font-semibold mb-4 inline-block relative">
+              About This Course
+              <span className="absolute bottom-0 left-0 w-1/3 h-1 bg-[#00bcd4] rounded-full"></span>
+            </h2>
+            <p className="text-gray-700 whitespace-pre-line leading-relaxed">{course.description}</p>
           </div>
 
           {course.tags?.length > 0 && (
             <div className="mb-8">
-              <h2 className="text-xl font-semibold mb-2">Tags</h2>
+              <h2 className="text-xl font-semibold mb-4 inline-block relative">
+                Topics Covered
+                <span className="absolute bottom-0 left-0 w-1/3 h-1 bg-[#00bcd4] rounded-full"></span>
+              </h2>
               <div className="flex flex-wrap gap-2">
                 {course.tags.map((tag, index) => (
                   <span
                     key={index}
-                    className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm"
+                    className="bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm border border-gray-200 hover:bg-[#00bcd4]/10 hover:border-[#00bcd4]/30 transition-colors duration-200"
                   >
                     {tag}
                   </span>
@@ -190,13 +253,16 @@ const CourseDetail = () => {
           {/* Course Content Preview Section */}
           {course.videos?.length > 0 && (
             <div className="mt-8">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold">Course Content</h2>
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-semibold inline-block relative">
+                  Course Content
+                  <span className="absolute bottom-0 left-0 w-1/3 h-1 bg-[#00bcd4] rounded-full"></span>
+                </h2>
 
                 {(isEnrolled() || canEdit()) && (
                   <Link
                     to={`/courses/${course._id}/video/${course.videos[0]._id}`}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors"
+                    className="bg-[#00bcd4] text-white px-5 py-2.5 rounded-lg flex items-center gap-2 hover:bg-[#01427a] transition-all duration-300 shadow-sm hover:shadow"
                   >
                     <FaPlay className="w-4 h-4" />
                     Start Learning
@@ -206,56 +272,65 @@ const CourseDetail = () => {
 
               {/* Preview Video for Non-enrolled Users */}
               {!isEnrolled() && !canEdit() && (
-                <div className="mb-6">
-                  <div className="aspect-w-16 aspect-h-9 bg-black rounded-lg overflow-hidden">
+                <div className="mb-8">
+                  <div className="aspect-w-16 aspect-h-9 bg-black rounded-xl overflow-hidden shadow-lg">
                     <iframe
                       src={`https://www.youtube.com/embed/${course.videos[0]?.videoId}`}
                       title={course.videos[0]?.title}
-                      frameBorder="0"
+                      style={{ border: 'none' }}
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowFullScreen
                       className="w-full h-full"
                     ></iframe>
                   </div>
-                  <h3 className="text-lg font-medium mt-2">{course.videos[0]?.title}</h3>
-                  <p className="text-gray-600 text-sm mt-1">{course.videos[0]?.description}</p>
-                  <div className="mt-4 bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded">
-                    <p className="font-medium">Preview Only</p>
-                    <p className="text-sm">Enroll in this course to access all {course.videos.length} videos.</p>
+                  <h3 className="text-lg font-medium mt-4">{course.videos[0]?.title}</h3>
+                  <p className="text-gray-600 text-sm mt-2">{course.videos[0]?.description}</p>
+                  <div className="mt-4 bg-yellow-50 border border-yellow-200 text-yellow-800 px-5 py-4 rounded-lg shadow-sm">
+                    <p className="font-medium flex items-center gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                        <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                      </svg>
+                      Preview Only
+                    </p>
+                    <p className="text-sm mt-1">Enroll in this course to access all {course.videos.length} videos.</p>
                   </div>
                 </div>
               )}
 
               {/* Video List with Locked/Unlocked Status */}
-              <div className="bg-gray-50 rounded-lg p-4 mt-4 border border-gray-200">
-                <h3 className="font-medium text-gray-700 mb-3 flex items-center gap-2">
-                  <FiVideo className="w-5 h-5 text-blue-600" />
+              <div className="bg-white rounded-xl p-5 mt-4 border border-gray-200 shadow-sm hover:shadow transition-all duration-300">
+                <h3 className="font-medium text-gray-800 mb-4 flex items-center gap-2">
+                  <FiVideo className="w-5 h-5 text-[#00bcd4]" />
                   Course Videos ({course.videos.length})
                 </h3>
-                <ul className="divide-y divide-gray-200">
+                <ul className="divide-y divide-gray-100">
                   {course.videos.map((video, index) => (
-                    <li key={video._id} className="py-3">
+                    <li key={video._id} className="group">
                       {(isEnrolled() || canEdit()) ? (
                         <Link
                           to={`/courses/${course._id}/video/${video._id}`}
-                          className="flex items-start w-full text-left hover:bg-gray-100 p-2 rounded transition-colors"
+                          className="flex items-start w-full text-left hover:bg-gray-50 p-3 rounded-lg transition-all duration-200 block"
                         >
-                          <div className="flex-shrink-0 mt-1 text-blue-600">
+                          <div className="flex-shrink-0 mt-1 text-[#00bcd4] group-hover:text-[#01427a] transition-colors duration-200">
                             <FaPlay className="w-4 h-4" />
                           </div>
                           <div className="ml-3 flex-grow">
-                            <p className="font-medium text-gray-800">{video.title}</p>
+                            <p className="font-medium text-gray-800 group-hover:text-[#01427a] transition-colors duration-200">{video.title}</p>
                             <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
-                              <span>{video.duration}</span>
-                              <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">Video {index + 1}</span>
+                              <span className="flex items-center gap-1">
+                                <BiTime className="w-4 h-4" />
+                                {video.duration}
+                              </span>
+                              <span className="text-xs bg-[#00bcd4]/10 text-[#00bcd4] px-2 py-0.5 rounded-full">Video {index + 1}</span>
                             </div>
                           </div>
                         </Link>
                       ) : (
-                        <div className="flex items-start w-full text-left p-2">
+                        <div className="flex items-start w-full text-left p-3 rounded-lg">
                           <div className="flex-shrink-0 mt-1 text-gray-400">
                             {index === 0 ? (
-                              <FaPlay className="w-4 h-4" />
+                              <FaPlay className="w-4 h-4 text-[#00bcd4]" />
                             ) : (
                               <FaLock className="w-4 h-4" />
                             )}
@@ -265,11 +340,14 @@ const CourseDetail = () => {
                               {video.title}
                             </p>
                             <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
-                              <span>{video.duration}</span>
+                              <span className="flex items-center gap-1">
+                                <BiTime className="w-4 h-4" />
+                                {video.duration}
+                              </span>
                               {index === 0 ? (
-                                <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded">Preview</span>
+                                <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Preview</span>
                               ) : (
-                                <span className="text-xs bg-gray-200 px-2 py-0.5 rounded">Locked</span>
+                                <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">Locked</span>
                               )}
                             </div>
                           </div>
@@ -284,95 +362,121 @@ const CourseDetail = () => {
         </div>
 
         {/* Sidebar Section */}
-        <div className="bg-gray-50 p-6">
+        <div className="lg:pl-6">
           <div className="sticky top-20">
-            <div className="mb-6">
-              <img
-                src={course.thumbnail}
-                alt={course.title}
-                className="w-full h-48 object-cover rounded-lg"
-              />
-            </div>
-
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-2xl font-bold text-blue-600">${course.price.toFixed(2)}</span>
-                {course.originalPrice > course.price && (
-                  <span className="text-lg text-gray-400 line-through">${course.originalPrice.toFixed(2)}</span>
-                )}
-              </div>
-
-              {isEnrolled() ? (
-                <button
-                  className="w-full bg-green-500 text-white py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 cursor-default"
-                  disabled
-                >
-                  <FaPlay className="w-4 h-4" />
-                  Enrolled
-                </button>
-              ) : (
-                <button
-                  onClick={handleEnroll}
-                  disabled={enrolling || !course.isPublished}
-                  className={`w-full py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 ${
-                    !course.isPublished
-                      ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                      : 'bg-blue-600 text-white hover:bg-blue-700'
-                  }`}
-                >
-                  {enrolling ? 'Enrolling...' : 'Enroll Now'}
-                </button>
-              )}
-
-              {!course.isPublished && (
-                <p className="text-yellow-600 text-sm mt-2 text-center">
-                  This course is not published yet
-                </p>
-              )}
-            </div>
-
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold mb-3">Course Information</h3>
-              <div className="space-y-3 bg-white p-4 rounded-lg border border-gray-200">
-                <div className="flex items-center gap-2">
-                  <FiVideo className="w-5 h-5 text-blue-600" />
-                  <span className="text-gray-700">{course.videos?.length || 0} videos</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <BiTime className="w-5 h-5 text-blue-600" />
-                  <span className="text-gray-700">Total duration: {calculateTotalDuration()}</span>
-                </div>
-                {course.enrolledStudents?.length > 0 && (
-                  <div className="flex items-center gap-2">
-                    <FaChalkboardTeacher className="w-5 h-5 text-blue-600" />
-                    <span className="text-gray-700">{course.enrolledStudents.length} students enrolled</span>
-                  </div>
-                )}
-                <div className="flex items-center gap-2">
-                  <FaSignal className="w-5 h-5 text-blue-600" />
-                  <span className="text-gray-700">Level: {course.level}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <BiCategory className="w-5 h-5 text-blue-600" />
-                  <span className="text-gray-700">Category: {course.category}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Instructor Information */}
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold mb-3">About the Instructor</h3>
-              <div className="bg-white p-4 rounded-lg border border-gray-200">
-                <div className="flex items-center gap-3 mb-3">
-                  <img
-                    src={course.creator?.avatar}
-                    alt={course.creator?.fullName}
-                    className="w-12 h-12 rounded-full object-cover"
-                  />
+            <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition-all duration-300">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h4 className="font-medium text-gray-900">{course.creator?.fullName}</h4>
-                    <p className="text-sm text-gray-500">@{course.creator?.username}</p>
+                    <span className="text-3xl font-bold text-[#01427a]">${course.price.toFixed(2)}</span>
+                    {course.originalPrice > course.price && (
+                      <span className="text-lg text-gray-400 line-through ml-2">${course.originalPrice.toFixed(2)}</span>
+                    )}
                   </div>
+                  {course.price === 0 && (
+                    <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">Free</span>
+                  )}
+                </div>
+
+                {isEnrolled() ? (
+                  <div className="mb-6">
+                    <button
+                      className="w-full bg-green-500 text-white py-3.5 px-4 rounded-lg font-medium flex items-center justify-center gap-2 cursor-default shadow-sm"
+                      disabled
+                    >
+                      <FaPlay className="w-4 h-4" />
+                      Enrolled
+                    </button>
+                    <Link
+                      to={`/courses/${course._id}/video/${course.videos[0]._id}`}
+                      className="w-full mt-3 bg-[#00bcd4] text-white py-3.5 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-[#01427a] transition-all duration-300 shadow-sm hover:shadow"
+                    >
+                      <FaPlay className="w-4 h-4" />
+                      Continue Learning
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="mb-6">
+                    <button
+                      onClick={handleEnroll}
+                      disabled={enrolling || !course.isPublished}
+                      className={`w-full py-3.5 px-4 rounded-lg font-medium flex items-center justify-center gap-2 shadow-sm hover:shadow transition-all duration-300 ${
+                        !course.isPublished
+                          ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                          : 'bg-[#00bcd4] text-white hover:bg-[#01427a]'
+                      }`}
+                    >
+                      {enrolling ? (
+                        <>
+                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Enrolling...
+                        </>
+                      ) : (
+                        <>
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
+                          </svg>
+                          Enroll Now
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
+
+                {!course.isPublished && (
+                  <div className="bg-yellow-50 text-yellow-800 px-4 py-3 rounded-lg mb-6 border border-yellow-200 flex items-center gap-2 text-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    <span>This course is not published yet</span>
+                  </div>
+                )}
+
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-[#00bcd4]/10 p-2 rounded-lg">
+                      <FiVideo className="w-5 h-5 text-[#00bcd4]" />
+                    </div>
+                    <div>
+                      <p className="text-gray-500 text-sm">Total Videos</p>
+                      <p className="font-medium">{course.videos?.length || 0} lessons</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <div className="bg-[#00bcd4]/10 p-2 rounded-lg">
+                      <BiTime className="w-5 h-5 text-[#00bcd4]" />
+                    </div>
+                    <div>
+                      <p className="text-gray-500 text-sm">Total Duration</p>
+                      <p className="font-medium">{calculateTotalDuration()}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <div className="bg-[#00bcd4]/10 p-2 rounded-lg">
+                      <FaSignal className="w-5 h-5 text-[#00bcd4]" />
+                    </div>
+                    <div>
+                      <p className="text-gray-500 text-sm">Level</p>
+                      <p className="font-medium">{course.level}</p>
+                    </div>
+                  </div>
+
+                  {course.enrolledStudents?.length > 0 && (
+                    <div className="flex items-center gap-3">
+                      <div className="bg-[#00bcd4]/10 p-2 rounded-lg">
+                        <FaChalkboardTeacher className="w-5 h-5 text-[#00bcd4]" />
+                      </div>
+                      <div>
+                        <p className="text-gray-500 text-sm">Students</p>
+                        <p className="font-medium">{course.enrolledStudents.length} enrolled</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -381,8 +485,16 @@ const CourseDetail = () => {
       </div>
 
       {/* Comment Section */}
-      <div className="mt-8">
-        <CommentSection courseId={course._id} type="course" />
+      <div className="mt-12 px-6 pb-8">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-xl font-semibold mb-6 inline-block relative">
+            Discussion
+            <span className="absolute bottom-0 left-0 w-1/3 h-1 bg-[#00bcd4] rounded-full"></span>
+          </h2>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <CommentSection courseId={course._id} type="course" />
+          </div>
+        </div>
       </div>
     </div>
   );

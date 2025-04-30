@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import CommentForm from './CommentForm';
 import CommentList from './CommentList';
 
-const CommentSection = ({ videoId, courseId, type }) => {
+const CommentSection = ({ videoId, courseId, programId, type }) => {
   const { isAuthenticated } = useAuth();
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -15,17 +15,23 @@ const CommentSection = ({ videoId, courseId, type }) => {
 
   useEffect(() => {
     fetchComments();
-  }, [videoId, courseId, currentPage]);
+  }, [videoId, courseId, programId, currentPage]);
 
   const fetchComments = async () => {
     try {
       setLoading(true);
-      const endpoint = type === 'video' 
-        ? `/api/v1/comments/video/${videoId}?page=${currentPage}` 
-        : `/api/v1/comments/course/${courseId}?page=${currentPage}`;
-      
+      let endpoint;
+
+      if (type === 'video') {
+        endpoint = `/api/v1/comments/video/${videoId}?page=${currentPage}`;
+      } else if (type === 'course') {
+        endpoint = `/api/v1/comments/course/${courseId}?page=${currentPage}`;
+      } else if (type === 'program') {
+        endpoint = `/api/v1/comments/program/${programId}?page=${currentPage}`;
+      }
+
       const response = await axios.get(endpoint);
-      
+
       setComments(response.data.data.comments);
       setTotalComments(response.data.data.totalComments);
       setTotalPages(response.data.data.totalPages);
@@ -39,11 +45,17 @@ const CommentSection = ({ videoId, courseId, type }) => {
 
   const handleAddComment = async (content) => {
     try {
-      const endpoint = type === 'video' 
-        ? `/api/v1/comments/video/${videoId}` 
-        : `/api/v1/comments/course/${courseId}`;
-      
-      const response = await axios.post(endpoint, 
+      let endpoint;
+
+      if (type === 'video') {
+        endpoint = `/api/v1/comments/video/${videoId}`;
+      } else if (type === 'course') {
+        endpoint = `/api/v1/comments/course/${courseId}`;
+      } else if (type === 'program') {
+        endpoint = `/api/v1/comments/program/${programId}`;
+      }
+
+      const response = await axios.post(endpoint,
         { content },
         {
           headers: {
@@ -51,7 +63,7 @@ const CommentSection = ({ videoId, courseId, type }) => {
           }
         }
       );
-      
+
       // Add the new comment to the top of the list
       setComments([response.data.data, ...comments]);
       setTotalComments(totalComments + 1);
@@ -72,7 +84,7 @@ const CommentSection = ({ videoId, courseId, type }) => {
           }
         }
       );
-      
+
       // Update the comments list with the new reply
       const updatedComments = comments.map(comment => {
         if (comment._id === commentId) {
@@ -83,7 +95,7 @@ const CommentSection = ({ videoId, courseId, type }) => {
         }
         return comment;
       });
-      
+
       setComments(updatedComments);
     } catch (error) {
       console.error('Error adding reply:', error);
@@ -95,7 +107,7 @@ const CommentSection = ({ videoId, courseId, type }) => {
     if (!window.confirm('Are you sure you want to delete this comment?')) {
       return;
     }
-    
+
     try {
       await axios.delete(
         `/api/v1/comments/${commentId}`,
@@ -105,7 +117,7 @@ const CommentSection = ({ videoId, courseId, type }) => {
           }
         }
       );
-      
+
       // Remove the comment from the list
       const updatedComments = comments.filter(comment => comment._id !== commentId);
       setComments(updatedComments);
@@ -120,7 +132,7 @@ const CommentSection = ({ videoId, courseId, type }) => {
     if (!window.confirm('Are you sure you want to delete this reply?')) {
       return;
     }
-    
+
     try {
       await axios.delete(
         `/api/v1/comments/${replyId}`,
@@ -130,7 +142,7 @@ const CommentSection = ({ videoId, courseId, type }) => {
           }
         }
       );
-      
+
       // Remove the reply from the comment
       const updatedComments = comments.map(comment => {
         if (comment._id === commentId) {
@@ -141,7 +153,7 @@ const CommentSection = ({ videoId, courseId, type }) => {
         }
         return comment;
       });
-      
+
       setComments(updatedComments);
     } catch (error) {
       console.error('Error deleting reply:', error);
@@ -160,7 +172,7 @@ const CommentSection = ({ videoId, courseId, type }) => {
           }
         }
       );
-      
+
       // Update the comment's like count
       const updatedComments = comments.map(comment => {
         if (comment._id === commentId) {
@@ -171,7 +183,7 @@ const CommentSection = ({ videoId, courseId, type }) => {
         }
         return comment;
       });
-      
+
       setComments(updatedComments);
     } catch (error) {
       console.error('Error liking comment:', error);
@@ -186,13 +198,13 @@ const CommentSection = ({ videoId, courseId, type }) => {
   return (
     <div className="bg-white rounded-lg shadow-sm p-6 mt-6">
       <h2 className="text-2xl font-bold mb-6">Comments ({totalComments})</h2>
-      
+
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
           {error}
         </div>
       )}
-      
+
       {isAuthenticated ? (
         <CommentForm onSubmit={handleAddComment} />
       ) : (
@@ -200,21 +212,21 @@ const CommentSection = ({ videoId, courseId, type }) => {
           <p>Please <a href="/login" className="text-blue-600 hover:underline">log in</a> to leave a comment.</p>
         </div>
       )}
-      
+
       {loading ? (
         <div className="flex justify-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
         </div>
       ) : (
         <>
-          <CommentList 
-            comments={comments} 
+          <CommentList
+            comments={comments}
             onAddReply={handleAddReply}
             onDeleteComment={handleDeleteComment}
             onDeleteReply={handleDeleteReply}
             onLikeComment={handleLikeComment}
           />
-          
+
           {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex justify-center mt-6">
@@ -223,14 +235,14 @@ const CommentSection = ({ videoId, courseId, type }) => {
                   onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
                   disabled={currentPage === 1}
                   className={`px-3 py-1 rounded ${
-                    currentPage === 1 
-                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed' 
+                    currentPage === 1
+                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
                       : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                   }`}
                 >
                   Previous
                 </button>
-                
+
                 {[...Array(totalPages).keys()].map(page => (
                   <button
                     key={page + 1}
@@ -244,7 +256,7 @@ const CommentSection = ({ videoId, courseId, type }) => {
                     {page + 1}
                   </button>
                 ))}
-                
+
                 <button
                   onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
                   disabled={currentPage === totalPages}

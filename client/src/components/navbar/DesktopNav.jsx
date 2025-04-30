@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { FaAngleDown, FaUserCircle, FaGraduationCap, FaVideo, FaBook, FaHeadset, FaEdit } from "react-icons/fa";
+import { FaAngleDown, FaUserCircle, FaGraduationCap, FaVideo, FaBook, FaHeadset, FaEdit, FaLayerGroup } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
 import { motion } from "framer-motion";
 
@@ -118,6 +118,23 @@ const DesktopNav = () => {
               <FaGraduationCap className="text-[#00bcd4]" />
               <span>Courses</span>
               {location.pathname.startsWith('/courses') && (
+                <motion.div
+                  layoutId="navbar-indicator"
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#00bcd4] rounded-full"
+                  transition={{ type: 'spring', duration: 0.5 }}
+                />
+              )}
+            </Link>
+
+            <Link
+              to="/programs"
+              className={`flex items-center space-x-2 font-medium transition-colors duration-300 ${
+                location.pathname.startsWith('/programs') ? 'text-[#00bcd4]' : 'text-gray-700 hover:text-[#00bcd4]'
+              }`}
+            >
+              <FaLayerGroup className="text-[#00bcd4]" />
+              <span>Programs</span>
+              {location.pathname.startsWith('/programs') && (
                 <motion.div
                   layoutId="navbar-indicator"
                   className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#00bcd4] rounded-full"

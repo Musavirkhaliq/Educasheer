@@ -5,6 +5,7 @@ import { Comment } from "../models/comment.model.js";
 import { Video } from "../models/video.model.js";
 import { Course } from "../models/course.model.js";
 import { Blog } from "../models/blog.model.js";
+import { Program } from "../models/program.model.js";
 import mongoose from "mongoose";
 
 // Add a comment to a video
@@ -103,10 +104,11 @@ const addReply = asyncHandler(async (req, res) => {
             owner: req.user._id,
             parentComment: commentId,
             isReply: true,
-            // Copy the video, course, or blog reference from parent comment
+            // Copy the video, course, blog, or program reference from parent comment
             video: parentComment.video,
             course: parentComment.course,
-            blog: parentComment.blog
+            blog: parentComment.blog,
+            program: parentComment.program
         });
 
         // Populate owner details
@@ -425,14 +427,110 @@ const getBlogComments = asyncHandler(async (req, res) => {
     }
 });
 
+// Add a comment to a program
+const addProgramComment = asyncHandler(async (req, res) => {
+    try {
+        const { programId } = req.params;
+        const { content } = req.body;
+
+        if (!content?.trim()) {
+            throw new ApiError(400, "Comment content is required");
+        }
+
+        // Check if program exists
+        const program = await Program.findById(programId);
+        if (!program) {
+            throw new ApiError(404, "Program not found");
+        }
+
+        // Create comment
+        const comment = await Comment.create({
+            content,
+            program: programId,
+            owner: req.user._id
+        });
+
+        // Populate owner details
+        const populatedComment = await Comment.findById(comment._id).populate("owner", "fullName username avatar");
+
+        return res.status(201).json(
+            new ApiResponse(201, populatedComment, "Comment added successfully")
+        );
+    } catch (error) {
+        if (error instanceof ApiError) {
+            throw error;
+        }
+        throw new ApiError(500, "Something went wrong while adding comment");
+    }
+});
+
+// Get all comments for a program
+const getProgramComments = asyncHandler(async (req, res) => {
+    try {
+        const { programId } = req.params;
+        const { page = 1, limit = 10 } = req.query;
+
+        // Check if program exists
+        const program = await Program.findById(programId);
+        if (!program) {
+            throw new ApiError(404, "Program not found");
+        }
+
+        const options = {
+            page: parseInt(page, 10),
+            limit: parseInt(limit, 10),
+            sort: { createdAt: -1 }
+        };
+
+        // Get top-level comments only (not replies)
+        const comments = await Comment.find({
+            program: programId,
+            isReply: false
+        })
+        .populate("owner", "fullName username avatar")
+        .populate({
+            path: "replies",
+            populate: {
+                path: "owner",
+                select: "fullName username avatar"
+            },
+            options: { sort: { createdAt: 1 } }
+        })
+        .skip((options.page - 1) * options.limit)
+        .limit(options.limit)
+        .sort(options.sort);
+
+        const totalComments = await Comment.countDocuments({
+            program: programId,
+            isReply: false
+        });
+
+        return res.status(200).json(
+            new ApiResponse(200, {
+                comments,
+                totalComments,
+                currentPage: options.page,
+                totalPages: Math.ceil(totalComments / options.limit)
+            }, "Comments fetched successfully")
+        );
+    } catch (error) {
+        if (error instanceof ApiError) {
+            throw error;
+        }
+        throw new ApiError(500, "Something went wrong while fetching comments");
+    }
+});
+
 export {
     addVideoComment,
     addCourseComment,
     addBlogComment,
+    addProgramComment,
     addReply,
     getVideoComments,
     getCourseComments,
     getBlogComments,
+    getProgramComments,
     updateComment,
     deleteComment,
     likeComment
