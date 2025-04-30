@@ -3,15 +3,25 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { BiTime } from 'react-icons/bi';
 import { FiVideo } from 'react-icons/fi';
-import { FaEdit, FaTrash } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaMapMarkerAlt, FaCalendarAlt, FaGraduationCap } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 
 const CourseCard = ({ course, showControls, onDelete }) => {
   const { currentUser } = useAuth();
   const canEdit = showControls && (currentUser?.role === 'admin' || currentUser?._id === course.creator?._id);
 
-  // Calculate total duration of all videos
-  const totalDuration = course.videos?.reduce((total, video) => {
+  // Check if it's an offline course
+  const isOfflineCourse = course.courseType === 'offline';
+
+  // Format date for offline courses
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  };
+
+  // Calculate total duration of all videos for online courses
+  const totalDuration = !isOfflineCourse ? (course.videos?.reduce((total, video) => {
     // Parse duration in format "H:MM:SS" or "MM:SS"
     const parts = video.duration?.split(':').map(Number);
     let seconds = 0;
@@ -25,7 +35,7 @@ const CourseCard = ({ course, showControls, onDelete }) => {
     }
 
     return total + seconds;
-  }, 0) || 0;
+  }, 0) || 0) : 0;
 
   // Convert seconds to hours and minutes
   const hours = Math.floor(totalDuration / 3600);
@@ -64,6 +74,13 @@ const CourseCard = ({ course, showControls, onDelete }) => {
           </span>
         </div>
 
+        {/* Course type badge */}
+        <div className="absolute top-2 sm:top-3 left-20 sm:left-24">
+          <span className={`${isOfflineCourse ? 'bg-purple-500/90' : 'bg-blue-500/90'} text-white px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs backdrop-blur-sm`}>
+            {isOfflineCourse ? 'Offline' : 'Online'}
+          </span>
+        </div>
+
         {/* Draft badge */}
         {!course.isPublished && (
           <div className="absolute top-2 sm:top-3 right-2 sm:right-3">
@@ -76,14 +93,35 @@ const CourseCard = ({ course, showControls, onDelete }) => {
 
       <div className="p-3 sm:p-4 md:p-5">
         <div className="flex flex-wrap items-center gap-2 mb-2 sm:mb-3">
-          <div className="flex items-center text-xs text-gray-500 gap-1 bg-gray-100 px-2 py-1 rounded-full">
-            <FiVideo className="w-3 h-3" />
-            <span>{course.videos?.length || 0} videos</span>
-          </div>
-          <div className="flex items-center text-xs text-gray-500 gap-1 bg-gray-100 px-2 py-1 rounded-full">
-            <BiTime className="w-3 h-3" />
-            <span>{formattedDuration}</span>
-          </div>
+          {isOfflineCourse ? (
+            <>
+              <div className="flex items-center text-xs text-gray-500 gap-1 bg-gray-100 px-2 py-1 rounded-full">
+                <FaMapMarkerAlt className="w-3 h-3" />
+                <span>{course.location}</span>
+              </div>
+              <div className="flex items-center text-xs text-gray-500 gap-1 bg-gray-100 px-2 py-1 rounded-full">
+                <FaCalendarAlt className="w-3 h-3" />
+                <span>{formatDate(course.startDate)}</span>
+              </div>
+              {course.modules && (
+                <div className="flex items-center text-xs text-gray-500 gap-1 bg-gray-100 px-2 py-1 rounded-full">
+                  <FaGraduationCap className="w-3 h-3" />
+                  <span>{course.modules.length} modules</span>
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <div className="flex items-center text-xs text-gray-500 gap-1 bg-gray-100 px-2 py-1 rounded-full">
+                <FiVideo className="w-3 h-3" />
+                <span>{course.videos?.length || 0} videos</span>
+              </div>
+              <div className="flex items-center text-xs text-gray-500 gap-1 bg-gray-100 px-2 py-1 rounded-full">
+                <BiTime className="w-3 h-3" />
+                <span>{formattedDuration}</span>
+              </div>
+            </>
+          )}
         </div>
 
         <Link to={`/courses/${course._id}`}>

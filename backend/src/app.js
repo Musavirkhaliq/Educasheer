@@ -40,6 +40,8 @@ import commentRouter from "./routes/comment.routes.js";
 import blogRouter from "./routes/blog.routes.js";
 import debugRouter from "./routes/debug.routes.js";
 import materialRouter from "./routes/material.routes.js";
+import discussionRouter from "./routes/discussion.routes.js";
+import courseMaterialRouter from "./routes/courseMaterial.routes.js";
 
 // Routes declaration
 app.use("/api/v1/users", userRouter);
@@ -52,6 +54,8 @@ app.use("/api/v1/comments", commentRouter);
 app.use("/api/v1/blogs", blogRouter);
 app.use("/api/v1/materials", materialRouter);
 app.use("/api/v1/debug", debugRouter);
+app.use("/api/v1", discussionRouter);
+app.use("/api/v1", courseMaterialRouter);
 
 // 404 handler
 app.use((req, res) => {

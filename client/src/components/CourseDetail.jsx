@@ -3,9 +3,11 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { BiTime, BiCategory } from 'react-icons/bi';
 import { FiVideo } from 'react-icons/fi';
-import { FaEdit, FaPlay, FaChalkboardTeacher, FaSignal, FaLock } from 'react-icons/fa';
+import { FaEdit, FaPlay, FaChalkboardTeacher, FaSignal, FaLock, FaMapMarkerAlt, FaCalendarAlt, FaClock, FaBook, FaListUl } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { CommentSection } from './comments';
+import DiscussionForum from './DiscussionForum';
+import CourseMaterials from './CourseMaterials';
 
 const CourseDetail = () => {
   const { courseId } = useParams();
@@ -89,7 +91,15 @@ const CourseDetail = () => {
         enrolledStudents: [...(course.enrolledStudents || []), currentUser._id]
       });
 
-      alert('Successfully enrolled in the course!');
+      // Show different messages based on course type
+      if (course.courseType === 'offline') {
+        alert('Successfully enrolled in the offline course! You can now access course materials and class information.');
+      } else {
+        alert('Successfully enrolled in the course! You can now access all videos.');
+      }
+
+      // Refresh the page to show enrolled content
+      window.location.reload();
     } catch (error) {
       console.error('Error enrolling in course:', error);
       alert(error.response?.data?.message || 'Failed to enroll in course. Please try again.');
@@ -250,8 +260,313 @@ const CourseDetail = () => {
             </div>
           )}
 
-          {/* Course Content Preview Section */}
-          {course.videos?.length > 0 && (
+          {/* Offline Course Details Section */}
+          {course.courseType === 'offline' && (
+            <div className="mt-8">
+              <h2 className="text-xl font-semibold mb-6 inline-block relative">
+                Offline Course Details
+                <span className="absolute bottom-0 left-0 w-1/3 h-1 bg-[#00bcd4] rounded-full"></span>
+              </h2>
+
+              <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow transition-all duration-300 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div className="flex items-start gap-3">
+                    <div className="bg-[#00bcd4]/10 p-2 rounded-lg flex-shrink-0">
+                      <FaMapMarkerAlt className="w-5 h-5 text-[#00bcd4]" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-gray-700">Location</h3>
+                      <p className="text-gray-600 mt-1">{course.location}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3">
+                    <div className="bg-[#00bcd4]/10 p-2 rounded-lg flex-shrink-0">
+                      <FaClock className="w-5 h-5 text-[#00bcd4]" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-gray-700">Schedule</h3>
+                      <p className="text-gray-600 mt-1">{course.schedule}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3">
+                    <div className="bg-[#00bcd4]/10 p-2 rounded-lg flex-shrink-0">
+                      <FaCalendarAlt className="w-5 h-5 text-[#00bcd4]" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-gray-700">Start Date</h3>
+                      <p className="text-gray-600 mt-1">{new Date(course.startDate).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3">
+                    <div className="bg-[#00bcd4]/10 p-2 rounded-lg flex-shrink-0">
+                      <FaCalendarAlt className="w-5 h-5 text-[#00bcd4]" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-gray-700">End Date</h3>
+                      <p className="text-gray-600 mt-1">{new Date(course.endDate).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 md:col-span-2">
+                    <div className="bg-[#00bcd4]/10 p-2 rounded-lg flex-shrink-0">
+                      <FaChalkboardTeacher className="w-5 h-5 text-[#00bcd4]" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-gray-700">Class Size</h3>
+                      <p className="text-gray-600 mt-1">
+                        {course.enrolledStudents?.length || 0} / {course.maxStudents || 20} students enrolled
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Enrollment button for offline courses */}
+                {!isEnrolled() && !canEdit() && course.isPublished && (
+                  <div className="mt-4 mb-2">
+                    <button
+                      onClick={handleEnroll}
+                      disabled={enrolling}
+                      className="w-full bg-[#00bcd4] text-white py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-[#01427a] transition-all duration-300 shadow-sm hover:shadow"
+                    >
+                      {enrolling ? (
+                        <>
+                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Enrolling...
+                        </>
+                      ) : (
+                        <>
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
+                          </svg>
+                          Enroll in this Offline Course
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
+
+                {/* Enrolled Student Information for Offline Courses */}
+                {isEnrolled() && (
+                  <div className="mt-4 mb-2 bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div className="flex items-center gap-2 text-green-700 mb-3">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      <span className="font-medium">You are enrolled in this course</span>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="flex items-start gap-2">
+                        <div className="bg-green-100 p-1 rounded-full mt-0.5">
+                          <FaCalendarAlt className="w-3 h-3 text-green-700" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-700">Next Class</p>
+                          <p className="text-sm text-gray-600">
+                            {new Date() < new Date(course.startDate)
+                              ? `Starting on ${new Date(course.startDate).toLocaleDateString()}`
+                              : `Next session according to schedule: ${course.schedule}`
+                            }
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-2">
+                        <div className="bg-green-100 p-1 rounded-full mt-0.5">
+                          <FaMapMarkerAlt className="w-3 h-3 text-green-700" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-700">Location</p>
+                          <p className="text-sm text-gray-600">{course.location}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-2">
+                        <div className="bg-green-100 p-1 rounded-full mt-0.5">
+                          <FaChalkboardTeacher className="w-3 h-3 text-green-700" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-700">Instructor Contact</p>
+                          <p className="text-sm text-gray-600">{course.creator?.fullName} (@{course.creator?.username})</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 pt-3 border-t border-green-200">
+                      <p className="text-sm text-gray-700 mb-2">Important Notes:</p>
+                      <ul className="text-sm text-gray-600 list-disc list-inside space-y-1">
+                        <li>Please arrive 10 minutes before the scheduled time</li>
+                        <li>Bring necessary materials as mentioned in the syllabus</li>
+                        <li>Contact the instructor if you need to miss a class</li>
+                      </ul>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Course Syllabus/Modules Section */}
+              {course.modules && course.modules.length > 0 && (
+                <div className="mt-8">
+                  <h2 className="text-xl font-semibold mb-6 inline-block relative">
+                    Course Syllabus
+                    <span className="absolute bottom-0 left-0 w-1/3 h-1 bg-[#00bcd4] rounded-full"></span>
+                  </h2>
+
+                  <div className="space-y-4">
+                    {course.modules.map((module, moduleIndex) => (
+                      <div key={moduleIndex} className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm hover:shadow transition-all duration-300">
+                        <div className="flex items-start gap-3 mb-3">
+                          <div className="bg-[#00bcd4]/10 p-2 rounded-lg flex-shrink-0">
+                            <FaBook className="w-5 h-5 text-[#00bcd4]" />
+                          </div>
+                          <div className="flex-grow">
+                            <h3 className="font-medium text-gray-800">Module {moduleIndex + 1}: {module.title}</h3>
+                            {module.duration && (
+                              <div className="flex items-center gap-1 text-sm text-gray-500 mt-1">
+                                <BiTime className="w-4 h-4" />
+                                <span>{module.duration}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="ml-12">
+                          <p className="text-gray-600 mb-3">{module.description}</p>
+
+                          {module.topics && module.topics.length > 0 && (
+                            <div className="mt-3">
+                              <h4 className="font-medium text-gray-700 flex items-center gap-2 mb-2">
+                                <FaListUl className="w-4 h-4 text-[#00bcd4]" />
+                                Topics Covered:
+                              </h4>
+                              <ul className="list-disc list-inside space-y-1 text-gray-600 ml-2">
+                                {module.topics.map((topic, topicIndex) => (
+                                  <li key={topicIndex}>{topic}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Course Materials Section for Enrolled Students */}
+              {isEnrolled() && (
+                <>
+                  <div className="mt-8">
+                    <h2 className="text-xl font-semibold mb-6 inline-block relative">
+                      Course Materials
+                      <span className="absolute bottom-0 left-0 w-1/3 h-1 bg-[#00bcd4] rounded-full"></span>
+                    </h2>
+
+                    <CourseMaterials
+                      courseId={course._id}
+                      isInstructor={canEdit()}
+                    />
+                  </div>
+
+                  {/* Class Discussion Section */}
+                  <div className="mt-8">
+                    <h2 className="text-xl font-semibold mb-6 inline-block relative">
+                      Class Discussion
+                      <span className="absolute bottom-0 left-0 w-1/3 h-1 bg-[#00bcd4] rounded-full"></span>
+                    </h2>
+
+                    <DiscussionForum courseId={course._id} />
+                  </div>
+
+                  {/* Attendance Tracking Section */}
+                  <div className="mt-8">
+                    <h2 className="text-xl font-semibold mb-6 inline-block relative">
+                      Attendance
+                      <span className="absolute bottom-0 left-0 w-1/3 h-1 bg-[#00bcd4] rounded-full"></span>
+                    </h2>
+
+                    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                      <div className="p-5 border-b border-gray-100">
+                        <h3 className="font-medium text-gray-800 flex items-center gap-2">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[#00bcd4]" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                          </svg>
+                          Your Attendance Record
+                        </h3>
+                      </div>
+
+                      <div className="p-4">
+                        <div className="flex items-center justify-between mb-4">
+                          <div>
+                            <span className="text-lg font-semibold text-gray-800">85%</span>
+                            <span className="text-sm text-gray-500 ml-2">Attendance Rate</span>
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            <span className="font-medium">6</span> out of <span className="font-medium">7</span> classes attended
+                          </div>
+                        </div>
+
+                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                          <div className="bg-green-600 h-2.5 rounded-full" style={{ width: '85%' }}></div>
+                        </div>
+
+                        <div className="mt-6 space-y-2">
+                          <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                            <div className="flex items-center gap-2">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                              </svg>
+                              <span className="text-gray-700">Introduction Class</span>
+                            </div>
+                            <span className="text-sm text-gray-500">Sep 5, 2023</span>
+                          </div>
+
+                          <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                            <div className="flex items-center gap-2">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                              </svg>
+                              <span className="text-gray-700">Module 1: Fundamentals</span>
+                            </div>
+                            <span className="text-sm text-gray-500">Sep 12, 2023</span>
+                          </div>
+
+                          <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                            <div className="flex items-center gap-2">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                              </svg>
+                              <span className="text-gray-700">Module 2: Advanced Concepts</span>
+                            </div>
+                            <span className="text-sm text-gray-500">Sep 19, 2023</span>
+                          </div>
+
+                          <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                            <div className="flex items-center gap-2">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                              </svg>
+                              <span className="text-gray-700">Module 3: Practical Applications</span>
+                            </div>
+                            <span className="text-sm text-gray-500">Sep 26, 2023</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* Online Course Content Preview Section */}
+          {course.courseType !== 'offline' && course.videos?.length > 0 && (
             <div className="mt-8">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-semibold inline-block relative">
@@ -259,7 +574,7 @@ const CourseDetail = () => {
                   <span className="absolute bottom-0 left-0 w-1/3 h-1 bg-[#00bcd4] rounded-full"></span>
                 </h2>
 
-                {(isEnrolled() || canEdit()) && (
+                {(isEnrolled() || canEdit()) && course.videos && course.videos.length > 0 && (
                   <Link
                     to={`/courses/${course._id}/video/${course.videos[0]._id}`}
                     className="bg-[#00bcd4] text-white px-5 py-2.5 rounded-lg flex items-center gap-2 hover:bg-[#01427a] transition-all duration-300 shadow-sm hover:shadow"
@@ -387,13 +702,23 @@ const CourseDetail = () => {
                       <FaPlay className="w-4 h-4" />
                       Enrolled
                     </button>
-                    <Link
-                      to={`/courses/${course._id}/video/${course.videos[0]._id}`}
-                      className="w-full mt-3 bg-[#00bcd4] text-white py-3.5 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-[#01427a] transition-all duration-300 shadow-sm hover:shadow"
-                    >
-                      <FaPlay className="w-4 h-4" />
-                      Continue Learning
-                    </Link>
+                    {course.courseType !== 'offline' && course.videos && course.videos.length > 0 ? (
+                      <Link
+                        to={`/courses/${course._id}/video/${course.videos[0]._id}`}
+                        className="w-full mt-3 bg-[#00bcd4] text-white py-3.5 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-[#01427a] transition-all duration-300 shadow-sm hover:shadow"
+                      >
+                        <FaPlay className="w-4 h-4" />
+                        Continue Learning
+                      </Link>
+                    ) : (
+                      <button
+                        className="w-full mt-3 bg-[#00bcd4] text-white py-3.5 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-[#01427a] transition-all duration-300 shadow-sm hover:shadow"
+                        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                      >
+                        <FaChalkboardTeacher className="w-4 h-4" />
+                        View Course Details
+                      </button>
+                    )}
                   </div>
                 ) : (
                   <div className="mb-6">

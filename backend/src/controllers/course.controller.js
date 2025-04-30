@@ -9,7 +9,24 @@ import mongoose from "mongoose";
 // Create a new course (admin and tutor only)
 const createCourse = asyncHandler(async (req, res) => {
     try {
-        const { title, description, category, level, price, originalPrice, videoIds, tags } = req.body;
+        const {
+            title,
+            description,
+            category,
+            level,
+            price,
+            originalPrice,
+            videoIds,
+            tags,
+            courseType,
+            location,
+            startDate,
+            endDate,
+            schedule,
+            modules,
+            maxStudents,
+            thumbnail: customThumbnail
+        } = req.body;
 
         // Check if user is admin or tutor
         if (req.user.role !== "admin" && req.user.role !== "tutor") {
@@ -21,46 +38,68 @@ const createCourse = asyncHandler(async (req, res) => {
             throw new ApiError(400, "Title and description are required");
         }
 
-        if (!videoIds || !Array.isArray(videoIds) || videoIds.length === 0) {
-            throw new ApiError(400, "At least one video is required for a course");
-        }
+        // Determine if it's an online or offline course
+        const isOfflineCourse = courseType === "offline";
 
-        // Verify all videos exist and user has access to them
-        const videos = await Video.find({
-            _id: { $in: videoIds }
-        });
+        // Validate course type specific requirements
+        if (isOfflineCourse) {
+            // Validate offline course fields
+            if (!location) {
+                throw new ApiError(400, "Location is required for offline courses");
+            }
+            if (!startDate) {
+                throw new ApiError(400, "Start date is required for offline courses");
+            }
+            if (!endDate) {
+                throw new ApiError(400, "End date is required for offline courses");
+            }
+            if (!schedule) {
+                throw new ApiError(400, "Schedule is required for offline courses");
+            }
 
-        if (videos.length !== videoIds.length) {
-            throw new ApiError(400, "One or more videos not found");
-        }
-
-        // If user is not admin, check if they own all the videos
-        if (req.user.role !== "admin") {
-            const hasAccess = videos.every(video =>
-                video.owner.toString() === req.user._id.toString()
-            );
-
-            if (!hasAccess) {
-                throw new ApiError(403, "You can only include videos that you own");
+            // Modules are optional but recommended for offline courses
+        } else {
+            // For online courses, videos are required
+            if (!videoIds || !Array.isArray(videoIds) || videoIds.length === 0) {
+                throw new ApiError(400, "At least one video is required for an online course");
             }
         }
 
-        // Use the first video's thumbnail as the course thumbnail
-        const thumbnail = videos[0].thumbnail;
+        let thumbnail = customThumbnail;
+        let videos = [];
 
-        // Log the received data for debugging
-        console.log("Creating course with data:", {
-            title,
-            description,
-            thumbnail: thumbnail ? thumbnail.substring(0, 30) + "..." : null,
-            videoIds: videoIds ? videoIds.length : 0,
-            creator: req.user._id,
-            category,
-            level,
-            price,
-            originalPrice,
-            tags
-        });
+        // For online courses, verify videos and set thumbnail
+        if (!isOfflineCourse) {
+            // Verify all videos exist and user has access to them
+            videos = await Video.find({
+                _id: { $in: videoIds }
+            });
+
+            if (videos.length !== videoIds.length) {
+                throw new ApiError(400, "One or more videos not found");
+            }
+
+            // If user is not admin, check if they own all the videos
+            if (req.user.role !== "admin") {
+                const hasAccess = videos.every(video =>
+                    video.owner.toString() === req.user._id.toString()
+                );
+
+                if (!hasAccess) {
+                    throw new ApiError(403, "You can only include videos that you own");
+                }
+            }
+
+            // Use the first video's thumbnail as the course thumbnail if not provided
+            if (!thumbnail && videos.length > 0) {
+                thumbnail = videos[0].thumbnail;
+            }
+        }
+
+        // If no thumbnail is provided or set, use a default one
+        if (!thumbnail) {
+            thumbnail = "https://placehold.co/600x400?text=Course+Thumbnail";
+        }
 
         // Process tags - handle different formats
         let processedTags = [];
@@ -80,20 +119,41 @@ const createCourse = asyncHandler(async (req, res) => {
         const slug = generateUniqueSlug(title);
         console.log("Generated slug:", slug);
 
-        // Create course
-        const course = await Course.create({
+        // Create course with base fields
+        const courseData = {
             title,
             slug,
             description,
             thumbnail,
-            videos: videoIds,
             creator: req.user._id,
             category: category || "Uncategorized",
             level: level || "Mixed",
             price: processedPrice,
             originalPrice: processedOriginalPrice,
-            tags: processedTags
-        });
+            tags: processedTags,
+            courseType: isOfflineCourse ? "offline" : "online"
+        };
+
+        // Add course type specific fields
+        if (isOfflineCourse) {
+            // Add offline course fields
+            Object.assign(courseData, {
+                location,
+                startDate,
+                endDate,
+                schedule,
+                modules: modules || [],
+                maxStudents: maxStudents || 20
+            });
+        } else {
+            // Add online course fields
+            Object.assign(courseData, {
+                videos: videoIds
+            });
+        }
+
+        // Create the course
+        const course = await Course.create(courseData);
 
         return res.status(201).json(
             new ApiResponse(201, course, "Course created successfully")
@@ -221,7 +281,15 @@ const updateCourse = asyncHandler(async (req, res) => {
             originalPrice,
             videoIds,
             tags,
-            isPublished
+            isPublished,
+            courseType,
+            location,
+            startDate,
+            endDate,
+            schedule,
+            modules,
+            maxStudents,
+            thumbnail: customThumbnail
         } = req.body;
 
         if (!courseId) {
@@ -239,8 +307,11 @@ const updateCourse = asyncHandler(async (req, res) => {
             throw new ApiError(403, "You don't have permission to update this course");
         }
 
-        // If videoIds is provided, verify all videos exist and user has access to them
-        if (videoIds && Array.isArray(videoIds) && videoIds.length > 0) {
+        // Determine if it's an online or offline course
+        const isOfflineCourse = courseType === "offline" || course.courseType === "offline";
+
+        // Handle video updates for online courses
+        if (!isOfflineCourse && videoIds && Array.isArray(videoIds) && videoIds.length > 0) {
             const videos = await Video.find({
                 _id: { $in: videoIds }
             });
@@ -260,12 +331,17 @@ const updateCourse = asyncHandler(async (req, res) => {
                 }
             }
 
-            // Update course thumbnail if videos are changed
-            if (videos.length > 0) {
+            // Update course thumbnail if videos are changed and no custom thumbnail is provided
+            if (videos.length > 0 && !customThumbnail) {
                 course.thumbnail = videos[0].thumbnail;
             }
 
             course.videos = videoIds;
+        }
+
+        // Update thumbnail if provided
+        if (customThumbnail) {
+            course.thumbnail = customThumbnail;
         }
 
         // Update other fields if provided
@@ -280,6 +356,21 @@ const updateCourse = asyncHandler(async (req, res) => {
         if (price !== undefined) course.price = parseFloat(price) || 0;
         if (originalPrice !== undefined) course.originalPrice = parseFloat(originalPrice) || course.price || 0;
         if (isPublished !== undefined) course.isPublished = isPublished;
+        if (courseType) course.courseType = courseType;
+
+        // Update offline course specific fields
+        if (isOfflineCourse) {
+            if (location) course.location = location;
+            if (startDate) course.startDate = startDate;
+            if (endDate) course.endDate = endDate;
+            if (schedule) course.schedule = schedule;
+            if (maxStudents) course.maxStudents = maxStudents;
+
+            // Update modules if provided
+            if (modules && Array.isArray(modules)) {
+                course.modules = modules;
+            }
+        }
 
         // Process tags
         if (tags) {

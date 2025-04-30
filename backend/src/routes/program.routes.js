@@ -10,7 +10,7 @@ import {
     enrollInProgram,
     getEnrolledPrograms
 } from "../controllers/program.controller.js";
-import { varifyJWT } from "../middlewares/auth.middleware.js";
+import { verifyJWT } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
@@ -18,13 +18,13 @@ const router = Router();
 router.route("/").get(getAllPrograms);
 
 // Protected routes (require authentication)
-router.route("/").post(varifyJWT, createProgram);
-router.route("/my/programs").get(varifyJWT, getMyPrograms);
-router.route("/my/enrolled").get(varifyJWT, getEnrolledPrograms);
+router.route("/").post(verifyJWT, createProgram);
+router.route("/my/programs").get(verifyJWT, getMyPrograms);
+router.route("/my/enrolled").get(verifyJWT, getEnrolledPrograms);
 router.route("/creator/:userId").get(getProgramsByCreator);
-router.route("/:programId").get(varifyJWT, getProgramById);
-router.route("/:programId").patch(varifyJWT, updateProgram);
-router.route("/:programId").delete(varifyJWT, deleteProgram);
-router.route("/:programId/enroll").post(varifyJWT, enrollInProgram);
+router.route("/:programId").get(verifyJWT, getProgramById);
+router.route("/:programId").patch(verifyJWT, updateProgram);
+router.route("/:programId").delete(verifyJWT, deleteProgram);
+router.route("/:programId/enroll").post(verifyJWT, enrollInProgram);
 
 export default router;

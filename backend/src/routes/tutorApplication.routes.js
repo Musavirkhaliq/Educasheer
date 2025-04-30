@@ -5,16 +5,16 @@ import {
     getAllTutorApplications,
     reviewTutorApplication
 } from "../controllers/tutorApplication.controller.js";
-import { varifyJWT } from "../middlewares/auth.middleware.js";
+import { verifyJWT } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
 // User routes
-router.route("/submit").post(varifyJWT, submitTutorApplication);
-router.route("/my-application").get(varifyJWT, getUserTutorApplication);
+router.route("/submit").post(verifyJWT, submitTutorApplication);
+router.route("/my-application").get(verifyJWT, getUserTutorApplication);
 
 // Admin routes
-router.route("/all").get(varifyJWT, getAllTutorApplications);
-router.route("/review/:applicationId").patch(varifyJWT, reviewTutorApplication);
+router.route("/all").get(verifyJWT, getAllTutorApplications);
+router.route("/review/:applicationId").patch(verifyJWT, reviewTutorApplication);
 
 export default router;

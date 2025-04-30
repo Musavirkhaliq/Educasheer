@@ -13,32 +13,32 @@ import {
     deleteComment,
     likeComment
 } from "../controllers/comment.controller.js";
-import { varifyJWT } from "../middlewares/auth.middleware.js";
+import { verifyJWT } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
 // Video comments
 router.route("/video/:videoId").get(getVideoComments);
-router.route("/video/:videoId").post(varifyJWT, addVideoComment);
+router.route("/video/:videoId").post(verifyJWT, addVideoComment);
 
 // Course comments
 router.route("/course/:courseId").get(getCourseComments);
-router.route("/course/:courseId").post(varifyJWT, addCourseComment);
+router.route("/course/:courseId").post(verifyJWT, addCourseComment);
 
 // Blog comments
 router.route("/blog/:blogId").get(getBlogComments);
-router.route("/blog/:blogId").post(varifyJWT, addBlogComment);
+router.route("/blog/:blogId").post(verifyJWT, addBlogComment);
 
 // Program comments
 router.route("/program/:programId").get(getProgramComments);
-router.route("/program/:programId").post(varifyJWT, addProgramComment);
+router.route("/program/:programId").post(verifyJWT, addProgramComment);
 
 // Replies
-router.route("/reply/:commentId").post(varifyJWT, addReply);
+router.route("/reply/:commentId").post(verifyJWT, addReply);
 
 // Comment operations
-router.route("/:commentId").patch(varifyJWT, updateComment);
-router.route("/:commentId").delete(varifyJWT, deleteComment);
-router.route("/:commentId/like").post(varifyJWT, likeComment);
+router.route("/:commentId").patch(verifyJWT, updateComment);
+router.route("/:commentId").delete(verifyJWT, deleteComment);
+router.route("/:commentId/like").post(verifyJWT, likeComment);
 
 export default router;
