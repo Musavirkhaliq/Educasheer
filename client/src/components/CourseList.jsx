@@ -46,36 +46,36 @@ const CourseCard = ({ course, showControls, onDelete }) => {
           <img
             src={course.thumbnail}
             alt={course.title}
-            className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105"
+            className="w-full h-40 sm:h-44 md:h-48 object-cover transition-transform duration-500 group-hover:scale-105"
           />
         </div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
-          <div className="p-4 w-full">
-            <span className="inline-block bg-white/20 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm">
+          <div className="p-3 sm:p-4 w-full">
+            <span className="inline-block bg-white/20 backdrop-blur-sm text-white px-2 py-1 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm">
               View Course
             </span>
           </div>
         </div>
 
         {/* Course level badge */}
-        <div className="absolute top-3 left-3">
-          <span className="bg-[#00bcd4]/90 text-white px-3 py-1 rounded-full text-xs backdrop-blur-sm">
+        <div className="absolute top-2 sm:top-3 left-2 sm:left-3">
+          <span className="bg-[#00bcd4]/90 text-white px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs backdrop-blur-sm">
             {course.level}
           </span>
         </div>
 
         {/* Draft badge */}
         {!course.isPublished && (
-          <div className="absolute top-3 right-3">
-            <span className="bg-yellow-500/90 text-white px-3 py-1 rounded-full text-xs backdrop-blur-sm">
+          <div className="absolute top-2 sm:top-3 right-2 sm:right-3">
+            <span className="bg-yellow-500/90 text-white px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs backdrop-blur-sm">
               Draft
             </span>
           </div>
         )}
       </Link>
 
-      <div className="p-5">
-        <div className="flex items-center gap-2 mb-3">
+      <div className="p-3 sm:p-4 md:p-5">
+        <div className="flex flex-wrap items-center gap-2 mb-2 sm:mb-3">
           <div className="flex items-center text-xs text-gray-500 gap-1 bg-gray-100 px-2 py-1 rounded-full">
             <FiVideo className="w-3 h-3" />
             <span>{course.videos?.length || 0} videos</span>
@@ -87,29 +87,29 @@ const CourseCard = ({ course, showControls, onDelete }) => {
         </div>
 
         <Link to={`/courses/${course._id}`}>
-          <h3 className="font-semibold text-lg mb-3 text-gray-800 hover:text-[#00bcd4] transition-colors line-clamp-2">{course.title}</h3>
+          <h3 className="font-semibold text-base sm:text-lg mb-2 sm:mb-3 text-gray-800 hover:text-[#00bcd4] transition-colors line-clamp-2">{course.title}</h3>
         </Link>
 
-        <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-100">
+        <div className="flex justify-between items-center mb-3 pb-3 sm:mb-4 sm:pb-4 border-b border-gray-100">
           <div className="flex items-center gap-2">
             <img
               src={course.creator?.avatar}
               alt={course.creator?.fullName}
-              className="w-8 h-8 rounded-full border border-gray-200"
+              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-gray-200"
             />
-            <span className="text-sm text-gray-600">{course.creator?.fullName}</span>
+            <span className="text-xs sm:text-sm text-gray-600 truncate max-w-[100px] sm:max-w-[150px]">{course.creator?.fullName}</span>
           </div>
         </div>
 
         <div className="flex items-center justify-between">
           <div>
             {course.price === 0 ? (
-              <span className="text-lg font-bold text-green-600">Free</span>
+              <span className="text-base sm:text-lg font-bold text-green-600">Free</span>
             ) : (
               <>
-                <span className="text-lg font-bold text-[#01427a]">${course.price.toFixed(2)}</span>
+                <span className="text-base sm:text-lg font-bold text-[#01427a]">${course.price.toFixed(2)}</span>
                 {course.originalPrice > course.price && (
-                  <span className="text-sm text-gray-400 line-through ml-2">${course.originalPrice.toFixed(2)}</span>
+                  <span className="text-xs sm:text-sm text-gray-400 line-through ml-2">${course.originalPrice.toFixed(2)}</span>
                 )}
               </>
             )}
@@ -119,20 +119,20 @@ const CourseCard = ({ course, showControls, onDelete }) => {
             <div className="flex gap-2">
               <Link
                 to={`/courses/edit/${course._id}`}
-                className="bg-[#00bcd4]/10 text-[#00bcd4] p-2 rounded-full hover:bg-[#00bcd4]/20 transition-colors"
+                className="bg-[#00bcd4]/10 text-[#00bcd4] p-1.5 sm:p-2 rounded-full hover:bg-[#00bcd4]/20 transition-colors"
                 title="Edit Course"
               >
-                <FaEdit className="w-4 h-4" />
+                <FaEdit className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </Link>
               <button
                 onClick={(e) => {
                   e.preventDefault();
                   onDelete(course._id);
                 }}
-                className="bg-red-100 text-red-500 p-2 rounded-full hover:bg-red-200 transition-colors"
+                className="bg-red-100 text-red-500 p-1.5 sm:p-2 rounded-full hover:bg-red-200 transition-colors"
                 title="Delete Course"
               >
-                <FaTrash className="w-4 h-4" />
+                <FaTrash className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </button>
             </div>
           )}
@@ -283,7 +283,7 @@ const CourseList = ({
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
           {courses.map((course) => (
             <CourseCard
               key={course._id}

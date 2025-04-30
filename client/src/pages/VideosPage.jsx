@@ -7,7 +7,7 @@ import { useAuth } from '../context/AuthContext';
 const VideosPage = () => {
   const { currentUser } = useAuth();
   const [activeCategory, setActiveCategory] = useState('All');
-  
+
   const categories = [
     'All',
     'Mathematics',
@@ -17,32 +17,32 @@ const VideosPage = () => {
     'Arts',
     'History'
   ];
-  
+
   // Check if user can upload videos
   const canUploadVideos = currentUser?.role === 'admin' || currentUser?.role === 'tutor';
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">Videos</h1>
-        
+    <div className="container mx-auto py-6 sm:py-8 px-4">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 sm:mb-8 gap-4">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Videos</h1>
+
         {canUploadVideos && (
           <Link
             to="/videos/upload"
-            className="flex items-center bg-[#00bcd4] text-white px-4 py-2 rounded-lg hover:bg-[#01427a] transition-colors duration-300"
+            className="flex items-center justify-center sm:justify-start bg-[#00bcd4] text-white px-4 py-2 rounded-lg hover:bg-[#01427a] transition-colors duration-300 text-sm sm:text-base"
           >
             <FaPlus className="mr-2" />
             <span>Add Video</span>
           </Link>
         )}
       </div>
-      
-      <div className="mb-8 overflow-x-auto">
+
+      <div className="mb-6 sm:mb-8 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 pb-1">
         <div className="flex space-x-2 pb-2">
           {categories.map((category) => (
             <button
               key={category}
-              className={`px-4 py-2 rounded-full whitespace-nowrap ${
+              className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full whitespace-nowrap text-sm ${
                 activeCategory === category
                   ? 'bg-[#00bcd4] text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -54,8 +54,8 @@ const VideosPage = () => {
           ))}
         </div>
       </div>
-      
-      <VideoList 
+
+      <VideoList
         category={activeCategory === 'All' ? null : activeCategory}
         showOwner={true}
       />

@@ -15,20 +15,20 @@ const VideoCard = ({ video, showControls, onDelete, showOwner = true }) => {
           <img
             src={video.thumbnail}
             alt={video.title}
-            className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105"
+            className="w-full h-40 sm:h-44 md:h-48 object-cover transition-transform duration-500 group-hover:scale-105"
           />
         </div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
-          <div className="p-4 w-full">
-            <span className="inline-block bg-white/20 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm">
+          <div className="p-3 sm:p-4 w-full">
+            <span className="inline-block bg-white/20 backdrop-blur-sm text-white px-2 py-1 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm">
               Watch Video
             </span>
           </div>
         </div>
       </Link>
 
-      <div className="p-5">
-        <div className="flex items-center gap-2 mb-3">
+      <div className="p-3 sm:p-4 md:p-5">
+        <div className="flex flex-wrap items-center gap-2 mb-2 sm:mb-3">
           <div className="flex items-center text-xs text-gray-500 gap-1 bg-gray-100 px-2 py-1 rounded-full">
             <FaEye className="w-3 h-3" />
             <span>{video.views || 0} views</span>
@@ -40,24 +40,26 @@ const VideoCard = ({ video, showControls, onDelete, showOwner = true }) => {
         </div>
 
         <Link to={`/videos/${video._id}`}>
-          <h3 className="font-semibold text-lg mb-3 text-gray-800 hover:text-[#00bcd4] transition-colors line-clamp-2">{video.title}</h3>
+          <h3 className="font-semibold text-base sm:text-lg mb-2 sm:mb-3 text-gray-800 hover:text-[#00bcd4] transition-colors line-clamp-2">{video.title}</h3>
         </Link>
 
-        <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+        <p className="text-gray-600 text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2">
           {video.description}
         </p>
 
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           {showOwner && video.owner && (
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gray-200 overflow-hidden">
                 <img
                   src={video.owner.avatar || 'https://via.placeholder.com/40'}
                   alt={video.owner.fullName || video.owner.username}
                   className="w-full h-full object-cover"
                 />
               </div>
-              <span className="text-sm text-gray-700">{video.owner.fullName || video.owner.username}</span>
+              <span className="text-xs sm:text-sm text-gray-700 truncate max-w-[100px] sm:max-w-[150px]">
+                {video.owner.fullName || video.owner.username}
+              </span>
             </div>
           )}
 
@@ -69,16 +71,16 @@ const VideoCard = ({ video, showControls, onDelete, showOwner = true }) => {
         </div>
 
         {showControls && (
-          <div className="mt-4 pt-4 border-t border-gray-100 flex justify-end space-x-2">
+          <div className="mt-3 pt-3 sm:mt-4 sm:pt-4 border-t border-gray-100 flex justify-end space-x-2">
             <Link
               to={`/videos/edit/${video._id}`}
-              className="text-sm px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+              className="text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
             >
               <FaEdit className="inline mr-1" /> Edit
             </Link>
             <button
               onClick={() => onDelete(video._id)}
-              className="text-sm px-3 py-1.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
+              className="text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-1.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
             >
               <FaTrash className="inline mr-1" /> Delete
             </button>
@@ -217,7 +219,7 @@ const VideoList = ({
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
           {videos.map((video) => (
             <VideoCard
               key={video._id}

@@ -250,6 +250,67 @@ const CourseVideoPlayerPage = () => {
           </div>
         </div>
 
+        {/* Mobile Course Content Toggle Button */}
+        <div className="lg:hidden mb-4">
+          <button
+            onClick={() => setShowSidebar(!showSidebar)}
+            className="w-full flex items-center justify-center gap-2 bg-white py-3 px-4 rounded-lg shadow-sm border border-gray-100 text-gray-700 hover:bg-gray-50 transition-all duration-200"
+          >
+            <FaList className="w-4 h-4" />
+            <span>{showSidebar ? 'Hide Course Content' : 'Show Course Content'}</span>
+          </button>
+        </div>
+
+        {/* Mobile Course Content */}
+        <div className={`lg:hidden mb-6 transition-all duration-300 overflow-hidden ${showSidebar ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
+          <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
+            <div className="p-4 bg-gradient-to-r from-[#01427a] to-[#00bcd4] text-white">
+              <h3 className="font-semibold text-base mb-2">Course Content</h3>
+              <div className="text-sm text-white/90 flex items-center gap-2">
+                <div className="w-full bg-white/20 rounded-full h-1.5">
+                  <div
+                    className="bg-white h-1.5 rounded-full"
+                    style={{ width: `${calculateCompletionPercentage()}%` }}
+                  ></div>
+                </div>
+                <span>{calculateCompletionPercentage()}%</span>
+              </div>
+            </div>
+            <div className="max-h-[300px] overflow-y-auto">
+              <ul className="divide-y divide-gray-100">
+                {course.videos.map((video, index) => (
+                  <li key={video._id} className="py-2">
+                    <button
+                      onClick={() => handleVideoSelect(video, index)}
+                      className={`flex items-start w-full text-left rounded-lg p-2 transition-all duration-200 ${
+                        currentVideoIndex === index
+                          ? 'bg-[#00bcd4]/10 text-[#00bcd4]'
+                          : 'hover:bg-gray-50 text-gray-700'
+                      }`}
+                    >
+                      <div className="flex-shrink-0 mt-1 mr-2 relative">
+                        {completedVideos.includes(video._id) ? (
+                          <div className="bg-green-500 rounded-full p-1 shadow-sm">
+                            <FaCheck className="w-3 h-3 text-white" />
+                          </div>
+                        ) : (
+                          <div className={`rounded-full p-1 shadow-sm ${currentVideoIndex === index ? 'bg-[#00bcd4]' : 'bg-gray-200'}`}>
+                            <FaPlay className="w-3 h-3 text-white" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium text-xs sm:text-sm line-clamp-1">{video.title}</p>
+                        <span className="text-xs text-gray-500">{video.duration}</span>
+                      </div>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+
         {/* Main Content Area */}
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Video Player Section */}
@@ -269,22 +330,22 @@ const CourseVideoPlayerPage = () => {
                 </div>
 
                 {/* Video Info */}
-                <div className="p-6">
-                  <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                <div className="p-4 sm:p-6">
+                  <div className="flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-4">
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-800 mb-2">{currentVideo.title}</h2>
-                      <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500">
+                      <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">{currentVideo.title}</h2>
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm text-gray-500">
                         <div className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded-full">
-                          <BiTime className="w-4 h-4 text-[#00bcd4]" />
+                          <BiTime className="w-3 h-3 sm:w-4 sm:h-4 text-[#00bcd4]" />
                           <span>{currentVideo.duration}</span>
                         </div>
                         <a
                           href={`https://www.youtube.com/watch?v=${currentVideo.videoId}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-[#00bcd4] hover:text-[#01427a] transition-colors text-sm flex items-center gap-1"
+                          className="text-[#00bcd4] hover:text-[#01427a] transition-colors text-xs sm:text-sm flex items-center gap-1"
                         >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                           </svg>
                           Open on YouTube
@@ -294,7 +355,7 @@ const CourseVideoPlayerPage = () => {
 
                     <button
                       onClick={() => markAsCompleted(currentVideo._id)}
-                      className={`px-5 py-2.5 rounded-lg text-sm font-medium flex items-center gap-2 transition-all duration-300 shadow-sm ${
+                      className={`w-full sm:w-auto px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium flex items-center justify-center gap-2 transition-all duration-300 shadow-sm ${
                         completedVideos.includes(currentVideo._id)
                           ? 'bg-green-500 text-white hover:bg-green-600'
                           : 'bg-[#00bcd4] text-white hover:bg-[#01427a]'
@@ -302,54 +363,54 @@ const CourseVideoPlayerPage = () => {
                     >
                       {completedVideos.includes(currentVideo._id) ? (
                         <>
-                          <FaCheck className="w-4 h-4" />
+                          <FaCheck className="w-3 h-3 sm:w-4 sm:h-4" />
                           Completed
                         </>
                       ) : (
                         <>
-                          <FaCheck className="w-4 h-4" />
+                          <FaCheck className="w-3 h-3 sm:w-4 sm:h-4" />
                           Mark as Completed
                         </>
                       )}
                     </button>
                   </div>
 
-                  <div className="mt-6">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-3 inline-block relative">
+                  <div className="mt-5 sm:mt-6">
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-2 sm:mb-3 inline-block relative">
                       Description
                       <span className="absolute bottom-0 left-0 w-1/3 h-1 bg-[#00bcd4] rounded-full"></span>
                     </h3>
-                    <p className="text-gray-600 whitespace-pre-line leading-relaxed mt-2">
+                    <p className="text-sm sm:text-base text-gray-600 whitespace-pre-line leading-relaxed mt-2">
                       {currentVideo.description}
                     </p>
                   </div>
 
                   {/* Navigation Buttons */}
-                  <div className="flex flex-col sm:flex-row justify-between gap-3 mt-8 border-t border-gray-100 pt-6">
+                  <div className="grid grid-cols-2 sm:flex sm:flex-row justify-between gap-2 sm:gap-3 mt-6 sm:mt-8 border-t border-gray-100 pt-4 sm:pt-6">
                     <button
                       onClick={handlePreviousVideo}
                       disabled={currentVideoIndex === 0}
-                      className={`px-5 py-2.5 rounded-lg flex items-center justify-center sm:justify-start gap-2 transition-all duration-300 ${
+                      className={`px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg flex items-center justify-center gap-1 sm:gap-2 transition-all duration-300 text-xs sm:text-sm ${
                         currentVideoIndex === 0
                           ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                     >
-                      <FaArrowLeft className="w-4 h-4" />
-                      <span>Previous Video</span>
+                      <FaArrowLeft className="w-3 h-3 sm:w-4 sm:h-4" />
+                      <span>Previous</span>
                     </button>
 
                     <button
                       onClick={handleNextVideo}
                       disabled={currentVideoIndex === course.videos.length - 1}
-                      className={`px-5 py-2.5 rounded-lg flex items-center justify-center sm:justify-start gap-2 transition-all duration-300 ${
+                      className={`px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg flex items-center justify-center gap-1 sm:gap-2 transition-all duration-300 text-xs sm:text-sm ${
                         currentVideoIndex === course.videos.length - 1
                           ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                           : 'bg-[#00bcd4] text-white hover:bg-[#01427a]'
                       }`}
                     >
-                      <span>Next Video</span>
-                      <FaArrowLeft className="w-4 h-4 transform rotate-180" />
+                      <span>Next</span>
+                      <FaArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 transform rotate-180" />
                     </button>
                   </div>
                 </div>
