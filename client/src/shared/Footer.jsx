@@ -38,18 +38,18 @@ const Footer = () => {
   const contactInfo = [
     {
       icon: FaMapMarkerAlt,
-      content: "123 Education Street, Learning City, 10001",
+      content: "New Colony, Jahangeerpora Baramulla",
       url: "https://maps.google.com"
     },
     {
       icon: FaPhoneAlt,
-      content: "+1 (555) 123-4567",
-      url: "tel:+15551234567"
+      content: "+91 8825063816",
+      url: "tel:+8825063816"
     },
     {
       icon: FaEnvelope,
-      content: "info@educasheer.com",
-      url: "mailto:info@educasheer.com"
+      content: "educasheer21@gmail.com",
+      url: "educasheer21@gmail.com"
     },
   ];
 
