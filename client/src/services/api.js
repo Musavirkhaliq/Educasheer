@@ -86,6 +86,8 @@ export const authAPI = {
   getCurrentUser: () => api.get('/users/get-current-user'),
   verifyEmail: (token) => api.get(`/users/verify-email/${token}`),
   resendVerification: (email) => api.post('/users/resend-verification', { email }),
+  forgotPassword: (email) => api.post('/users/forgot-password', { email }),
+  resetPassword: (token, newPassword) => api.post('/users/reset-password', { token, newPassword }),
 };
 
 // Profile API functions

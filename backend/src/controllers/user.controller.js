@@ -4,7 +4,7 @@ import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { generateVerificationToken } from "../utils/crypto.js";
-import { sendVerificationEmail } from "../utils/emailService.js";
+import { sendVerificationEmail, sendPasswordResetEmail } from "../utils/emailService.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 
@@ -810,6 +810,104 @@ const resendVerificationEmail = asyncHandler(async (req, res) => {
   }
 });
 
+// Forgot password - send reset email
+const forgotPassword = asyncHandler(async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      throw new ApiError(400, "Email is required");
+    }
+
+    // Find user by email
+    const user = await User.findOne({ email: email.toLowerCase() });
+
+    if (!user) {
+      // Don't reveal that the user doesn't exist for security reasons
+      return res
+        .status(200)
+        .json(new ApiResponse(200, {}, "If your email exists in our system, a password reset link has been sent."));
+    }
+
+    // Generate a reset token with 1-hour expiry
+    const { token, expiryDate } = generateVerificationToken(1); // 1 hour expiry
+
+    // Update user with reset token
+    user.passwordResetToken = token;
+    user.passwordResetExpiry = expiryDate;
+    await user.save({ validateBeforeSave: false });
+
+    // Send password reset email
+    try {
+      await sendPasswordResetEmail(user, token);
+      console.log("Password reset email sent to:", user.email);
+    } catch (emailError) {
+      console.error("Error sending password reset email:", emailError);
+
+      // Revert the changes if email fails
+      user.passwordResetToken = undefined;
+      user.passwordResetExpiry = undefined;
+      await user.save({ validateBeforeSave: false });
+
+      throw new ApiError(500, "Failed to send password reset email. Please try again later.");
+    }
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, {}, "If your email exists in our system, a password reset link has been sent."));
+
+  } catch (error) {
+    console.error("Forgot password error:", error);
+
+    if (error instanceof ApiError) {
+      throw error;
+    }
+
+    throw new ApiError(500, "Something went wrong while processing your request");
+  }
+});
+
+// Reset password with token
+const resetPassword = asyncHandler(async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+
+    if (!token || !newPassword) {
+      throw new ApiError(400, "Token and new password are required");
+    }
+
+    // Find user with this token and valid expiry
+    const user = await User.findOne({
+      passwordResetToken: token,
+      passwordResetExpiry: { $gt: new Date() }
+    });
+
+    if (!user) {
+      throw new ApiError(400, "Invalid or expired reset token");
+    }
+
+    // Update password and clear reset token
+    user.password = newPassword;
+    user.passwordResetToken = undefined;
+    user.passwordResetExpiry = undefined;
+
+    await user.save();
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, {}, "Password has been reset successfully. You can now log in with your new password."));
+
+  } catch (error) {
+    console.error("Reset password error:", error);
+
+    if (error instanceof ApiError) {
+      throw error;
+    }
+
+    throw new ApiError(500, "Something went wrong while resetting your password");
+  }
+});
+
 export {
   registerUser,
   loginUser,
@@ -826,4 +924,6 @@ export {
   googleLogin,
   verifyEmail,
   resendVerificationEmail,
+  forgotPassword,
+  resetPassword,
 };

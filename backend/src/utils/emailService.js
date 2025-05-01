@@ -49,8 +49,28 @@ export const sendEmail = async (options) => {
  * @param {string} verificationToken - Email verification token
  * @returns {Promise} - Email send result
  */
+/**
+ * Get the client URL based on environment
+ * @returns {string} - Client URL
+ */
+const getClientUrl = () => {
+  let clientUrl = process.env.CLIENT_URL;
+
+  if (!clientUrl) {
+    // Default URLs based on NODE_ENV
+    if (process.env.NODE_ENV === 'production') {
+      clientUrl = 'https://learn.sukoonsphere.org';
+    } else {
+      clientUrl = 'http://localhost:5173';
+    }
+  }
+
+  return clientUrl;
+};
+
 export const sendVerificationEmail = async (user, verificationToken) => {
-  const verificationUrl = `${process.env.CLIENT_URL || 'http://localhost:5173'}/verify-email?token=${verificationToken}`;
+  const clientUrl = getClientUrl();
+  const verificationUrl = `${clientUrl}/verify-email?token=${verificationToken}`;
 
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -79,6 +99,49 @@ export const sendVerificationEmail = async (user, verificationToken) => {
   return sendEmail({
     to: user.email,
     subject: 'Verify Your Email Address - Educasheer',
+    html
+  });
+};
+
+/**
+ * Send a password reset email to a user
+ * @param {Object} user - User object
+ * @param {string} user.email - User's email
+ * @param {string} user.fullName - User's full name
+ * @param {string} resetToken - Password reset token
+ * @returns {Promise} - Email send result
+ */
+export const sendPasswordResetEmail = async (user, resetToken) => {
+  const clientUrl = getClientUrl();
+  const resetUrl = `${clientUrl}/reset-password?token=${resetToken}`;
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <div style="background-color: #00bcd4; padding: 20px; text-align: center; color: white;">
+        <h1>Educasheer</h1>
+      </div>
+      <div style="padding: 20px; border: 1px solid #eee; border-top: none;">
+        <h2>Reset Your Password</h2>
+        <p>Hello ${user.fullName},</p>
+        <p>We received a request to reset your password. Click the button below to create a new password:</p>
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${resetUrl}" style="background-color: #00bcd4; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">Reset Password</a>
+        </div>
+        <p>If the button doesn't work, you can also copy and paste the following link into your browser:</p>
+        <p style="word-break: break-all; color: #666;">${resetUrl}</p>
+        <p>This link will expire in 1 hour.</p>
+        <p>If you didn't request a password reset, you can safely ignore this email.</p>
+        <p>Best regards,<br>The Educasheer Team</p>
+      </div>
+      <div style="background-color: #f5f5f5; padding: 15px; text-align: center; font-size: 12px; color: #666;">
+        <p>&copy; ${new Date().getFullYear()} Educasheer. All rights reserved.</p>
+      </div>
+    </div>
+  `;
+
+  return sendEmail({
+    to: user.email,
+    subject: 'Reset Your Password - Educasheer',
     html
   });
 };

@@ -78,6 +78,12 @@ const userSchema = new Schema({
     },
     emailVerificationExpiry: {
         type: Date
+    },
+    passwordResetToken: {
+        type: String
+    },
+    passwordResetExpiry: {
+        type: Date
     }
 }
     , {

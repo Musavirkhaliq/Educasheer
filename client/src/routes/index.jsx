@@ -18,6 +18,7 @@ export const routes = [
   },
   // Routes that don't need the header and footer
   {
+    path: "/",
     element: (
       <Suspense fallback={<h1>Loading</h1>}>
         <AuthLayout />
