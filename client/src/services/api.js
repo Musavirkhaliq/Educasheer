@@ -128,6 +128,10 @@ export const blogAPI = {
   getBlogsByAuthor: (userId, params) => api.get(`/blogs/author/${userId}`, { params }),
   getBlogComments: (blogId, params) => api.get(`/comments/blog/${blogId}`, { params }),
   addBlogComment: (blogId, data) => api.post(`/comments/blog/${blogId}`, data),
+  // Comment operations
+  addCommentReply: (commentId, data) => api.post(`/comments/reply/${commentId}`, data),
+  deleteComment: (commentId) => api.delete(`/comments/${commentId}`),
+  likeComment: (commentId) => api.post(`/comments/${commentId}/like`),
 };
 
 // Export the api instance for other API services

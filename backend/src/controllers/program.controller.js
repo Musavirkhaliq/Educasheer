@@ -461,8 +461,19 @@ const getEnrolledPrograms = asyncHandler(async (req, res) => {
         .populate("creator", "fullName username avatar")
         .populate("courses", "title thumbnail");
 
+        // Add isEnrolled flag to each program
+        const programsWithEnrollmentStatus = programs.map(program => {
+            const programObj = program.toObject();
+            programObj.isEnrolled = true; // These are all enrolled programs
+            return programObj;
+        });
+
+        console.log("Returning enrolled programs with isEnrolled flag:",
+            programsWithEnrollmentStatus.map(p => ({ id: p._id, title: p.title, isEnrolled: p.isEnrolled }))
+        );
+
         return res.status(200).json(
-            new ApiResponse(200, programs, "Enrolled programs fetched successfully")
+            new ApiResponse(200, programsWithEnrollmentStatus, "Enrolled programs fetched successfully")
         );
     } catch (error) {
         console.error("Error fetching enrolled programs:", error);

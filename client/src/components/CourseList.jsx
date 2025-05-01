@@ -13,6 +13,24 @@ const CourseCard = ({ course, showControls, onDelete }) => {
   // Check if it's an offline course
   const isOfflineCourse = course.courseType === 'offline';
 
+  // Check if user is enrolled in this course
+  const isEnrolled = () => {
+    // First check if the backend already provided the enrollment status
+    if (course.isEnrolled !== undefined) {
+      return course.isEnrolled;
+    }
+    // Otherwise check if the user's ID is in the enrolledStudents array
+    return currentUser && course.enrolledStudents?.includes(currentUser._id);
+  };
+
+  // Add debugging to help identify enrollment issues
+  console.debug(`Course ${course.title} (${course._id}):`, {
+    isEnrolled: isEnrolled(),
+    hasIsEnrolledFlag: course.isEnrolled !== undefined,
+    enrolledStudents: course.enrolledStudents,
+    currentUserId: currentUser?._id
+  });
+
   // Format date for offline courses
   const formatDate = (dateString) => {
     if (!dateString) return '';
@@ -81,14 +99,22 @@ const CourseCard = ({ course, showControls, onDelete }) => {
           </span>
         </div>
 
-        {/* Draft badge */}
-        {!course.isPublished && (
-          <div className="absolute top-2 sm:top-3 right-2 sm:right-3">
+        {/* Status badges on the right side */}
+        <div className="absolute top-2 sm:top-3 right-2 sm:right-3 flex flex-col gap-1">
+          {/* Draft badge */}
+          {!course.isPublished && (
             <span className="bg-yellow-500/90 text-white px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs backdrop-blur-sm">
               Draft
             </span>
-          </div>
-        )}
+          )}
+
+          {/* Enrolled badge */}
+          {isEnrolled() && (
+            <span className="bg-green-500/90 text-white px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs backdrop-blur-sm">
+              Enrolled
+            </span>
+          )}
+        </div>
       </Link>
 
       <div className="p-3 sm:p-4 md:p-5">

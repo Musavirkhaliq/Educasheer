@@ -5,10 +5,11 @@ import { FaUser, FaEye, FaClock, FaEdit, FaTrash, FaFileAlt } from 'react-icons/
 import { useAuth } from '../context/AuthContext';
 import { CommentSection } from './comments';
 import { MaterialList } from './';
+import customFetch from '../utils/customFetch';
 
 const VideoDetail = () => {
   const { videoId } = useParams();
-  const { currentUser } = useAuth();
+  const { currentUser, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [video, setVideo] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -17,7 +18,9 @@ const VideoDetail = () => {
   useEffect(() => {
     const fetchVideo = async () => {
       try {
-        const response = await axios.get(`/api/v1/videos/${videoId}`);
+        // Use customFetch which includes the auth token in headers
+        const response = await customFetch.get(`/videos/${videoId}`);
+        console.log('Video data:', response.data.data);
         setVideo(response.data.data);
       } catch (error) {
         console.error('Error fetching video:', error);
@@ -53,10 +56,7 @@ const VideoDetail = () => {
 
   // Check if user can edit/delete the video
   const canManageVideo = () => {
-    // First check if we have the isAuthenticated flag from the backend
-    if (!video?.isAuthenticated) return false;
-
-    if (!currentUser || !video) return false;
+    if (!isAuthenticated || !currentUser || !video) return false;
 
     // Admin can manage all videos
     if (currentUser.role === 'admin') return true;
@@ -203,7 +203,7 @@ const VideoDetail = () => {
 
       {/* Materials Section */}
       <div className="mt-8">
-        {video.isAuthenticated ? (
+        {isAuthenticated ? (
           <MaterialList
             videoId={video._id}
             showControls={canManageVideo()}
@@ -228,7 +228,7 @@ const VideoDetail = () => {
       </div>
 
       {/* Comment Section */}
-      {video.isAuthenticated ? (
+      {isAuthenticated ? (
         <CommentSection videoId={video._id} type="video" />
       ) : (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-8">

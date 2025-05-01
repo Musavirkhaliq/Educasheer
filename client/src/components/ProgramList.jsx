@@ -9,14 +9,31 @@ import { BiTime, BiCategory } from 'react-icons/bi';
 const ProgramCard = ({ program, showControls, onDelete }) => {
   const { currentUser } = useAuth();
   const canEdit = showControls && (currentUser?.role === 'admin' || currentUser?._id === program.creator?._id);
-  
+
+  // Check if user is enrolled in this program
+  const isEnrolled = () => {
+    // First check if the backend already provided the enrollment status
+    if (program.isEnrolled !== undefined) {
+      return program.isEnrolled;
+    }
+    // Otherwise check if the user's ID is in the enrolledStudents array
+    return currentUser && program.enrolledStudents?.includes(currentUser._id);
+  };
+
+  // Add debugging to help identify enrollment issues
+  console.debug(`Program ${program.title} (${program._id}):`, {
+    isEnrolled: isEnrolled(),
+    hasIsEnrolledFlag: program.isEnrolled !== undefined,
+    enrolledStudents: program.enrolledStudents,
+    currentUserId: currentUser?._id
+  });
   return (
     <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 group">
       <Link to={`/programs/${program._id}`} className="block relative">
         <div className="overflow-hidden">
-          <img 
-            src={program.thumbnail} 
-            alt={program.title} 
+          <img
+            src={program.thumbnail}
+            alt={program.title}
             className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105"
           />
         </div>
@@ -27,24 +44,32 @@ const ProgramCard = ({ program, showControls, onDelete }) => {
             </span>
           </div>
         </div>
-        
+
         {/* Program level badge */}
         <div className="absolute top-3 left-3">
           <span className="bg-[#01427a]/90 text-white px-3 py-1 rounded-full text-xs backdrop-blur-sm">
             {program.level}
           </span>
         </div>
-        
-        {/* Draft badge */}
-        {!program.isPublished && (
-          <div className="absolute top-3 right-3">
+
+        {/* Status badges on the right side */}
+        <div className="absolute top-3 right-3 flex flex-col gap-1">
+          {/* Draft badge */}
+          {!program.isPublished && (
             <span className="bg-yellow-500/90 text-white px-3 py-1 rounded-full text-xs backdrop-blur-sm">
               Draft
             </span>
-          </div>
-        )}
+          )}
+
+          {/* Enrolled badge */}
+          {isEnrolled() && (
+            <span className="bg-green-500/90 text-white px-3 py-1 rounded-full text-xs backdrop-blur-sm">
+              Enrolled
+            </span>
+          )}
+        </div>
       </Link>
-      
+
       <div className="p-5">
         <div className="flex items-center gap-2 mb-3">
           <div className="flex items-center text-xs text-gray-500 gap-1 bg-gray-100 px-2 py-1 rounded-full">
@@ -56,22 +81,22 @@ const ProgramCard = ({ program, showControls, onDelete }) => {
             <span>{program.duration}</span>
           </div>
         </div>
-        
+
         <Link to={`/programs/${program._id}`}>
           <h3 className="font-semibold text-lg mb-3 text-gray-800 hover:text-[#01427a] transition-colors line-clamp-2">{program.title}</h3>
         </Link>
-        
+
         <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-100">
           <div className="flex items-center gap-2">
-            <img 
-              src={program.creator?.avatar} 
-              alt={program.creator?.fullName} 
+            <img
+              src={program.creator?.avatar}
+              alt={program.creator?.fullName}
               className="w-8 h-8 rounded-full border border-gray-200"
             />
             <span className="text-sm text-gray-600">{program.creator?.fullName}</span>
           </div>
         </div>
-        
+
         <div className="flex items-center justify-between">
           <div>
             {program.price === 0 ? (
@@ -85,17 +110,17 @@ const ProgramCard = ({ program, showControls, onDelete }) => {
               </>
             )}
           </div>
-          
+
           {canEdit && (
             <div className="flex gap-2">
-              <Link 
+              <Link
                 to={`/programs/edit/${program._id}`}
                 className="bg-[#00bcd4]/10 text-[#00bcd4] p-2 rounded-full hover:bg-[#00bcd4]/20 transition-colors"
                 title="Edit Program"
               >
                 <FaEdit className="w-4 h-4" />
               </Link>
-              <button 
+              <button
                 onClick={(e) => {
                   e.preventDefault();
                   onDelete(program._id);
@@ -192,7 +217,7 @@ const ProgramList = ({
       </div>
     );
   }
-  
+
   if (error) {
     return (
       <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-5 rounded-lg shadow-sm" role="alert">
@@ -203,7 +228,7 @@ const ProgramList = ({
           <span className="font-medium">Error</span>
         </div>
         <p className="mt-2 text-sm">{error}</p>
-        <button 
+        <button
           onClick={() => window.location.reload()}
           className="mt-3 bg-red-100 hover:bg-red-200 text-red-800 px-4 py-2 rounded-lg text-sm transition-colors duration-200"
         >
@@ -212,7 +237,7 @@ const ProgramList = ({
       </div>
     );
   }
-  
+
   return (
     <div>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
@@ -220,9 +245,9 @@ const ProgramList = ({
           {title}
           <span className="absolute bottom-0 left-0 w-1/3 h-1 bg-[#01427a] rounded-full"></span>
         </h2>
-        
+
         {showCreateButton && (currentUser?.role === 'admin' || currentUser?.role === 'tutor') && (
-          <Link 
+          <Link
             to="/programs/create"
             className="bg-[#01427a] text-white px-5 py-2.5 rounded-lg flex items-center gap-2 hover:bg-[#01427a]/80 transition-all duration-300 shadow-sm hover:shadow"
           >
@@ -233,7 +258,7 @@ const ProgramList = ({
           </Link>
         )}
       </div>
-      
+
       {programs.length === 0 ? (
         <div className="text-center py-16 bg-white rounded-xl shadow-sm border border-gray-100">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-gray-300 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -244,7 +269,7 @@ const ProgramList = ({
             {showCreateButton ? "You haven't created any programs yet." : "There are no programs available at the moment."}
           </p>
           {showCreateButton && (currentUser?.role === 'admin' || currentUser?.role === 'tutor') && (
-            <Link 
+            <Link
               to="/programs/create"
               className="inline-block bg-[#01427a] text-white px-6 py-3 rounded-lg hover:bg-[#01427a]/80 transition-all duration-300 shadow-sm hover:shadow"
             >
@@ -255,9 +280,9 @@ const ProgramList = ({
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {programs.map((program) => (
-            <ProgramCard 
-              key={program._id} 
-              program={program} 
+            <ProgramCard
+              key={program._id}
+              program={program}
               showControls={showControls}
               onDelete={handleDeleteProgram}
             />

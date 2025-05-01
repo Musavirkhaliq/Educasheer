@@ -538,10 +538,22 @@ const getEnrolledCourses = asyncHandler(async (req, res) => {
             .populate("videos", "title thumbnail duration views")
             .sort({ createdAt: -1 });
 
+        // Add isEnrolled flag to each course
+        const coursesWithEnrollmentStatus = courses.map(course => {
+            const courseObj = course.toObject();
+            courseObj.isEnrolled = true; // These are all enrolled courses
+            return courseObj;
+        });
+
+        console.log("Returning enrolled courses with isEnrolled flag:",
+            coursesWithEnrollmentStatus.map(c => ({ id: c._id, title: c.title, isEnrolled: c.isEnrolled }))
+        );
+
         return res.status(200).json(
-            new ApiResponse(200, courses, "Enrolled courses fetched successfully")
+            new ApiResponse(200, coursesWithEnrollmentStatus, "Enrolled courses fetched successfully")
         );
     } catch (error) {
+        console.error("Error fetching enrolled courses:", error);
         throw new ApiError(500, "Something went wrong while fetching enrolled courses");
     }
 });

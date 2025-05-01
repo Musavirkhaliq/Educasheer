@@ -34,11 +34,11 @@ const BlogCommentSection = ({ blogId }) => {
 
   const handleSubmitComment = async (e) => {
     e.preventDefault();
-    
+
     if (!newComment.trim()) return;
-    
+
     setSubmitting(true);
-    
+
     try {
       const response = await blogAPI.addBlogComment(blogId, { content: newComment });
       setComments([response.data.data, ...comments]);
@@ -53,39 +53,26 @@ const BlogCommentSection = ({ blogId }) => {
 
   const handleSubmitReply = async (e, commentId) => {
     e.preventDefault();
-    
+
     if (!replyContent.trim()) return;
-    
+
     setSubmitting(true);
-    
+
     try {
-      // Use the comment controller's addReply endpoint
-      const response = await fetch(`/api/v1/comments/reply/${commentId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-        },
-        body: JSON.stringify({ content: replyContent })
-      });
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to add reply');
-      }
-      
+      // Use the blogAPI service which includes auth token in headers
+      const response = await blogAPI.addCommentReply(commentId, { content: replyContent });
+
       // Update the comments state to include the new reply
       setComments(comments.map(comment => {
         if (comment._id === commentId) {
           return {
             ...comment,
-            replies: [...(comment.replies || []), data.data]
+            replies: [...(comment.replies || []), response.data.data]
           };
         }
         return comment;
       }));
-      
+
       setReplyTo(null);
       setReplyContent('');
     } catch (error) {
@@ -100,15 +87,11 @@ const BlogCommentSection = ({ blogId }) => {
     if (!window.confirm('Are you sure you want to delete this comment?')) {
       return;
     }
-    
+
     try {
-      await fetch(`/api/v1/comments/${commentId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-        }
-      });
-      
+      // Use the blogAPI service which includes auth token in headers
+      await blogAPI.deleteComment(commentId);
+
       // Remove the comment from state
       setComments(comments.filter(comment => comment._id !== commentId));
     } catch (error) {
@@ -119,19 +102,13 @@ const BlogCommentSection = ({ blogId }) => {
 
   const handleLikeComment = async (commentId) => {
     try {
-      const response = await fetch(`/api/v1/comments/${commentId}/like`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-        }
-      });
-      
-      const data = await response.json();
-      
+      // Use the blogAPI service which includes auth token in headers
+      const response = await blogAPI.likeComment(commentId);
+
       // Update the comment likes in state
       setComments(comments.map(comment => {
         if (comment._id === commentId) {
-          return { ...comment, likes: data.data.likes };
+          return { ...comment, likes: response.data.data.likes };
         }
         return comment;
       }));
@@ -151,7 +128,7 @@ const BlogCommentSection = ({ blogId }) => {
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <h2 className="text-2xl font-bold mb-6">Comments</h2>
-      
+
       {/* Comment Form */}
       {isAuthenticated ? (
         <form onSubmit={handleSubmitComment} className="mb-8">
@@ -192,7 +169,7 @@ const BlogCommentSection = ({ blogId }) => {
           </Link>
         </div>
       )}
-      
+
       {/* Comments List */}
       {error ? (
         <div className="text-center py-4">
@@ -222,7 +199,7 @@ const BlogCommentSection = ({ blogId }) => {
                           {new Date(comment.createdAt).toLocaleString()}
                         </p>
                       </div>
-                      
+
                       {/* Delete button - only for comment owner or admin */}
                       {currentUser && (currentUser._id === comment.owner?._id || currentUser.role === 'admin') && (
                         <button
@@ -236,7 +213,7 @@ const BlogCommentSection = ({ blogId }) => {
                     </div>
                     <p className="text-gray-700">{comment.content}</p>
                   </div>
-                  
+
                   {/* Comment Actions */}
                   <div className="flex mt-2 text-sm">
                     {isAuthenticated && (
@@ -258,11 +235,11 @@ const BlogCommentSection = ({ blogId }) => {
                       </>
                     )}
                   </div>
-                  
+
                   {/* Reply Form */}
                   {replyTo === comment._id && (
-                    <form 
-                      onSubmit={(e) => handleSubmitReply(e, comment._id)} 
+                    <form
+                      onSubmit={(e) => handleSubmitReply(e, comment._id)}
                       className="mt-4 ml-6"
                     >
                       <textarea
@@ -290,7 +267,7 @@ const BlogCommentSection = ({ blogId }) => {
                       </div>
                     </form>
                   )}
-                  
+
                   {/* Replies */}
                   {comment.replies && comment.replies.length > 0 && (
                     <div className="mt-4 ml-6 space-y-4">
@@ -310,7 +287,7 @@ const BlogCommentSection = ({ blogId }) => {
                                     {new Date(reply.createdAt).toLocaleString()}
                                   </p>
                                 </div>
-                                
+
                                 {/* Delete button - only for reply owner or admin */}
                                 {currentUser && (currentUser._id === reply.owner?._id || currentUser.role === 'admin') && (
                                   <button
@@ -324,7 +301,7 @@ const BlogCommentSection = ({ blogId }) => {
                               </div>
                               <p className="text-gray-700 text-sm">{reply.content}</p>
                             </div>
-                            
+
                             {/* Reply Actions */}
                             {isAuthenticated && (
                               <div className="flex mt-1 text-xs">

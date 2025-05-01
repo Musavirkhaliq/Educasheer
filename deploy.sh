@@ -54,12 +54,12 @@ echo "Saving PM2 configuration..."
 pm2 save
 
 # Configure Nginx for better performance
-echo "Configuring Nginx for better performance..."
-sudo cp nginx/educasheer.conf /etc/nginx/sites-available/educasheer.conf
-sudo ln -sf /etc/nginx/sites-available/educasheer.conf /etc/nginx/sites-enabled/educasheer.conf
+# echo "Configuring Nginx for better performance..."
+# sudo cp nginx/educasheer.conf /etc/nginx/sites-available/educasheer.conf
+# sudo ln -sf /etc/nginx/sites-available/educasheer.conf /etc/nginx/sites-enabled/educasheer.conf
 
-# Restart Nginx to ensure it picks up new files and configuration
-echo "Restarting Nginx..."
-sudo systemctl restart nginx
+# # Restart Nginx to ensure it picks up new files and configuration
+# echo "Restarting Nginx..."
+# sudo systemctl restart nginx
 
 echo "Deployment completed successfully!"

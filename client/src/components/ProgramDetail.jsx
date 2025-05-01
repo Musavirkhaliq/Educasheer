@@ -6,10 +6,11 @@ import { FaEdit, FaPlay, FaChalkboardTeacher, FaSignal, FaLock } from 'react-ico
 import { FiVideo } from 'react-icons/fi';
 import { BiTime, BiCategory } from 'react-icons/bi';
 import CommentSection from './comments/CommentSection';
+import customFetch from '../utils/customFetch';
 
 const ProgramDetail = () => {
   const { programId } = useParams();
-  const { currentUser } = useAuth();
+  const { currentUser, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   const [program, setProgram] = useState(null);
@@ -20,8 +21,9 @@ const ProgramDetail = () => {
   useEffect(() => {
     const fetchProgramDetails = async () => {
       try {
-        // Make the request without requiring authentication
-        const response = await axios.get(`/api/v1/programs/${programId}`);
+        // Use customFetch which includes auth token if user is logged in
+        const response = await customFetch.get(`/programs/${programId}`);
+        console.log('Program data:', response.data.data);
         setProgram(response.data.data);
       } catch (error) {
         console.error('Error fetching program details:', error);
@@ -43,11 +45,8 @@ const ProgramDetail = () => {
     setEnrolling(true);
 
     try {
-      await axios.post(`/api/v1/programs/${programId}/enroll`, {}, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('accessToken')}`
-        }
-      });
+      // Use customFetch which includes auth token in headers
+      await customFetch.post(`/programs/${programId}/enroll`);
 
       // Update the program state to reflect enrollment
       setProgram(prev => ({

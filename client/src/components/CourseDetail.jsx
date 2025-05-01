@@ -11,10 +11,11 @@ import { useAuth } from '../context/AuthContext';
 import { CommentSection } from './comments';
 import DiscussionForum from './DiscussionForum';
 import CourseMaterials from './CourseMaterials';
+import customFetch from '../utils/customFetch';
 
 const CourseDetail = () => {
   const { courseId } = useParams();
-  const { currentUser } = useAuth();
+  const { currentUser, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   const [course, setCourse] = useState(null);
@@ -25,8 +26,9 @@ const CourseDetail = () => {
   useEffect(() => {
     const fetchCourseDetails = async () => {
       try {
-        // Make the request without requiring authentication
-        const response = await axios.get(`/api/v1/courses/${courseId}`);
+        // Use customFetch which includes auth token if user is logged in
+        const response = await customFetch.get(`/courses/${courseId}`);
+        console.log('Course data:', response.data.data);
         setCourse(response.data.data);
       } catch (error) {
         console.error('Error fetching course details:', error);
@@ -78,11 +80,8 @@ const CourseDetail = () => {
     setEnrolling(true);
 
     try {
-      await axios.post(`/api/v1/courses/${courseId}/enroll`, {}, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('accessToken')}`
-        }
-      });
+      // Use customFetch which includes auth token in headers
+      await customFetch.post(`/courses/${courseId}/enroll`);
 
       // Update the course state to reflect enrollment
       setCourse({
