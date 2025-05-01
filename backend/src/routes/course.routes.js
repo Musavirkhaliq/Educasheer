@@ -24,7 +24,7 @@ router.route("/my/enrolled").get(verifyJWT, getEnrolledCourses);
 router.route("/creator/:userId").get(getCoursesByCreator);
 
 // Routes with parameters (must be after specific routes)
-router.route("/:courseId").get(verifyJWT, getCourseById);
+router.route("/:courseId").get(getCourseById); // Public route to view course details
 router.route("/:courseId").patch(verifyJWT, updateCourse);
 router.route("/:courseId").delete(verifyJWT, deleteCourse);
 router.route("/:courseId/enroll").post(verifyJWT, enrollInCourse);

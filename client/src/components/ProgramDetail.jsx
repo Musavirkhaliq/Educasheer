@@ -20,12 +20,8 @@ const ProgramDetail = () => {
   useEffect(() => {
     const fetchProgramDetails = async () => {
       try {
-        const response = await axios.get(`/api/v1/programs/${programId}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('accessToken')}`
-          }
-        });
-
+        // Make the request without requiring authentication
+        const response = await axios.get(`/api/v1/programs/${programId}`);
         setProgram(response.data.data);
       } catch (error) {
         console.error('Error fetching program details:', error);
@@ -68,6 +64,11 @@ const ProgramDetail = () => {
   };
 
   const isEnrolled = () => {
+    // Use the isEnrolled flag from the backend if available
+    if (program?.isEnrolled !== undefined) {
+      return program.isEnrolled;
+    }
+    // Fallback to the old method
     if (!currentUser || !program) return false;
     return program.enrolledStudents?.some(student => student === currentUser._id);
   };

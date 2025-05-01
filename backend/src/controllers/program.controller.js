@@ -9,14 +9,14 @@ import { generateUniqueSlug } from "../utils/generateSlug.js";
 const calculateProgramDuration = async (courseIds) => {
     try {
         const courses = await Course.find({ _id: { $in: courseIds } }).populate("videos", "duration");
-        
+
         let totalSeconds = 0;
-        
+
         courses.forEach(course => {
             course.videos.forEach(video => {
                 // Parse duration in format "H:MM:SS" or "MM:SS"
                 const parts = video.duration?.split(':').map(Number);
-                
+
                 if (parts?.length === 3) {
                     // Format: H:MM:SS
                     totalSeconds += parts[0] * 3600 + parts[1] * 60 + parts[2];
@@ -26,11 +26,11 @@ const calculateProgramDuration = async (courseIds) => {
                 }
             });
         });
-        
+
         // Convert to hours and minutes
         const hours = Math.floor(totalSeconds / 3600);
         const minutes = Math.floor((totalSeconds % 3600) / 60);
-        
+
         return `${hours}h ${minutes}m`;
     } catch (error) {
         console.error("Error calculating program duration:", error);
@@ -130,17 +130,17 @@ const createProgram = asyncHandler(async (req, res) => {
 const getAllPrograms = asyncHandler(async (req, res) => {
     try {
         const { limit = 10, page = 1, category, level, search } = req.query;
-        
+
         const query = { isPublished: true };
-        
+
         if (category && category !== "all") {
             query.category = category;
         }
-        
+
         if (level && level !== "all") {
             query.level = level;
         }
-        
+
         if (search) {
             query.$or = [
                 { title: { $regex: search, $options: "i" } },
@@ -148,7 +148,7 @@ const getAllPrograms = asyncHandler(async (req, res) => {
                 { tags: { $in: [new RegExp(search, "i")] } }
             ];
         }
-        
+
         const options = {
             page: parseInt(page, 10),
             limit: parseInt(limit, 10),
@@ -158,16 +158,16 @@ const getAllPrograms = asyncHandler(async (req, res) => {
                 { path: "courses", select: "title thumbnail" }
             ]
         };
-        
+
         const programs = await Program.find(query)
             .skip((parseInt(page, 10) - 1) * parseInt(limit, 10))
             .limit(parseInt(limit, 10))
             .sort({ createdAt: -1 })
             .populate("creator", "fullName username avatar")
             .populate("courses", "title thumbnail");
-            
+
         const totalPrograms = await Program.countDocuments(query);
-        
+
         return res.status(200).json(
             new ApiResponse(200, {
                 programs,
@@ -207,14 +207,35 @@ const getProgramById = asyncHandler(async (req, res) => {
         }
 
         // If program is not published, only allow creator or admin to view it
-        if (!program.isPublished &&
-            program.creator._id.toString() !== req.user?._id?.toString() &&
-            req.user?.role !== "admin") {
-            throw new ApiError(403, "This program is not published yet");
+        if (!program.isPublished) {
+            // For unauthenticated users, don't show unpublished programs
+            if (!req.user) {
+                throw new ApiError(403, "This program is not published yet");
+            }
+
+            // For authenticated users, check if they're the creator or admin
+            if (program.creator._id.toString() !== req.user._id.toString() &&
+                req.user.role !== "admin") {
+                throw new ApiError(403, "This program is not published yet");
+            }
         }
 
+        // Add a flag to indicate if the user is authenticated
+        const isAuthenticated = !!req.user;
+
+        // Add a flag to indicate if the user is enrolled (if authenticated)
+        const isEnrolled = isAuthenticated ?
+            program.enrolledStudents.includes(req.user._id) : false;
+
+        // Create a response object with the program data and authentication flags
+        const responseData = {
+            ...program.toObject(),
+            isAuthenticated,
+            isEnrolled
+        };
+
         return res.status(200).json(
-            new ApiResponse(200, program, "Program fetched successfully")
+            new ApiResponse(200, responseData, "Program fetched successfully")
         );
     } catch (error) {
         console.error("Error fetching program:", error);
@@ -276,7 +297,7 @@ const updateProgram = asyncHandler(async (req, res) => {
 
             program.courses = courseIds;
             program.totalCourses = courseIds.length;
-            
+
             // Recalculate program duration
             program.duration = await calculateProgramDuration(courseIds);
         }
@@ -349,18 +370,18 @@ const deleteProgram = asyncHandler(async (req, res) => {
 const getProgramsByCreator = asyncHandler(async (req, res) => {
     try {
         const { userId } = req.params;
-        
+
         if (!userId) {
             throw new ApiError(400, "User ID is required");
         }
-        
-        const programs = await Program.find({ 
+
+        const programs = await Program.find({
             creator: userId,
-            isPublished: true 
+            isPublished: true
         })
         .populate("creator", "fullName username avatar")
         .populate("courses", "title thumbnail");
-        
+
         return res.status(200).json(
             new ApiResponse(200, programs, "Programs fetched successfully")
         );
@@ -373,12 +394,12 @@ const getProgramsByCreator = asyncHandler(async (req, res) => {
 // Get my programs (for logged in creator)
 const getMyPrograms = asyncHandler(async (req, res) => {
     try {
-        const programs = await Program.find({ 
-            creator: req.user._id 
+        const programs = await Program.find({
+            creator: req.user._id
         })
         .populate("creator", "fullName username avatar")
         .populate("courses", "title thumbnail");
-        
+
         return res.status(200).json(
             new ApiResponse(200, programs, "My programs fetched successfully")
         );
@@ -392,36 +413,36 @@ const getMyPrograms = asyncHandler(async (req, res) => {
 const enrollInProgram = asyncHandler(async (req, res) => {
     try {
         const { programId } = req.params;
-        
+
         if (!programId) {
             throw new ApiError(400, "Program ID is required");
         }
-        
+
         const program = await Program.findById(programId);
-        
+
         if (!program) {
             throw new ApiError(404, "Program not found");
         }
-        
+
         if (!program.isPublished) {
             throw new ApiError(403, "This program is not published yet");
         }
-        
+
         // Check if user is already enrolled
         if (program.enrolledStudents.includes(req.user._id)) {
             throw new ApiError(400, "You are already enrolled in this program");
         }
-        
+
         // Add user to enrolled students
         program.enrolledStudents.push(req.user._id);
         await program.save();
-        
+
         // Also enroll the user in all courses in the program
         await Course.updateMany(
             { _id: { $in: program.courses } },
             { $addToSet: { enrolledStudents: req.user._id } }
         );
-        
+
         return res.status(200).json(
             new ApiResponse(200, program, "Enrolled in program successfully")
         );
@@ -434,12 +455,12 @@ const enrollInProgram = asyncHandler(async (req, res) => {
 // Get enrolled programs
 const getEnrolledPrograms = asyncHandler(async (req, res) => {
     try {
-        const programs = await Program.find({ 
-            enrolledStudents: req.user._id 
+        const programs = await Program.find({
+            enrolledStudents: req.user._id
         })
         .populate("creator", "fullName username avatar")
         .populate("courses", "title thumbnail");
-        
+
         return res.status(200).json(
             new ApiResponse(200, programs, "Enrolled programs fetched successfully")
         );

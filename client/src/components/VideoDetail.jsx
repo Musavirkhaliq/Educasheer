@@ -53,6 +53,9 @@ const VideoDetail = () => {
 
   // Check if user can edit/delete the video
   const canManageVideo = () => {
+    // First check if we have the isAuthenticated flag from the backend
+    if (!video?.isAuthenticated) return false;
+
     if (!currentUser || !video) return false;
 
     // Admin can manage all videos
@@ -200,14 +203,50 @@ const VideoDetail = () => {
 
       {/* Materials Section */}
       <div className="mt-8">
-        <MaterialList
-          videoId={video._id}
-          showControls={canManageVideo()}
-        />
+        {video.isAuthenticated ? (
+          <MaterialList
+            videoId={video._id}
+            showControls={canManageVideo()}
+          />
+        ) : (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <div className="flex items-center gap-3">
+              <div className="bg-blue-100 p-2 rounded-full">
+                <FaFileAlt className="text-blue-500" />
+              </div>
+              <div>
+                <h3 className="font-medium text-blue-800">Access Materials</h3>
+                <p className="text-blue-600 text-sm mt-1">
+                  <Link to="/login" className="text-blue-700 font-medium hover:underline">
+                    Log in
+                  </Link> to access additional materials for this video.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Comment Section */}
-      <CommentSection videoId={video._id} type="video" />
+      {video.isAuthenticated ? (
+        <CommentSection videoId={video._id} type="video" />
+      ) : (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-8">
+          <div className="flex items-center gap-3">
+            <div className="bg-blue-100 p-2 rounded-full">
+              <FaUser className="text-blue-500" />
+            </div>
+            <div>
+              <h3 className="font-medium text-blue-800">Join the Discussion</h3>
+              <p className="text-blue-600 text-sm mt-1">
+                <Link to="/login" className="text-blue-700 font-medium hover:underline">
+                  Log in
+                </Link> to comment on this video and join the discussion.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

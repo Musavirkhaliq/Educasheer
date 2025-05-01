@@ -134,12 +134,35 @@ const getVideoById = asyncHandler(async (req, res) => {
             throw new ApiError(404, "Video not found");
         }
 
+        // If video is not published, only allow owner or admin to view it
+        if (!video.isPublished) {
+            // For unauthenticated users, don't show unpublished videos
+            if (!req.user) {
+                throw new ApiError(403, "This video is not published yet");
+            }
+
+            // For authenticated users, check if they're the owner or admin
+            if (video.owner._id.toString() !== req.user._id.toString() &&
+                req.user.role !== "admin") {
+                throw new ApiError(403, "This video is not published yet");
+            }
+        }
+
         // Increment view count
         video.views += 1;
         await video.save();
 
+        // Add a flag to indicate if the user is authenticated
+        const isAuthenticated = !!req.user;
+
+        // Create a response object with the video data and authentication flag
+        const responseData = {
+            ...video.toObject(),
+            isAuthenticated
+        };
+
         return res.status(200).json(
-            new ApiResponse(200, video, "Video fetched successfully")
+            new ApiResponse(200, responseData, "Video fetched successfully")
         );
     } catch (error) {
         if (error instanceof ApiError) {

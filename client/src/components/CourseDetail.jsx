@@ -25,12 +25,8 @@ const CourseDetail = () => {
   useEffect(() => {
     const fetchCourseDetails = async () => {
       try {
-        const response = await axios.get(`/api/v1/courses/${courseId}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('accessToken')}`
-          }
-        });
-
+        // Make the request without requiring authentication
+        const response = await axios.get(`/api/v1/courses/${courseId}`);
         setCourse(response.data.data);
       } catch (error) {
         console.error('Error fetching course details:', error);
@@ -112,6 +108,11 @@ const CourseDetail = () => {
   };
 
   const isEnrolled = () => {
+    // Use the isEnrolled flag from the backend if available
+    if (course?.isEnrolled !== undefined) {
+      return course.isEnrolled;
+    }
+    // Fallback to the old method
     return currentUser && course?.enrolledStudents?.includes(currentUser._id);
   };
 

@@ -251,14 +251,35 @@ const getCourseById = asyncHandler(async (req, res) => {
         }
 
         // If course is not published, only allow creator or admin to view it
-        if (!course.isPublished &&
-            course.creator._id.toString() !== req.user?._id?.toString() &&
-            req.user?.role !== "admin") {
-            throw new ApiError(403, "This course is not published yet");
+        if (!course.isPublished) {
+            // For unauthenticated users, don't show unpublished courses
+            if (!req.user) {
+                throw new ApiError(403, "This course is not published yet");
+            }
+
+            // For authenticated users, check if they're the creator or admin
+            if (course.creator._id.toString() !== req.user._id.toString() &&
+                req.user.role !== "admin") {
+                throw new ApiError(403, "This course is not published yet");
+            }
         }
 
+        // Add a flag to indicate if the user is authenticated
+        const isAuthenticated = !!req.user;
+
+        // Add a flag to indicate if the user is enrolled (if authenticated)
+        const isEnrolled = isAuthenticated ?
+            course.enrolledStudents.includes(req.user._id) : false;
+
+        // Create a response object with the course data and authentication flags
+        const responseData = {
+            ...course.toObject(),
+            isAuthenticated,
+            isEnrolled
+        };
+
         return res.status(200).json(
-            new ApiResponse(200, course, "Course fetched successfully")
+            new ApiResponse(200, responseData, "Course fetched successfully")
         );
     } catch (error) {
         if (error instanceof ApiError) {

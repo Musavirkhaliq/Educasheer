@@ -22,7 +22,7 @@ router.route("/").post(verifyJWT, createProgram);
 router.route("/my/programs").get(verifyJWT, getMyPrograms);
 router.route("/my/enrolled").get(verifyJWT, getEnrolledPrograms);
 router.route("/creator/:userId").get(getProgramsByCreator);
-router.route("/:programId").get(verifyJWT, getProgramById);
+router.route("/:programId").get(getProgramById); // Public route to view program details
 router.route("/:programId").patch(verifyJWT, updateProgram);
 router.route("/:programId").delete(verifyJWT, deleteProgram);
 router.route("/:programId/enroll").post(verifyJWT, enrollInProgram);
