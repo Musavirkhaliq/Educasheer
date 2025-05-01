@@ -71,8 +71,8 @@ const Footer = () => {
             </div>
 
             <p className="text-gray-300 mb-6 max-w-md">
-              Empowering learners worldwide with quality educational content and
-              comprehensive study materials. Join our community of educators and students.
+              Reinventing education to make humans more human, not just to serve capitalism.
+              We help students reinvent concepts for themselves through our online and offline courses.
             </p>
 
             <div className="flex space-x-3">

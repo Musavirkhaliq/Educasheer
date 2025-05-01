@@ -1,12 +1,11 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { FaSearch, FaGraduationCap, FaUsers, FaStar, FaArrowRight, FaPlay } from "react-icons/fa";
-import { motion, useAnimation } from "framer-motion";
+import { motion } from "framer-motion";
 
 const Hero = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isVisible, setIsVisible] = useState(false);
   const [currentStat, setCurrentStat] = useState(0);
-  const controls = useAnimation();
 
   // Detect if device is mobile for conditional rendering
   const [isMobile, setIsMobile] = useState(false);
@@ -32,7 +31,7 @@ const Hero = () => {
   }, []);
 
   // Handle swipe gesture for stats on mobile
-  const handleDragEnd = (event, info) => {
+  const handleDragEnd = (_, info) => {
     if (info.offset.x > 50) {
       // Swiped right
       setCurrentStat(prev => (prev === 0 ? 2 : prev - 1));
@@ -43,9 +42,9 @@ const Hero = () => {
   };
 
   const stats = [
-    { icon: FaGraduationCap, count: "10,000+", label: "Courses" },
-    { icon: FaUsers, count: "500,000+", label: "Students" },
-    { icon: FaStar, count: "95%", label: "Satisfaction" },
+    { icon: FaGraduationCap, count: "50+", label: "Offline & Online Courses" },
+    { icon: FaUsers, count: "1,000+", label: "Creative Thinkers" },
+    { icon: FaStar, count: "100%", label: "Human-Centered" },
   ];
 
   return (
@@ -137,7 +136,7 @@ const Hero = () => {
                 className="inline-block px-4 py-1 glass-effect rounded-full shadow-glass-sm"
                 whileTap={{ scale: 0.97 }}
               >
-                <span className="text-secondary font-medium text-sm neon-text">Unlock Your Learning Potential</span>
+                <span className="text-secondary font-medium text-sm neon-text">Education for Human Flourishing</span>
               </motion.div>
 
               <motion.h1
@@ -146,7 +145,7 @@ const Hero = () => {
                 transition={{ duration: 0.7, delay: 0.4 }}
                 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-[#0c0c0d] leading-tight"
               >
-                Empowering You to <span className="gradient-text animate-glow">Learn</span> and <span className="gradient-text animate-glow">Succeed</span>
+                Reinventing <span className="gradient-text animate-glow">Education</span> for <span className="gradient-text animate-glow">Humanity</span>
               </motion.h1>
 
               <motion.p
@@ -155,7 +154,7 @@ const Hero = () => {
                 transition={{ duration: 0.7, delay: 0.5 }}
                 className="text-base sm:text-lg md:text-xl text-gray-600 max-w-xl"
               >
-                Explore expertly curated educational videos on diverse topics from industry leaders and educators. Start your learning journey today.
+                We believe in education that helps students reinvent concepts for themselves, not just serve capitalism. Explore our online and offline courses in computer science, AI, and more.
               </motion.p>
             </div>
 
@@ -169,7 +168,7 @@ const Hero = () => {
               <div className="glass-effect rounded-full shadow-glass p-1">
                 <input
                   type="text"
-                  placeholder="Search for courses, topics, or skills..."
+                  placeholder="Search for transformative courses and skills..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full px-6 py-4 rounded-full border-none bg-white/80 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary pl-12"
@@ -197,7 +196,7 @@ const Hero = () => {
                 whileTap={{ scale: 0.95 }}
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
-                Start Learning Now
+                Discover Our Approach
                 <FaArrowRight className="ml-2 group-hover:translate-x-1 transition-transform duration-300" />
               </motion.button>
               <motion.button
@@ -207,7 +206,7 @@ const Hero = () => {
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
                 <FaPlay className="mr-2 inline-block" />
-                Browse Free Resources
+                Explore Our Courses
               </motion.button>
             </motion.div>
 
@@ -356,7 +355,7 @@ const Hero = () => {
                       >
                         <FaStar className="mr-2 text-primary" />
                       </motion.div>
-                      <span className="neon-text">Learn Anytime, Anywhere</span>
+                      <span className="neon-text">Reinvent Yourself</span>
                     </span>
                   </motion.div>
 
@@ -375,7 +374,7 @@ const Hero = () => {
                       >
                         <FaGraduationCap className="mr-2 text-primary" />
                       </motion.div>
-                      <span className="neon-text">10,000+ Videos Available</span>
+                      <span className="neon-text">Computer Science & AI</span>
                     </span>
                   </motion.div>
 
@@ -395,9 +394,9 @@ const Hero = () => {
                           animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
                           transition={{ duration: 2, repeat: Infinity }}
                         ></motion.div>
-                        <span className="text-secondary font-semibold neon-text">Live Classes Available</span>
+                        <span className="text-secondary font-semibold neon-text">Beyond Capitalism</span>
                       </div>
-                      <p className="text-gray-600 text-xs mt-1">Join expert-led sessions today</p>
+                      <p className="text-gray-600 text-xs mt-1">Education for human flourishing</p>
                     </div>
                   </motion.div>
                 </>
@@ -408,7 +407,7 @@ const Hero = () => {
                   <div className="absolute top-4 left-4">
                     <span className="glass-effect px-3 py-1 rounded-full text-xs font-medium shadow-glass flex items-center">
                       <FaStar className="mr-1 text-primary" />
-                      <span>Learn Anytime, Anywhere</span>
+                      <span>Reinvent Yourself</span>
                     </span>
                   </div>
 
@@ -417,7 +416,7 @@ const Hero = () => {
                     <div className="glass-effect px-3 py-2 rounded-xl text-xs font-medium shadow-glass">
                       <div className="flex items-center space-x-1">
                         <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                        <span className="text-secondary font-semibold">Live Classes</span>
+                        <span className="text-secondary font-semibold">Beyond Capitalism</span>
                       </div>
                     </div>
                   </div>
