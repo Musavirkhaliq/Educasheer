@@ -42,15 +42,23 @@ const Login = () => {
         // Login with Google
         const user = await googleLogin(userInfo);
 
+        console.log("Google login successful, user data:", user);
+
         // Show success message
         const successMessage = `Login successful! You are logged in as a ${user.role}.`;
 
+        // Make sure we're using the correct role for redirection
+        console.log("Redirecting based on role (Google login):", user.role);
+
         // Redirect based on role
         if (user.role === "admin") {
+          console.log("Redirecting to admin dashboard (Google login)");
           setTimeout(() => navigate("/admin"), 500);
         } else if (user.role === "tutor") {
+          console.log("Redirecting to profile (tutor) (Google login)");
           setTimeout(() => navigate("/profile"), 500);
         } else {
+          console.log("Redirecting to profile (learner) (Google login)");
           setTimeout(() => navigate("/profile"), 500);
         }
 
@@ -74,10 +82,13 @@ const Login = () => {
   // If user is already authenticated, redirect to appropriate page
   React.useEffect(() => {
     if (isAuthenticated && currentUser) {
-      console.log("User already authenticated, redirecting...");
+      console.log("User already authenticated, redirecting...", currentUser);
+      // Make sure we're using the latest role information
       if (currentUser.role === "admin") {
+        console.log("Redirecting admin to admin dashboard");
         navigate("/admin");
       } else {
+        console.log("Redirecting non-admin to profile page");
         navigate("/profile");
       }
     }
@@ -122,18 +133,26 @@ const Login = () => {
       // Use the login function from AuthContext
       const user = await login(formData.email, formData.password);
 
+      console.log("Login successful, user data:", user);
+
       // Show success message with role information
       const successMessage = `Login successful! You are logged in as a ${user.role}.`;
+
+      // Make sure we're using the correct role for redirection
+      console.log("Redirecting based on role:", user.role);
 
       // Redirect based on role
       if (user.role === "admin") {
         // Admin dashboard
+        console.log("Redirecting to admin dashboard");
         setTimeout(() => navigate("/admin"), 500);
       } else if (user.role === "tutor") {
         // Tutor dashboard
+        console.log("Redirecting to profile (tutor)");
         setTimeout(() => navigate("/profile"), 500);
       } else {
         // Learner profile page
+        console.log("Redirecting to profile (learner)");
         setTimeout(() => navigate("/profile"), 500);
       }
 

@@ -29,15 +29,20 @@ api.interceptors.response.use(
     // If the error is 401 and we haven't already tried to refresh the token
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
+      console.log('API - Token expired, attempting to refresh...');
 
       try {
         // Try to refresh the token
         const refreshToken = localStorage.getItem('refreshToken');
         if (!refreshToken) {
+          console.log('API - No refresh token available');
+          clearAuthData();
           throw new Error('No refresh token available');
         }
 
+        console.log('API - Calling refresh token endpoint');
         const response = await axios.post('/api/v1/users/refresh-token', { refreshToken });
+        console.log('API - Token refresh successful');
 
         // Store the new tokens
         localStorage.setItem('accessToken', response.data.data.accessToken);
@@ -46,29 +51,54 @@ api.interceptors.response.use(
         // Update the authorization header
         originalRequest.headers.Authorization = `Bearer ${response.data.data.accessToken}`;
 
+        // Always fetch the latest user data to ensure role consistency
+        try {
+          console.log('API - Fetching latest user data after token refresh');
+          const userResponse = await axios.get('/api/v1/users/get-current-user', {
+            headers: {
+              Authorization: `Bearer ${response.data.data.accessToken}`
+            }
+          });
+
+          const userData = userResponse.data.data;
+
+          // Check if we have existing user data to compare
+          const existingUserData = localStorage.getItem('user');
+          if (existingUserData) {
+            try {
+              const parsedExistingUser = JSON.parse(existingUserData);
+
+              // If user IDs don't match, we have a serious inconsistency
+              if (parsedExistingUser._id !== userData._id) {
+                console.error('API - User ID mismatch after token refresh!', {
+                  storedUserId: parsedExistingUser._id,
+                  serverUserId: userData._id
+                });
+                clearAuthData();
+                throw new Error('User identity mismatch after token refresh');
+              }
+            } catch (parseError) {
+              console.error('API - Error parsing existing user data:', parseError);
+            }
+          }
+
+          // Update user data in localStorage and sessionStorage
+          localStorage.setItem('user', JSON.stringify(userData));
+          sessionStorage.setItem('userRole', userData.role);
+          sessionStorage.setItem('lastAuthCheck', Date.now().toString());
+
+          console.log('API - User data updated after token refresh:', userData);
+        } catch (userError) {
+          console.error('API - Failed to fetch user data after token refresh:', userError);
+          clearAuthData();
+          throw new Error('Failed to verify user identity after token refresh');
+        }
+
         // Retry the original request
         return api(originalRequest);
       } catch (refreshError) {
-        console.error('Token refresh failed:', refreshError);
-
-        // For form submissions and file uploads, don't automatically redirect
-        // This allows the component to handle the error gracefully
-        if (originalRequest.headers['Content-Type']?.includes('multipart/form-data')) {
-          // Just clear the tokens but don't redirect
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
-          localStorage.removeItem('user');
-          return Promise.reject(error);
-        }
-
-        // Clear tokens but don't redirect
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('user');
-
-        // Let the component handle the error
-        // Don't redirect automatically as it breaks the React Router flow
-
+        console.error('API - Token refresh failed:', refreshError);
+        clearAuthData();
         return Promise.reject(refreshError);
       }
     }
@@ -76,6 +106,18 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// Helper function to clear auth data
+function clearAuthData() {
+  console.log('API - Clearing all auth data');
+  localStorage.removeItem('accessToken');
+  localStorage.removeItem('refreshToken');
+  localStorage.removeItem('user');
+  localStorage.removeItem('admin');
+  sessionStorage.removeItem('lastAuthCheck');
+  sessionStorage.removeItem('userRole');
+  sessionStorage.removeItem('admin');
+}
 
 // Auth API functions
 export const authAPI = {

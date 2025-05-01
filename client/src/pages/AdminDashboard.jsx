@@ -5,23 +5,66 @@ import axios from "axios";
 import FeeManagement from "../components/admin/FeeManagement";
 
 const AdminDashboard = () => {
-  const { currentUser, isAuthenticated } = useAuth();
+  const { currentUser, isAuthenticated, logout } = useAuth();
   const [activeTab, setActiveTab] = useState("applications");
   const [applications, setApplications] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Verify admin status on component mount and when currentUser changes
+  useEffect(() => {
+    const verifyAdminStatus = async () => {
+      if (isAuthenticated && currentUser) {
+        console.log("AdminDashboard: Verifying admin status for user:", currentUser);
+
+        if (currentUser.role !== "admin") {
+          console.log("AdminDashboard: User is not admin, redirecting to home", currentUser);
+          // Force logout to clear any stale data
+          await logout();
+          return;
+        }
+
+        // Double-check with the server
+        try {
+          const response = await axios.get("/api/v1/admin/users", {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("accessToken")}`
+            }
+          });
+
+          // If we get here, the user is confirmed as admin
+          console.log("AdminDashboard: Admin status confirmed by server");
+          setIsAdmin(true);
+        } catch (error) {
+          console.error("AdminDashboard: Failed to verify admin status:", error);
+          if (error.response?.status === 403) {
+            console.log("AdminDashboard: Server rejected admin access, logging out");
+            // User is not actually an admin according to the server
+            await logout();
+          }
+        }
+      }
+    };
+
+    verifyAdminStatus();
+  }, [currentUser, isAuthenticated, logout]);
 
   // Redirect to login if not authenticated
   if (!isAuthenticated) {
+    console.log("AdminDashboard: User not authenticated, redirecting to login");
     return <Navigate to="/login" />;
   }
 
   // Redirect if user is not an admin
   if (currentUser?.role !== "admin") {
+    console.log("AdminDashboard: User is not admin, redirecting to home", currentUser);
     return <Navigate to="/" />;
   }
+
+  console.log("AdminDashboard: User is admin, showing admin dashboard", currentUser);
 
   // Fetch tutor applications
   useEffect(() => {
