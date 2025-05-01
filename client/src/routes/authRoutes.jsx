@@ -1,6 +1,7 @@
 import React, { Suspense } from "react";
 import Login from "../pages/Login";
 import Signup from "../pages/Signup";
+import VerifyEmail from "../pages/VerifyEmail";
 
 export const authRoutes = [
   {
@@ -16,6 +17,14 @@ export const authRoutes = [
     element: (
       <Suspense fallback={<h1>Loading</h1>}>
         <Signup />
+      </Suspense>
+    ),
+  },
+  {
+    path: "verify-email",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <VerifyEmail />
       </Suspense>
     ),
   },

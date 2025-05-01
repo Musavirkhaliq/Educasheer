@@ -3,6 +3,8 @@ import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import { generateVerificationToken } from "../utils/crypto.js";
+import { sendVerificationEmail } from "../utils/emailService.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 
@@ -109,6 +111,9 @@ const registerUser = asyncHandler(async (req, res) => {
       }
     }
 
+    // Generate verification token
+    const { token, expiryDate } = generateVerificationToken(24); // 24 hours expiry
+
     // Create user with password (will be hashed by pre-save hook)
     const user = await User.create({
       email: email.toLowerCase(),
@@ -118,25 +123,37 @@ const registerUser = asyncHandler(async (req, res) => {
       password, // Let the pre-save hook handle hashing
       username: username.toLowerCase(),
       role: "learner",
-      tutorStatus: "none"
+      tutorStatus: "none",
+      isEmailVerified: false,
+      emailVerificationToken: token,
+      emailVerificationExpiry: expiryDate
     });
 
     console.log("User created with password");
 
     // Fetch user without sensitive fields
     const createdUser = await User.findById(user._id).select(
-      "-password -refreshToken"
+      "-password -refreshToken -emailVerificationToken -emailVerificationExpiry"
     );
 
     if (!createdUser) {
       throw new ApiError(500, "Error creating user account");
     }
 
+    // Send verification email
+    try {
+      await sendVerificationEmail(user, token);
+      console.log("Verification email sent to:", user.email);
+    } catch (emailError) {
+      console.error("Error sending verification email:", emailError);
+      // Continue with registration even if email fails
+    }
+
     console.log("User registered successfully:", createdUser);
 
     return res
       .status(201)
-      .json(new ApiResponse(201, createdUser, "User registered successfully"));
+      .json(new ApiResponse(201, createdUser, "User registered successfully. Please check your email to verify your account."));
   } catch (error) {
     // Log the error for debugging
     console.error("Registration error:", error);
@@ -205,8 +222,32 @@ const loginUser = asyncHandler(async (req, res) => {
       if (!isPasswordValid) {
         throw new ApiError(401, "Invalid credentials");
       }
+
+      // Check if email is verified for local accounts
+      if (user.authProvider === "local" && !user.isEmailVerified) {
+        // Generate a new verification token if needed
+        if (!user.emailVerificationToken || new Date() > user.emailVerificationExpiry) {
+          const { token, expiryDate } = generateVerificationToken(24);
+          user.emailVerificationToken = token;
+          user.emailVerificationExpiry = expiryDate;
+          await user.save({ validateBeforeSave: false });
+
+          // Send a new verification email
+          try {
+            await sendVerificationEmail(user, token);
+            console.log("New verification email sent to:", user.email);
+          } catch (emailError) {
+            console.error("Error sending verification email:", emailError);
+          }
+        }
+
+        throw new ApiError(403, "Email not verified. Please check your email for verification link.");
+      }
     } catch (passwordError) {
       console.error("Password verification error:", passwordError);
+      if (passwordError instanceof ApiError) {
+        throw passwordError;
+      }
       throw new ApiError(500, "Error verifying credentials");
     }
 
@@ -670,6 +711,105 @@ const googleLogin = asyncHandler(async (req, res) => {
   }
 });
 
+// Verify email
+const verifyEmail = asyncHandler(async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    if (!token) {
+      throw new ApiError(400, "Verification token is required");
+    }
+
+    // Find user with this token and valid expiry
+    const user = await User.findOne({
+      emailVerificationToken: token,
+      emailVerificationExpiry: { $gt: new Date() }
+    });
+
+    if (!user) {
+      throw new ApiError(400, "Invalid or expired verification token");
+    }
+
+    // Mark email as verified and remove token
+    user.isEmailVerified = true;
+    user.emailVerificationToken = undefined;
+    user.emailVerificationExpiry = undefined;
+
+    await user.save({ validateBeforeSave: false });
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, {}, "Email verified successfully. You can now log in."));
+
+  } catch (error) {
+    console.error("Email verification error:", error);
+
+    if (error instanceof ApiError) {
+      throw error;
+    }
+
+    throw new ApiError(500, "Something went wrong during email verification");
+  }
+});
+
+// Resend verification email
+const resendVerificationEmail = asyncHandler(async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      throw new ApiError(400, "Email is required");
+    }
+
+    // Find user by email
+    const user = await User.findOne({ email: email.toLowerCase() });
+
+    if (!user) {
+      // Don't reveal that the user doesn't exist for security reasons
+      return res
+        .status(200)
+        .json(new ApiResponse(200, {}, "If your email exists in our system, a verification email has been sent."));
+    }
+
+    // Check if email is already verified
+    if (user.isEmailVerified) {
+      return res
+        .status(200)
+        .json(new ApiResponse(200, {}, "Your email is already verified. Please log in."));
+    }
+
+    // Generate a new verification token
+    const { token, expiryDate } = generateVerificationToken(24);
+
+    // Update user with new token
+    user.emailVerificationToken = token;
+    user.emailVerificationExpiry = expiryDate;
+    await user.save({ validateBeforeSave: false });
+
+    // Send verification email
+    try {
+      await sendVerificationEmail(user, token);
+      console.log("Verification email resent to:", user.email);
+    } catch (emailError) {
+      console.error("Error sending verification email:", emailError);
+      throw new ApiError(500, "Failed to send verification email. Please try again later.");
+    }
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, {}, "Verification email has been sent. Please check your inbox."));
+
+  } catch (error) {
+    console.error("Resend verification email error:", error);
+
+    if (error instanceof ApiError) {
+      throw error;
+    }
+
+    throw new ApiError(500, "Something went wrong while resending verification email");
+  }
+});
+
 export {
   registerUser,
   loginUser,
@@ -684,4 +824,6 @@ export {
   getUserChannelProfile,
   getWatchHistory,
   googleLogin,
+  verifyEmail,
+  resendVerificationEmail,
 };

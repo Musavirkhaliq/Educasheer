@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FaEye, FaEyeSlash, FaGoogle } from "react-icons/fa";
+import { FaEye, FaEyeSlash, FaGoogle, FaEnvelope } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
 import { useGoogleLogin } from "@react-oauth/google";
+import { authAPI } from "../services/api";
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -11,7 +12,10 @@ const Login = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showVerificationOption, setShowVerificationOption] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
   const navigate = useNavigate();
   const { login, googleLogin, isAuthenticated, currentUser } = useAuth();
 
@@ -87,9 +91,31 @@ const Login = () => {
     }));
   };
 
+  // Handle resending verification email
+  const handleResendVerification = async () => {
+    if (!formData.email) return;
+
+    setResendLoading(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      const response = await authAPI.resendVerification(formData.email);
+      setSuccess(response.data.message || "Verification email has been resent. Please check your inbox.");
+      setShowVerificationOption(false);
+    } catch (error) {
+      console.error("Error resending verification email:", error);
+      setError(error.response?.data?.message || "Failed to resend verification email. Please try again.");
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
+    setShowVerificationOption(false);
     setLoading(true);
 
     try {
@@ -116,10 +142,17 @@ const Login = () => {
 
     } catch (error) {
       console.error("Login error:", error);
-      setError(
-        error.response?.data?.message ||
-        "Login failed. Please check your credentials."
-      );
+
+      // Check if the error is due to email not being verified
+      if (error.response?.status === 403 && error.response?.data?.message?.includes("Email not verified")) {
+        setError("Your email is not verified. Please check your inbox for the verification email.");
+        setShowVerificationOption(true);
+      } else {
+        setError(
+          error.response?.data?.message ||
+          "Login failed. Please check your credentials."
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -134,7 +167,26 @@ const Login = () => {
 
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {error}
+          <p>{error}</p>
+
+          {showVerificationOption && (
+            <div className="mt-3">
+              <button
+                onClick={handleResendVerification}
+                disabled={resendLoading}
+                className="flex items-center justify-center gap-2 text-sm bg-red-600 text-white py-1 px-3 rounded hover:bg-red-700 transition-colors duration-300"
+              >
+                <FaEnvelope />
+                {resendLoading ? "Sending..." : "Resend Verification Email"}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {success && (
+        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+          {success}
         </div>
       )}
 

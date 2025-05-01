@@ -68,6 +68,16 @@ const userSchema = new Schema({
         type: String,
         enum: ["local", "google"],
         default: "local"
+    },
+    isEmailVerified: {
+        type: Boolean,
+        default: false
+    },
+    emailVerificationToken: {
+        type: String
+    },
+    emailVerificationExpiry: {
+        type: Date
     }
 }
     , {

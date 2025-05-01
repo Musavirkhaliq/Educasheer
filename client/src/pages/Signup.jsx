@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FaEye, FaEyeSlash, FaUpload, FaGoogle } from "react-icons/fa";
+import { FaEye, FaEyeSlash, FaUpload, FaGoogle, FaEnvelope } from "react-icons/fa";
 import { authAPI } from "../services/api";
 import { useGoogleLogin } from "@react-oauth/google";
 import { useAuth } from "../context/AuthContext";
@@ -17,7 +17,11 @@ const Signup = () => {
   const [coverImage, setCoverImage] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState("");
+  const [showResendOption, setShowResendOption] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
   const navigate = useNavigate();
   const { googleLogin } = useAuth();
 
@@ -92,9 +96,30 @@ const Signup = () => {
     }
   };
 
+  // Handle resending verification email
+  const handleResendVerification = async () => {
+    if (!registeredEmail) return;
+
+    setResendLoading(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      const response = await authAPI.resendVerification(registeredEmail);
+      setSuccess(response.data.message || "Verification email has been resent. Please check your inbox.");
+    } catch (error) {
+      console.error("Error resending verification email:", error);
+      setError(error.response?.data?.message || "Failed to resend verification email. Please try again.");
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
+    setShowResendOption(false);
 
     // Validate form
     if (formData.password !== formData.confirmPassword) {
@@ -144,10 +169,26 @@ const Signup = () => {
 
       console.log("Registration successful:", data);
 
-      // Redirect to login page after successful registration
-      navigate("/login", {
-        state: { message: "Registration successful! Please login." }
+      // Store the email for resend functionality
+      setRegisteredEmail(formData.email);
+
+      // Show success message with verification info
+      setSuccess("Registration successful! A verification email has been sent to your email address. Please check your inbox and verify your email to complete the registration.");
+
+      // Show resend option
+      setShowResendOption(true);
+
+      // Clear form
+      setFormData({
+        fullName: "",
+        username: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
       });
+      setAvatar(null);
+      setCoverImage(null);
+
     } catch (error) {
       console.error("Registration error:", error);
       setError(
@@ -169,6 +210,25 @@ const Signup = () => {
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
           {error}
+        </div>
+      )}
+
+      {success && (
+        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+          <p>{success}</p>
+
+          {showResendOption && (
+            <div className="mt-3">
+              <button
+                onClick={handleResendVerification}
+                disabled={resendLoading}
+                className="flex items-center justify-center gap-2 text-sm bg-green-600 text-white py-1 px-3 rounded hover:bg-green-700 transition-colors duration-300"
+              >
+                <FaEnvelope />
+                {resendLoading ? "Sending..." : "Resend Verification Email"}
+              </button>
+            </div>
+          )}
         </div>
       )}
 

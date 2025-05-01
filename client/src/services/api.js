@@ -84,6 +84,8 @@ export const authAPI = {
   register: (userData) => api.post('/users/register', userData),
   logout: () => api.post('/users/logout'),
   getCurrentUser: () => api.get('/users/get-current-user'),
+  verifyEmail: (token) => api.get(`/users/verify-email/${token}`),
+  resendVerification: (email) => api.post('/users/resend-verification', { email }),
 };
 
 // Profile API functions
