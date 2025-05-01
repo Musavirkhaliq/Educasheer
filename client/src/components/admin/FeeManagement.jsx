@@ -145,10 +145,20 @@ const FeeManagement = () => {
 
   // Handle payment recording success
   const handlePaymentRecorded = (updatedFee) => {
+    // Update the fee in the fees list
     setFees(fees.map(fee => fee._id === updatedFee._id ? updatedFee : fee));
-    setShowPaymentForm(false);
-    setSuccess("Payment recorded successfully");
-    setTimeout(() => setSuccess(""), 3000);
+
+    // Show success message
+    setSuccess(`Payment recorded successfully for ${updatedFee.course.title}`);
+
+    // Close the payment form after a short delay to allow user to see the success message
+    setTimeout(() => {
+      setShowPaymentForm(false);
+      setSelectedFee(null);
+    }, 2000);
+
+    // Clear success message after a longer delay
+    setTimeout(() => setSuccess(""), 5000);
   };
 
   // Handle invoice generation success
@@ -187,8 +197,11 @@ const FeeManagement = () => {
     <div className="bg-white rounded-lg shadow-md p-6">
       {/* Success and Error Messages */}
       {success && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-          {success}
+        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4 flex items-center justify-center">
+          <svg className="w-5 h-5 mr-2 text-green-600" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path>
+          </svg>
+          <span className="font-medium">{success}</span>
         </div>
       )}
       {error && (

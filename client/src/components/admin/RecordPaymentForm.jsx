@@ -100,12 +100,15 @@ const RecordPaymentForm = ({ fee, onSuccess, onCancel }) => {
 
       // Show success message
       setError("");
-      setSuccess(`Payment of $${parseFloat(amount).toFixed(2)} recorded successfully!`);
+      const amountValue = parseFloat(amount);
+      setSuccess(`Payment of $${amountValue.toFixed(2)} recorded successfully! The fee status is now ${newStatus.toUpperCase()}.`);
 
-      // Call onSuccess with the updated fee and automatically close the form after a short delay
-      setTimeout(() => {
-        onSuccess(updatedFee);
-      }, 1500); // Delay to allow user to see the success message and updated payment
+      // Call onSuccess immediately with the updated fee
+      // This will update the fee list in the parent component
+      onSuccess(updatedFee);
+
+      // Don't close the form yet, let the user see the success message and updated payment history
+      // The form will be closed by the parent component
     } catch (error) {
       setError(
         error.response?.data?.message ||
@@ -125,9 +128,9 @@ const RecordPaymentForm = ({ fee, onSuccess, onCancel }) => {
       )}
 
       {success && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4 flex items-center">
-          <FaCheckCircle className="mr-2" />
-          {success}
+        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4 flex items-center justify-center">
+          <FaCheckCircle className="mr-2 text-green-600 text-xl" />
+          <span className="font-medium">{success}</span>
         </div>
       )}
 
@@ -213,7 +216,7 @@ const RecordPaymentForm = ({ fee, onSuccess, onCancel }) => {
           step="0.01"
           max={remainingAmount}
           required
-          disabled={loadingPayments || remainingAmount <= 0}
+          disabled={loadingPayments || remainingAmount <= 0 || success}
         />
         {remainingAmount <= 0 && (
           <p className="text-green-600 text-xs mt-1">This fee has been fully paid.</p>
@@ -229,6 +232,7 @@ const RecordPaymentForm = ({ fee, onSuccess, onCancel }) => {
           value={paymentMethod}
           onChange={(e) => setPaymentMethod(e.target.value)}
           required
+          disabled={success}
         >
           <option value="cash">Cash</option>
           <option value="bank_transfer">Bank Transfer</option>
@@ -250,6 +254,7 @@ const RecordPaymentForm = ({ fee, onSuccess, onCancel }) => {
           onChange={(e) => setPaymentDate(e.target.value)}
           max={new Date().toISOString().split("T")[0]}
           required
+          disabled={success}
         />
       </div>
 
@@ -262,6 +267,7 @@ const RecordPaymentForm = ({ fee, onSuccess, onCancel }) => {
           className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
           value={transactionId}
           onChange={(e) => setTransactionId(e.target.value)}
+          disabled={success}
         />
       </div>
 
@@ -274,36 +280,51 @@ const RecordPaymentForm = ({ fee, onSuccess, onCancel }) => {
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows="2"
+          disabled={success}
         ></textarea>
       </div>
 
       <div className="flex justify-between">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="bg-blue-100 text-blue-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-          disabled={loading || success}
-        >
-          Done
-        </button>
+        {success ? (
+          <div className="flex justify-center w-full">
+            <button
+              type="button"
+              onClick={onCancel}
+              className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded focus:outline-none focus:shadow-outline"
+            >
+              Close
+            </button>
+          </div>
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={onCancel}
+              className="bg-blue-100 text-blue-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              disabled={loading}
+            >
+              Done
+            </button>
 
-        <div className="flex space-x-2">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            disabled={loading || success}
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            className="bg-[#00bcd4] hover:bg-[#01427a] text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            disabled={loading || loadingPayments || remainingAmount <= 0 || success}
-          >
-            {loading ? "Recording..." : success ? "Payment Recorded" : "Record Payment"}
-          </button>
-        </div>
+            <div className="flex space-x-2">
+              <button
+                type="button"
+                onClick={onCancel}
+                className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                disabled={loading}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="bg-[#00bcd4] hover:bg-[#01427a] text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                disabled={loading || loadingPayments || remainingAmount <= 0}
+              >
+                {loading ? "Recording..." : "Record Payment"}
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </form>
   );
