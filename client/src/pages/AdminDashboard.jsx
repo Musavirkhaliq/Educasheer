@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Navigate } from "react-router-dom";
 import axios from "axios";
+import FeeManagement from "../components/admin/FeeManagement";
 
 const AdminDashboard = () => {
   const { currentUser, isAuthenticated } = useAuth();
@@ -88,9 +89,9 @@ const AdminDashboard = () => {
       );
 
       // Update applications list
-      setApplications(applications.map(app => 
-        app._id === applicationId 
-          ? { ...app, status, adminFeedback } 
+      setApplications(applications.map(app =>
+        app._id === applicationId
+          ? { ...app, status, adminFeedback }
           : app
       ));
 
@@ -123,9 +124,9 @@ const AdminDashboard = () => {
       );
 
       // Update users list
-      setUsers(users.map(user => 
-        user._id === userId 
-          ? { ...user, role } 
+      setUsers(users.map(user =>
+        user._id === userId
+          ? { ...user, role }
           : user
       ));
 
@@ -178,6 +179,16 @@ const AdminDashboard = () => {
         >
           Manage Users
         </button>
+        <button
+          className={`py-2 px-4 font-medium ${
+            activeTab === "fees"
+              ? "text-[#00bcd4] border-b-2 border-[#00bcd4]"
+              : "text-gray-500 hover:text-gray-700"
+          }`}
+          onClick={() => setActiveTab("fees")}
+        >
+          Fee Management
+        </button>
       </div>
 
       {/* Content */}
@@ -191,7 +202,7 @@ const AdminDashboard = () => {
           {activeTab === "applications" && (
             <div>
               <h2 className="text-xl font-semibold text-gray-800 mb-4">Tutor Applications</h2>
-              
+
               {applications.length === 0 ? (
                 <p className="text-gray-600">No applications found.</p>
               ) : (
@@ -244,9 +255,9 @@ const AdminDashboard = () => {
                               onClick={() => {
                                 alert(`
                                   Qualifications: ${application.qualifications}
-                                  
+
                                   Experience: ${application.experience}
-                                  
+
                                   Specialization: ${application.specialization}
                                 `);
                               }}
@@ -305,7 +316,7 @@ const AdminDashboard = () => {
           {activeTab === "users" && (
             <div>
               <h2 className="text-xl font-semibold text-gray-800 mb-4">Manage Users</h2>
-              
+
               {users.length === 0 ? (
                 <p className="text-gray-600">No users found.</p>
               ) : (
@@ -391,6 +402,11 @@ const AdminDashboard = () => {
                 </div>
               )}
             </div>
+          )}
+
+          {/* Fee Management Tab */}
+          {activeTab === "fees" && (
+            <FeeManagement />
           )}
         </>
       )}

@@ -9,6 +9,7 @@ import {
   PenTool,
   ShoppingBag,
   BookOpen,
+  Receipt,
 } from "lucide-react";
 import { FaHome, FaLayerGroup } from "react-icons/fa";
 import { MdNotifications } from "react-icons/md";
@@ -79,6 +80,11 @@ const adminLinks = [
     name: "Manage Users",
     address: "users",
     icon: <MapPin />,
+  },
+  {
+    name: "Fee Management",
+    address: "fees",
+    icon: <Receipt />,
   },
   {
     name: "Manage Videos",

@@ -22,6 +22,7 @@ import BlogDetailPage from "../pages/BlogDetailPage";
 import BlogCreatePage from "../pages/BlogCreatePage";
 import BlogEditPage from "../pages/BlogEditPage";
 import QRScannerTestPage from "../pages/QRScannerTestPage";
+import InvoiceView from "../components/admin/InvoiceView";
 
 export const homeRoutes = [
   {
@@ -229,6 +230,15 @@ export const homeRoutes = [
     element: (
       <Suspense fallback={<h1>Loading</h1>}>
         <BlogEditPage />
+      </Suspense>
+    ),
+  },
+  // Invoice routes
+  {
+    path: "admin/invoice/:invoiceId",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <InvoiceView />
       </Suspense>
     ),
   },
