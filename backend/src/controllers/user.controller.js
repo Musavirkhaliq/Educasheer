@@ -565,6 +565,111 @@ const getWatchHistory = asyncHandler(async (req, res) => {
       )
     );
 });
+// Google OAuth login handler
+const googleLogin = asyncHandler(async (req, res) => {
+  try {
+    const { googleId, email, fullName, avatar, picture, name, sub } = req.body;
+
+    // Support both formats: googleId or sub (from Google's JWT)
+    const userGoogleId = googleId || sub;
+    const userName = fullName || name;
+    const userAvatar = avatar || picture;
+
+    if (!userGoogleId || !email) {
+      throw new ApiError(400, "Google ID and email are required");
+    }
+
+    console.log("Google login attempt:", { googleId: userGoogleId, email });
+
+    // Check if user already exists with this Google ID
+    let user = await User.findOne({ googleId: userGoogleId });
+
+    // If user doesn't exist with Google ID, check if email exists
+    if (!user) {
+      user = await User.findOne({ email: email.toLowerCase() });
+
+      // If user exists with email but no Google ID, update the user with Google info
+      if (user) {
+        console.log("Existing user found with email, updating with Google ID");
+        user.googleId = userGoogleId;
+        user.authProvider = "google";
+
+        // Update avatar if not already set
+        if (!user.avatar || user.avatar.includes("ui-avatars.com")) {
+          user.avatar = userAvatar;
+        }
+
+        await user.save({ validateBeforeSave: false });
+      } else {
+        // Create new user with Google info
+        console.log("Creating new user with Google account");
+
+        // Generate a unique username based on email
+        const baseUsername = email.split('@')[0].toLowerCase();
+        let username = baseUsername;
+        let counter = 1;
+
+        // Check if username exists, if so, append a number
+        while (await User.findOne({ username })) {
+          username = `${baseUsername}${counter}`;
+          counter++;
+        }
+
+        user = await User.create({
+          email: email.toLowerCase(),
+          fullName: userName || email.split('@')[0],
+          username,
+          googleId: userGoogleId,
+          avatar: userAvatar || "https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff",
+          authProvider: "google",
+          role: "learner",
+          tutorStatus: "none"
+        });
+      }
+    }
+
+    // Generate tokens
+    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
+
+    // Get user data without sensitive fields
+    const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
+
+    // Set cookie options
+    const options = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+    };
+
+    // Send response
+    return res
+      .status(200)
+      .cookie("accessToken", accessToken, options)
+      .cookie("refreshToken", refreshToken, options)
+      .json(
+        new ApiResponse(200, {
+          user: loggedInUser,
+          accessToken,
+          refreshToken,
+        }, "Google login successful")
+      );
+  } catch (error) {
+    console.error("Google login error:", error);
+
+    if (error instanceof ApiError) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+        errors: error.errors
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Something went wrong during Google login"
+    });
+  }
+});
+
 export {
   registerUser,
   loginUser,
@@ -578,4 +683,5 @@ export {
   updateUserCoverImage,
   getUserChannelProfile,
   getWatchHistory,
+  googleLogin,
 };

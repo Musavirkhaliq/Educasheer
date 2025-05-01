@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FaEye, FaEyeSlash, FaUpload } from "react-icons/fa";
+import { FaEye, FaEyeSlash, FaUpload, FaGoogle } from "react-icons/fa";
 import { authAPI } from "../services/api";
+import { useGoogleLogin } from "@react-oauth/google";
+import { useAuth } from "../context/AuthContext";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -17,6 +19,59 @@ const Signup = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { googleLogin } = useAuth();
+
+  // Check if Google Client ID is available
+  const isGoogleClientIdAvailable = !!import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
+  // Handle Google login/signup
+  const handleGoogleSignup = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        setLoading(true);
+        setError("");
+
+        // Get user info from Google
+        const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: {
+            Authorization: `Bearer ${tokenResponse.access_token}`,
+          },
+        });
+
+        const userInfo = await userInfoResponse.json();
+        console.log("Google user info:", userInfo);
+
+        // Login with Google
+        const user = await googleLogin(userInfo);
+
+        // Show success message
+        const successMessage = `Account created successfully! You are logged in as a ${user.role}.`;
+
+        // Redirect based on role
+        if (user.role === "admin") {
+          setTimeout(() => navigate("/admin"), 500);
+        } else if (user.role === "tutor") {
+          setTimeout(() => navigate("/profile"), 500);
+        } else {
+          setTimeout(() => navigate("/profile"), 500);
+        }
+
+        // Alert the user about their role
+        alert(successMessage);
+      } catch (error) {
+        console.error("Google signup error:", error);
+        setError(error.message || "Google signup failed. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    },
+    onError: (error) => {
+      console.error("Google signup error:", error);
+      setError("Google signup failed. Please try again.");
+    },
+    // Only flow will be 'implicit' by default
+    flow: 'implicit'
+  });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -254,6 +309,35 @@ const Signup = () => {
           {loading ? "Creating Account..." : "Sign Up"}
         </button>
       </form>
+
+      <div className="mt-4 relative">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-gray-300"></div>
+        </div>
+        <div className="relative flex justify-center text-sm">
+          <span className="px-2 bg-white text-gray-500">Or continue with</span>
+        </div>
+      </div>
+
+      <div className="mt-4">
+        <button
+          type="button"
+          onClick={handleGoogleSignup}
+          disabled={loading || !isGoogleClientIdAvailable}
+          className={`w-full flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 py-2 rounded-lg font-medium hover:bg-gray-50 transition-colors duration-300 ${
+            (loading || !isGoogleClientIdAvailable) ? "opacity-70 cursor-not-allowed" : ""
+          }`}
+          title={!isGoogleClientIdAvailable ? "Google signup is not configured" : ""}
+        >
+          <FaGoogle className="text-red-500" />
+          {loading ? "Processing..." : "Sign up with Google"}
+        </button>
+        {!isGoogleClientIdAvailable && (
+          <p className="text-xs text-gray-500 mt-1 text-center">
+            Google signup is not configured correctly
+          </p>
+        )}
+      </div>
 
       <div className="mt-6 text-center">
         <p className="text-gray-600">

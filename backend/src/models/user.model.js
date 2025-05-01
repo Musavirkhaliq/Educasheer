@@ -41,7 +41,10 @@ const userSchema = new Schema({
     ],
     password: {
         type: String,
-        required: [true, 'Password is required'],
+        required: function() {
+            // Password is required only if the user is not using Google auth
+            return !this.googleId;
+        },
     },
     refreshToken: {
         type: String,
@@ -55,6 +58,16 @@ const userSchema = new Schema({
         type: String,
         enum: ["none", "pending", "approved", "rejected"],
         default: "none"
+    },
+    googleId: {
+        type: String,
+        unique: true,
+        sparse: true, // This allows null values and only enforces uniqueness for non-null values
+    },
+    authProvider: {
+        type: String,
+        enum: ["local", "google"],
+        default: "local"
     }
 }
     , {

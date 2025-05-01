@@ -96,6 +96,44 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Google login function
+  const googleLogin = async (googleData) => {
+    setLoading(true);
+    setError(null);
+    console.log('AuthContext - Google login attempt');
+
+    try {
+      const response = await authAPI.googleLogin({
+        googleId: googleData.sub,
+        email: googleData.email,
+        fullName: googleData.name,
+        avatar: googleData.picture
+      });
+
+      console.log('AuthContext - Google login response:', response.data);
+
+      const { user, accessToken, refreshToken } = response.data.data;
+
+      // Store auth data in localStorage
+      localStorage.setItem('accessToken', accessToken);
+      localStorage.setItem('refreshToken', refreshToken);
+      localStorage.setItem('user', JSON.stringify(user));
+
+      console.log('AuthContext - User data stored in localStorage');
+      console.log('AuthContext - Setting current user:', user);
+
+      // Update state
+      setCurrentUser(user);
+      return user;
+    } catch (error) {
+      console.error('AuthContext - Google login error:', error);
+      setError(error.response?.data?.message || 'Google login failed');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Register function
   const register = async (userData) => {
     setLoading(true);
@@ -153,6 +191,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     error,
     login,
+    googleLogin,
     register,
     logout,
     isAuthenticated: !!currentUser,
