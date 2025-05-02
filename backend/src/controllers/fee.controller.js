@@ -277,7 +277,7 @@ const generateInvoice = asyncHandler(async (req, res) => {
         const fee = await Fee.findById(feeId)
             .populate("user", "fullName username email")
             .populate("course", "title");
-        
+
         if (!fee) {
             throw new ApiError(404, "Fee not found");
         }
@@ -416,12 +416,190 @@ const getInvoiceById = asyncHandler(async (req, res) => {
     }
 });
 
+// Update fee details
+const updateFee = asyncHandler(async (req, res) => {
+    try {
+        // Check if user is admin
+        if (req.user.role !== "admin") {
+            throw new ApiError(403, "Unauthorized access. Only admins can update fees");
+        }
+
+        const { feeId } = req.params;
+        const { amount, dueDate, description } = req.body;
+
+        if (!feeId) {
+            throw new ApiError(400, "Fee ID is required");
+        }
+
+        // Check if fee exists
+        const fee = await Fee.findById(feeId);
+        if (!fee) {
+            throw new ApiError(404, "Fee not found");
+        }
+
+        // Update fee fields if provided
+        if (amount !== undefined) fee.amount = amount;
+        if (dueDate !== undefined) fee.dueDate = new Date(dueDate);
+        if (description !== undefined) fee.description = description;
+
+        await fee.save();
+
+        // Return updated fee
+        const updatedFee = await Fee.findById(feeId)
+            .populate("user", "fullName username email avatar")
+            .populate("course", "title slug")
+            .populate("createdBy", "fullName username");
+
+        return res.status(200).json(
+            new ApiResponse(200, updatedFee, "Fee updated successfully")
+        );
+    } catch (error) {
+        if (error instanceof ApiError) {
+            throw error;
+        }
+        throw new ApiError(500, "Something went wrong while updating fee");
+    }
+});
+
+// Update payment details
+const updatePayment = asyncHandler(async (req, res) => {
+    try {
+        // Check if user is admin
+        if (req.user.role !== "admin") {
+            throw new ApiError(403, "Unauthorized access. Only admins can update payments");
+        }
+
+        const { paymentId } = req.params;
+        const { amount, paymentMethod, paymentDate, transactionId, notes } = req.body;
+
+        if (!paymentId) {
+            throw new ApiError(400, "Payment ID is required");
+        }
+
+        // Check if payment exists
+        const payment = await Payment.findById(paymentId);
+        if (!payment) {
+            throw new ApiError(404, "Payment not found");
+        }
+
+        // Update payment fields if provided
+        if (amount !== undefined) payment.amount = amount;
+        if (paymentMethod !== undefined) payment.paymentMethod = paymentMethod;
+        if (paymentDate !== undefined) payment.paymentDate = new Date(paymentDate);
+        if (transactionId !== undefined) payment.transactionId = transactionId;
+        if (notes !== undefined) payment.notes = notes;
+
+        await payment.save();
+
+        // Recalculate fee status based on updated payment
+        const feeId = payment.fee;
+        const fee = await Fee.findById(feeId);
+
+        if (fee) {
+            // Calculate total payments for this fee
+            const payments = await Payment.find({ fee: feeId });
+            const totalPaid = payments.reduce((sum, p) => sum + p.amount, 0);
+
+            // Update fee status based on payment
+            let newStatus = "pending";
+            if (totalPaid >= fee.amount) {
+                newStatus = "paid";
+            } else if (totalPaid > 0) {
+                newStatus = "partial";
+            }
+
+            // Update fee status
+            fee.status = newStatus;
+            await fee.save();
+        }
+
+        // Return updated payment
+        const updatedPayment = await Payment.findById(paymentId)
+            .populate("user", "fullName username email")
+            .populate("fee")
+            .populate("recordedBy", "fullName username");
+
+        return res.status(200).json(
+            new ApiResponse(200, {
+                payment: updatedPayment,
+                feeStatus: fee ? fee.status : null
+            }, "Payment updated successfully")
+        );
+    } catch (error) {
+        if (error instanceof ApiError) {
+            throw error;
+        }
+        throw new ApiError(500, "Something went wrong while updating payment");
+    }
+});
+
+// Delete payment
+const deletePayment = asyncHandler(async (req, res) => {
+    try {
+        // Check if user is admin
+        if (req.user.role !== "admin") {
+            throw new ApiError(403, "Unauthorized access. Only admins can delete payments");
+        }
+
+        const { paymentId } = req.params;
+
+        if (!paymentId) {
+            throw new ApiError(400, "Payment ID is required");
+        }
+
+        // Check if payment exists
+        const payment = await Payment.findById(paymentId);
+        if (!payment) {
+            throw new ApiError(404, "Payment not found");
+        }
+
+        // Store fee ID before deleting payment
+        const feeId = payment.fee;
+
+        // Delete payment
+        await Payment.findByIdAndDelete(paymentId);
+
+        // Recalculate fee status after payment deletion
+        const fee = await Fee.findById(feeId);
+
+        if (fee) {
+            // Calculate total payments for this fee
+            const payments = await Payment.find({ fee: feeId });
+            const totalPaid = payments.reduce((sum, p) => sum + p.amount, 0);
+
+            // Update fee status based on payment
+            let newStatus = "pending";
+            if (totalPaid >= fee.amount) {
+                newStatus = "paid";
+            } else if (totalPaid > 0) {
+                newStatus = "partial";
+            }
+
+            // Update fee status
+            fee.status = newStatus;
+            await fee.save();
+        }
+
+        return res.status(200).json(
+            new ApiResponse(200, { feeStatus: fee ? fee.status : null }, "Payment deleted successfully")
+        );
+    } catch (error) {
+        if (error instanceof ApiError) {
+            throw error;
+        }
+        throw new ApiError(500, "Something went wrong while deleting payment");
+    }
+});
+
 export {
     createFee,
     getAllFees,
     getUserFees,
     updateFeeStatus,
+    updateFee,
     recordPayment,
+    updatePayment,
+    deletePayment,
     getFeePayments,
     generateInvoice,
     getAllInvoices,

@@ -3,6 +3,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { User } from "../models/user.model.js";
 import { TutorApplication } from "../models/tutorApplication.model.js";
+import { Course } from "../models/course.model.js";
 
 // Get all users (admin only)
 const getAllUsers = asyncHandler(async (req, res) => {
@@ -86,6 +87,53 @@ const updateUserRole = asyncHandler(async (req, res) => {
     }
 });
 
+// Enroll user in a course (admin only)
+const enrollUserInCourse = asyncHandler(async (req, res) => {
+    try {
+        // Check if user is admin
+        if (req.user.role !== "admin") {
+            throw new ApiError(403, "Unauthorized access. Only admins can enroll users in courses");
+        }
+
+        const { userId } = req.params;
+        const { courseId } = req.body;
+
+        if (!userId || !courseId) {
+            throw new ApiError(400, "User ID and Course ID are required");
+        }
+
+        // Check if user exists
+        const user = await User.findById(userId);
+        if (!user) {
+            throw new ApiError(404, "User not found");
+        }
+
+        // Check if course exists
+        const course = await Course.findById(courseId);
+        if (!course) {
+            throw new ApiError(404, "Course not found");
+        }
+
+        // Check if user is already enrolled
+        if (course.enrolledStudents.includes(userId)) {
+            throw new ApiError(400, "User is already enrolled in this course");
+        }
+
+        // Add user to enrolled students
+        course.enrolledStudents.push(userId);
+        await course.save();
+
+        return res.status(200).json(
+            new ApiResponse(200, course, "User enrolled in course successfully")
+        );
+    } catch (error) {
+        if (error instanceof ApiError) {
+            throw error;
+        }
+        throw new ApiError(500, "Something went wrong while enrolling user in course");
+    }
+});
+
 // Create admin user (for seeding the database)
 const createAdminUser = asyncHandler(async (req, res) => {
     try {
@@ -123,5 +171,6 @@ const createAdminUser = asyncHandler(async (req, res) => {
 export {
     getAllUsers,
     updateUserRole,
+    enrollUserInCourse,
     createAdminUser
 };
