@@ -21,10 +21,31 @@ const ProgramDetail = () => {
   useEffect(() => {
     const fetchProgramDetails = async () => {
       try {
+        // Log authentication status for debugging
+        console.log('ProgramDetail - Authentication status:', {
+          isAuthenticated,
+          currentUser: currentUser ? {
+            id: currentUser._id,
+            role: currentUser.role
+          } : null,
+          hasToken: !!localStorage.getItem('accessToken')
+        });
+
         // Use customFetch which includes auth token if user is logged in
         const response = await customFetch.get(`/programs/${programId}`);
         console.log('Program data:', response.data.data);
-        setProgram(response.data.data);
+
+        // Log enrollment status for debugging
+        const programData = response.data.data;
+        console.log('ProgramDetail - Enrollment status:', {
+          isEnrolledFlag: programData.isEnrolled,
+          enrolledStudents: programData.enrolledStudents?.length,
+          currentUserInList: currentUser ? programData.enrolledStudents?.some(
+            id => id.toString() === currentUser._id.toString()
+          ) : false
+        });
+
+        setProgram(programData);
       } catch (error) {
         console.error('Error fetching program details:', error);
         setError(error.response?.data?.message || 'Failed to load program details');
@@ -34,42 +55,107 @@ const ProgramDetail = () => {
     };
 
     fetchProgramDetails();
-  }, [programId]);
+  }, [programId, currentUser, isAuthenticated]);
 
   const handleEnroll = async () => {
     if (!currentUser) {
+      console.log('ProgramDetail - No user logged in, redirecting to login');
       navigate('/login', { state: { from: `/programs/${programId}` } });
       return;
     }
 
+    console.log('ProgramDetail - Starting enrollment process');
     setEnrolling(true);
 
     try {
       // Use customFetch which includes auth token in headers
-      await customFetch.post(`/programs/${programId}/enroll`);
+      console.log('ProgramDetail - Sending enrollment request');
+      const response = await customFetch.post(`/programs/${programId}/enroll`);
+      console.log('ProgramDetail - Enrollment successful:', response.data);
 
-      // Update the program state to reflect enrollment
-      setProgram(prev => ({
-        ...prev,
-        enrolledStudents: [...(prev.enrolledStudents || []), currentUser._id]
-      }));
+      // Show success message
+      alert('Successfully enrolled in the program! You can now access all courses in this program.');
 
+      // Fetch the updated program data
+      console.log('ProgramDetail - Fetching updated program data');
+      try {
+        const updatedResponse = await customFetch.get(`/programs/${programId}`);
+        const updatedProgram = updatedResponse.data.data;
+
+        console.log('ProgramDetail - Updated program data received:', {
+          isEnrolled: updatedProgram.isEnrolled,
+          enrolledStudents: updatedProgram.enrolledStudents?.length
+        });
+
+        // Make sure the isEnrolled flag is set correctly
+        if (!updatedProgram.isEnrolled && currentUser) {
+          console.log('ProgramDetail - Fixing isEnrolled flag manually');
+          updatedProgram.isEnrolled = true;
+        }
+
+        setProgram(updatedProgram);
+      } catch (fetchError) {
+        console.error('Error fetching updated program data:', fetchError);
+
+        // If fetching updated data fails, update the program state locally
+        const updatedProgram = {
+          ...program,
+          isEnrolled: true,
+          enrolledStudents: [...(program.enrolledStudents || []), currentUser._id]
+        };
+
+        console.log('ProgramDetail - Using local program update as fallback');
+        setProgram(updatedProgram);
+      }
     } catch (error) {
       console.error('Error enrolling in program:', error);
-      alert(error.response?.data?.message || 'Failed to enroll in program');
+      alert(error.response?.data?.message || 'Failed to enroll in program. Please try again.');
     } finally {
       setEnrolling(false);
     }
   };
 
   const isEnrolled = () => {
+    // Log enrollment check for debugging
+    console.log('ProgramDetail - Checking enrollment status:', {
+      isEnrolledFlag: program?.isEnrolled,
+      hasCurrentUser: !!currentUser,
+      currentUserId: currentUser?._id,
+      enrolledStudents: program?.enrolledStudents?.length,
+      enrolledStudentsArray: program?.enrolledStudents
+    });
+
+    // Manual check if user's ID is in the enrolledStudents array
+    if (currentUser && program?.enrolledStudents && Array.isArray(program.enrolledStudents)) {
+      // First convert all IDs to strings for proper comparison
+      const userIdStr = currentUser._id.toString();
+      const enrolledStudentIds = program.enrolledStudents.map(id =>
+        typeof id === 'string' ? id : id.toString()
+      );
+
+      // Check if user's ID is in the array
+      const isUserEnrolled = enrolledStudentIds.includes(userIdStr);
+
+      console.log('ProgramDetail - Manual enrollment check:', {
+        userIdStr,
+        enrolledStudentIds,
+        isUserEnrolled
+      });
+
+      // If we found the user is enrolled, override the backend flag
+      if (isUserEnrolled) {
+        return true;
+      }
+    }
+
     // Use the isEnrolled flag from the backend if available
     if (program?.isEnrolled !== undefined) {
+      console.log('ProgramDetail - Using isEnrolled flag from backend:', program.isEnrolled);
       return program.isEnrolled;
     }
-    // Fallback to the old method
-    if (!currentUser || !program) return false;
-    return program.enrolledStudents?.some(student => student === currentUser._id);
+
+    // Not enrolled if no user or no program data
+    return false;
   };
 
   const canEdit = () => {

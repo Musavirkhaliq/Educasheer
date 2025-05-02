@@ -15,21 +15,61 @@ import customFetch from '../utils/customFetch';
 
 const CourseDetail = () => {
   const { courseId } = useParams();
-  const { currentUser, isAuthenticated } = useAuth();
+  const { currentUser, isAuthenticated, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [enrolling, setEnrolling] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
 
+  // Effect to track when authentication is complete
   useEffect(() => {
+    if (!authLoading) {
+      console.log('CourseDetail - Auth loading complete, auth state:', {
+        isAuthenticated,
+        currentUser: currentUser ? { id: currentUser._id, role: currentUser.role } : null
+      });
+      setAuthChecked(true);
+    }
+  }, [authLoading, isAuthenticated, currentUser]);
+
+  // Effect to fetch course details after authentication is checked
+  useEffect(() => {
+    // Only fetch course details after authentication check is complete
+    if (!authChecked) {
+      console.log('CourseDetail - Waiting for auth check to complete');
+      return;
+    }
+
     const fetchCourseDetails = async () => {
       try {
+        // Log authentication status for debugging
+        console.log('CourseDetail - Authentication status:', {
+          isAuthenticated,
+          currentUser: currentUser ? {
+            id: currentUser._id,
+            role: currentUser.role
+          } : null,
+          hasToken: !!localStorage.getItem('accessToken')
+        });
+
         // Use customFetch which includes auth token if user is logged in
         const response = await customFetch.get(`/courses/${courseId}`);
         console.log('Course data:', response.data.data);
-        setCourse(response.data.data);
+
+        // Log enrollment status for debugging
+        const courseData = response.data.data;
+        console.log('CourseDetail - Enrollment status:', {
+          isEnrolledFlag: courseData.isEnrolled,
+          enrolledStudents: courseData.enrolledStudents?.length,
+          currentUserInList: currentUser ? courseData.enrolledStudents?.some(
+            id => id.toString() === currentUser._id.toString()
+          ) : false
+        });
+
+        setCourse(courseData);
       } catch (error) {
         console.error('Error fetching course details:', error);
         setError(error.response?.data?.message || 'Failed to load course details. Please try again later.');
@@ -39,7 +79,7 @@ const CourseDetail = () => {
     };
 
     fetchCourseDetails();
-  }, [courseId]);
+  }, [courseId, currentUser, isAuthenticated, authChecked]);
 
   // Calculate total duration of all videos
   const calculateTotalDuration = () => {
@@ -73,21 +113,19 @@ const CourseDetail = () => {
 
   const handleEnroll = async () => {
     if (!currentUser) {
+      console.log('CourseDetail - No user logged in, redirecting to login');
       navigate('/login', { state: { from: `/courses/${courseId}` } });
       return;
     }
 
+    console.log('CourseDetail - Starting enrollment process');
     setEnrolling(true);
 
     try {
       // Use customFetch which includes auth token in headers
-      await customFetch.post(`/courses/${courseId}/enroll`);
-
-      // Update the course state to reflect enrollment
-      setCourse({
-        ...course,
-        enrolledStudents: [...(course.enrolledStudents || []), currentUser._id]
-      });
+      console.log('CourseDetail - Sending enrollment request');
+      const response = await customFetch.post(`/courses/${courseId}/enroll`);
+      console.log('CourseDetail - Enrollment successful:', response.data);
 
       // Show different messages based on course type
       if (course.courseType === 'offline') {
@@ -96,8 +134,37 @@ const CourseDetail = () => {
         alert('Successfully enrolled in the course! You can now access all videos.');
       }
 
-      // Refresh the page to show enrolled content
-      window.location.reload();
+      // Fetch the updated course data
+      console.log('CourseDetail - Fetching updated course data');
+      try {
+        const updatedResponse = await customFetch.get(`/courses/${courseId}`);
+        const updatedCourse = updatedResponse.data.data;
+
+        console.log('CourseDetail - Updated course data received:', {
+          isEnrolled: updatedCourse.isEnrolled,
+          enrolledStudents: updatedCourse.enrolledStudents?.length
+        });
+
+        // Make sure the isEnrolled flag is set correctly
+        if (!updatedCourse.isEnrolled && currentUser) {
+          console.log('CourseDetail - Fixing isEnrolled flag manually');
+          updatedCourse.isEnrolled = true;
+        }
+
+        setCourse(updatedCourse);
+      } catch (fetchError) {
+        console.error('Error fetching updated course data:', fetchError);
+
+        // If fetching updated data fails, update the course state locally
+        const updatedCourse = {
+          ...course,
+          isEnrolled: true,
+          enrolledStudents: [...(course.enrolledStudents || []), currentUser._id]
+        };
+
+        console.log('CourseDetail - Using local course update as fallback');
+        setCourse(updatedCourse);
+      }
     } catch (error) {
       console.error('Error enrolling in course:', error);
       alert(error.response?.data?.message || 'Failed to enroll in course. Please try again.');
@@ -107,12 +174,46 @@ const CourseDetail = () => {
   };
 
   const isEnrolled = () => {
+    // Log enrollment check for debugging
+    console.log('CourseDetail - Checking enrollment status:', {
+      isEnrolledFlag: course?.isEnrolled,
+      hasCurrentUser: !!currentUser,
+      currentUserId: currentUser?._id,
+      enrolledStudents: course?.enrolledStudents?.length,
+      enrolledStudentsArray: course?.enrolledStudents
+    });
+
+    // Manual check if user's ID is in the enrolledStudents array
+    if (currentUser && course?.enrolledStudents && Array.isArray(course.enrolledStudents)) {
+      // First convert all IDs to strings for proper comparison
+      const userIdStr = currentUser._id.toString();
+      const enrolledStudentIds = course.enrolledStudents.map(id =>
+        typeof id === 'string' ? id : id.toString()
+      );
+
+      // Check if user's ID is in the array
+      const isUserEnrolled = enrolledStudentIds.includes(userIdStr);
+
+      console.log('CourseDetail - Manual enrollment check:', {
+        userIdStr,
+        enrolledStudentIds,
+        isUserEnrolled
+      });
+
+      // If we found the user is enrolled, override the backend flag
+      if (isUserEnrolled) {
+        return true;
+      }
+    }
+
     // Use the isEnrolled flag from the backend if available
     if (course?.isEnrolled !== undefined) {
+      console.log('CourseDetail - Using isEnrolled flag from backend:', course.isEnrolled);
       return course.isEnrolled;
     }
-    // Fallback to the old method
-    return currentUser && course?.enrolledStudents?.includes(currentUser._id);
+
+    // Not enrolled if no user or no course data
+    return false;
   };
 
   const canEdit = () => {
@@ -122,12 +223,14 @@ const CourseDetail = () => {
     );
   };
 
-  if (loading) {
+  if (loading || authLoading || !authChecked) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#00bcd4] mb-4"></div>
-          <p className="text-gray-600">Loading course details...</p>
+          <p className="text-gray-600">
+            {authLoading || !authChecked ? 'Checking authentication...' : 'Loading course details...'}
+          </p>
         </div>
       </div>
     );
