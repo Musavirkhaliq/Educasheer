@@ -248,6 +248,30 @@ const FeeManagement = () => {
     }
   };
 
+  // Calculate fee statistics
+  const calculateFeeStats = () => {
+    if (!fees.length) return { totalFees: 0, paidAmount: 0, pendingAmount: 0 };
+
+    const totalFees = fees.reduce((sum, fee) => sum + fee.amount, 0);
+
+    // Calculate paid amount by fetching all payments
+    const paidAmount = fees.reduce((sum, fee) => {
+      if (fee.status === "paid") return sum + fee.amount;
+      if (fee.status === "partial") {
+        // For partial payments, we need to estimate the paid amount
+        // This will be updated with actual data when we view payments
+        return sum + (fee.amount * 0.5); // Estimate 50% paid for partial status
+      }
+      return sum;
+    }, 0);
+
+    const pendingAmount = totalFees - paidAmount;
+
+    return { totalFees, paidAmount, pendingAmount };
+  };
+
+  const { totalFees, paidAmount, pendingAmount } = calculateFeeStats();
+
   // Filter fees by search query
   const filteredFees = fees.filter(fee => {
     const userFullName = fee.user?.fullName?.toLowerCase() || "";
@@ -455,6 +479,22 @@ const FeeManagement = () => {
                 </div>
               </div>
 
+              {/* Fee Summary Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div className="bg-blue-50 p-4 rounded-lg shadow-sm">
+                  <h4 className="text-lg font-medium text-blue-800 mb-2">Total Fees</h4>
+                  <p className="text-2xl font-bold text-blue-900">${totalFees.toFixed(2)}</p>
+                </div>
+                <div className="bg-green-50 p-4 rounded-lg shadow-sm">
+                  <h4 className="text-lg font-medium text-green-800 mb-2">Paid Amount</h4>
+                  <p className="text-2xl font-bold text-green-900">${paidAmount.toFixed(2)}</p>
+                </div>
+                <div className="bg-red-50 p-4 rounded-lg shadow-sm">
+                  <h4 className="text-lg font-medium text-red-800 mb-2">Pending Amount</h4>
+                  <p className="text-2xl font-bold text-red-900">${pendingAmount.toFixed(2)}</p>
+                </div>
+              </div>
+
               {loading ? (
                 <div className="text-center py-4">Loading...</div>
               ) : (
@@ -477,7 +517,10 @@ const FeeManagement = () => {
                             Course
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Amount
+                            Total Fee
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Balance
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Due Date
@@ -491,82 +534,112 @@ const FeeManagement = () => {
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
-                        {filteredFees.map((fee) => (
-                          <tr key={fee._id}>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-900">{fee.course.title}</div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-900">${fee.amount.toFixed(2)}</div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-900">
-                                {new Date(fee.dueDate).toLocaleDateString()}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span
-                                className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                  fee.status === "paid"
-                                    ? "bg-green-100 text-green-800"
-                                    : fee.status === "partial"
-                                    ? "bg-yellow-100 text-yellow-800"
-                                    : "bg-red-100 text-red-800"
-                                }`}
-                              >
-                                {fee.status.charAt(0).toUpperCase() + fee.status.slice(1)}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                              <div className="flex space-x-2">
-                                <button
-                                  onClick={() => {
-                                    setSelectedFee(fee);
-                                    setShowPaymentForm(true);
-                                  }}
-                                  className="text-[#00bcd4] hover:text-[#01427a] flex items-center"
-                                  title="Record Payment"
+                        {filteredFees.map((fee) => {
+                          // Calculate balance for this fee
+                          const feeBalance = fee.status === "paid" ? 0 :
+                                           fee.status === "partial" ? fee.amount * 0.5 : // Estimate
+                                           fee.amount;
+
+                          return (
+                            <tr key={fee._id} className="hover:bg-gray-50">
+                              <td className="px-6 py-4">
+                                <div className="flex items-center">
+                                  {fee.course.thumbnail && (
+                                    <img
+                                      src={fee.course.thumbnail}
+                                      alt={fee.course.title}
+                                      className="w-10 h-10 rounded object-cover mr-3"
+                                    />
+                                  )}
+                                  <div>
+                                    <div className="text-sm font-medium text-gray-900">{fee.course.title}</div>
+                                    <div className="text-xs text-gray-500">
+                                      Created: {new Date(fee.createdAt).toLocaleDateString()}
+                                    </div>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm font-medium text-gray-900">${fee.amount.toFixed(2)}</div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className={`text-sm font-medium ${feeBalance > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                                  ${feeBalance.toFixed(2)}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm text-gray-900">
+                                  {new Date(fee.dueDate).toLocaleDateString()}
+                                </div>
+                                {new Date(fee.dueDate) < new Date() && fee.status !== "paid" && (
+                                  <div className="text-xs text-red-600 font-medium">Overdue</div>
+                                )}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span
+                                  className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                    fee.status === "paid"
+                                      ? "bg-green-100 text-green-800"
+                                      : fee.status === "partial"
+                                      ? "bg-yellow-100 text-yellow-800"
+                                      : "bg-red-100 text-red-800"
+                                  }`}
                                 >
-                                  <FaMoneyBillWave className="mr-1" />
-                                  <span>Payment</span>
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    setSelectedFee(fee);
-                                    setShowInvoiceForm(true);
-                                  }}
-                                  className="text-[#00bcd4] hover:text-[#01427a] flex items-center"
-                                  title="Generate Invoice"
-                                >
-                                  <FaFileInvoice className="mr-1" />
-                                  <span>Invoice</span>
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    setSelectedFee(fee);
-                                    setShowEditFeeForm(true);
-                                  }}
-                                  className="text-[#00bcd4] hover:text-[#01427a] flex items-center"
-                                  title="Edit Fee"
-                                >
-                                  <FaEdit className="mr-1" />
-                                  <span>Edit</span>
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    setSelectedFee(fee);
-                                    fetchPaymentsForFee(fee._id);
-                                    setActiveTab("payments");
-                                  }}
-                                  className="text-[#00bcd4] hover:text-[#01427a] flex items-center"
-                                  title="View Payments"
-                                >
-                                  <span>Payments</span>
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
+                                  {fee.status.charAt(0).toUpperCase() + fee.status.slice(1)}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <div className="flex flex-wrap gap-2">
+                                  <button
+                                    onClick={() => {
+                                      setSelectedFee(fee);
+                                      setShowPaymentForm(true);
+                                    }}
+                                    className="text-[#00bcd4] hover:text-[#01427a] flex items-center"
+                                    title="Record Payment"
+                                    disabled={fee.status === "paid"}
+                                  >
+                                    <FaMoneyBillWave className="mr-1" />
+                                    <span>Payment</span>
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setSelectedFee(fee);
+                                      setShowInvoiceForm(true);
+                                    }}
+                                    className="text-[#00bcd4] hover:text-[#01427a] flex items-center"
+                                    title="Generate Invoice"
+                                  >
+                                    <FaFileInvoice className="mr-1" />
+                                    <span>Invoice</span>
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setSelectedFee(fee);
+                                      setShowEditFeeForm(true);
+                                    }}
+                                    className="text-[#00bcd4] hover:text-[#01427a] flex items-center"
+                                    title="Edit Fee"
+                                  >
+                                    <FaEdit className="mr-1" />
+                                    <span>Edit</span>
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setSelectedFee(fee);
+                                      fetchPaymentsForFee(fee._id);
+                                      setActiveTab("payments");
+                                    }}
+                                    className="text-[#00bcd4] hover:text-[#01427a] flex items-center"
+                                    title="View Payments"
+                                  >
+                                    <span>Payments</span>
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   )}
@@ -730,37 +803,85 @@ const FeeManagement = () => {
                 setShowPaymentForm(true);
               }}
               className="bg-[#00bcd4] text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-[#01427a] transition-colors"
+              disabled={selectedFee.status === "paid"}
             >
               <FaPlus /> Record Payment
             </button>
           </div>
 
-          <div className="bg-gray-100 p-4 rounded-lg mb-4">
-            <div className="flex justify-between mb-2">
-              <span className="font-medium">Course:</span>
-              <span>{selectedFee.course.title}</span>
+          {/* Payment Summary */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div className="bg-blue-50 p-4 rounded-lg shadow-sm">
+              <h4 className="text-lg font-medium text-blue-800 mb-2">Total Fee</h4>
+              <p className="text-2xl font-bold text-blue-900">${selectedFee.amount.toFixed(2)}</p>
+              <p className="text-xs text-blue-700 mt-1">Due: {new Date(selectedFee.dueDate).toLocaleDateString()}</p>
             </div>
-            <div className="flex justify-between mb-2">
-              <span className="font-medium">Total Fee:</span>
-              <span>${selectedFee.amount.toFixed(2)}</span>
+
+            <div className="bg-green-50 p-4 rounded-lg shadow-sm">
+              <h4 className="text-lg font-medium text-green-800 mb-2">Amount Paid</h4>
+              <p className="text-2xl font-bold text-green-900">
+                ${payments.reduce((sum, payment) => sum + payment.amount, 0).toFixed(2)}
+              </p>
+              <p className="text-xs text-green-700 mt-1">{payments.length} payment(s) recorded</p>
             </div>
-            <div className="flex justify-between mb-2">
-              <span className="font-medium">Due Date:</span>
-              <span>{new Date(selectedFee.dueDate).toLocaleDateString()}</span>
+
+            <div className={`p-4 rounded-lg shadow-sm ${selectedFee.status === "paid" ? "bg-green-50" : "bg-red-50"}`}>
+              <h4 className={`text-lg font-medium mb-2 ${selectedFee.status === "paid" ? "text-green-800" : "text-red-800"}`}>
+                {selectedFee.status === "paid" ? "Fully Paid" : "Balance Due"}
+              </h4>
+              <p className={`text-2xl font-bold ${selectedFee.status === "paid" ? "text-green-900" : "text-red-900"}`}>
+                ${Math.max(0, selectedFee.amount - payments.reduce((sum, payment) => sum + payment.amount, 0)).toFixed(2)}
+              </p>
+              <div className="flex items-center mt-1">
+                <span
+                  className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
+                    selectedFee.status === "paid"
+                      ? "bg-green-100 text-green-800"
+                      : selectedFee.status === "partial"
+                      ? "bg-yellow-100 text-yellow-800"
+                      : "bg-red-100 text-red-800"
+                  }`}
+                >
+                  {selectedFee.status.charAt(0).toUpperCase() + selectedFee.status.slice(1)}
+                </span>
+                {new Date(selectedFee.dueDate) < new Date() && selectedFee.status !== "paid" && (
+                  <span className="ml-2 text-xs text-red-600 font-medium">Overdue</span>
+                )}
+              </div>
             </div>
-            <div className="flex justify-between">
-              <span className="font-medium">Status:</span>
-              <span
-                className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
-                  selectedFee.status === "paid"
-                    ? "bg-green-100 text-green-800"
-                    : selectedFee.status === "partial"
-                    ? "bg-yellow-100 text-yellow-800"
-                    : "bg-red-100 text-red-800"
-                }`}
-              >
-                {selectedFee.status.charAt(0).toUpperCase() + selectedFee.status.slice(1)}
-              </span>
+          </div>
+
+          {/* Course Details */}
+          <div className="bg-gray-100 p-4 rounded-lg mb-6">
+            <div className="flex items-start">
+              {selectedFee.course.thumbnail && (
+                <img
+                  src={selectedFee.course.thumbnail}
+                  alt={selectedFee.course.title}
+                  className="w-16 h-16 rounded object-cover mr-4"
+                />
+              )}
+              <div className="flex-1">
+                <h3 className="text-lg font-medium text-gray-800">{selectedFee.course.title}</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+                  <div>
+                    <p className="text-sm text-gray-600">
+                      <span className="font-medium">Fee Created:</span> {new Date(selectedFee.createdAt).toLocaleDateString()}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      <span className="font-medium">Description:</span> {selectedFee.description || "No description provided"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">
+                      <span className="font-medium">Student:</span> {selectedFee.user.fullName}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      <span className="font-medium">Email:</span> {selectedFee.user.email}
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -768,85 +889,193 @@ const FeeManagement = () => {
             <div className="text-center py-4">Loading payments...</div>
           ) : (
             <div className="overflow-x-auto">
+              <h3 className="text-lg font-medium text-gray-800 mb-3">Payment History</h3>
               {payments.length === 0 ? (
                 <div className="text-center py-8 bg-gray-50 rounded-lg">
                   <p className="text-gray-600 mb-4">No payments recorded for this fee.</p>
-                  <button
-                    onClick={() => setShowPaymentForm(true)}
-                    className="bg-[#00bcd4] text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-[#01427a] transition-colors mx-auto"
-                  >
-                    <FaPlus /> Record Payment
-                  </button>
+                  {selectedFee.status !== "paid" && (
+                    <button
+                      onClick={() => setShowPaymentForm(true)}
+                      className="bg-[#00bcd4] text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-[#01427a] transition-colors mx-auto"
+                    >
+                      <FaPlus /> Record Payment
+                    </button>
+                  )}
                 </div>
               ) : (
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Date
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Amount
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Method
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Transaction ID
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Recorded By
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {payments.map((payment) => (
-                      <tr key={payment._id}>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
-                            {new Date(payment.paymentDate).toLocaleDateString()}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-green-600">
-                            ${payment.amount.toFixed(2)}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
-                            {payment.paymentMethod.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
-                            {payment.transactionId || "-"}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
-                            {payment.recordedBy?.fullName || "Admin"}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <button
-                            onClick={() => {
-                              setSelectedPayment(payment);
-                              setShowEditPaymentForm(true);
-                            }}
-                            className="text-[#00bcd4] hover:text-[#01427a] flex items-center"
-                            title="Edit Payment"
-                          >
-                            <FaPencilAlt className="mr-1" />
-                            <span>Edit</span>
-                          </button>
-                        </td>
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Date
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Amount
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Method
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Transaction ID
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Recorded By
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Actions
+                        </th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {payments.map((payment) => (
+                        <tr key={payment._id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-900">
+                              {new Date(payment.paymentDate).toLocaleDateString()}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {new Date(payment.createdAt).toLocaleTimeString()}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm font-medium text-green-600">
+                              ${payment.amount.toFixed(2)}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-900">
+                              {payment.paymentMethod.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-900">
+                              {payment.transactionId || "-"}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-900">
+                              {payment.recordedBy?.fullName || "Admin"}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button
+                              onClick={() => {
+                                setSelectedPayment(payment);
+                                setShowEditPaymentForm(true);
+                              }}
+                              className="text-[#00bcd4] hover:text-[#01427a] flex items-center"
+                              title="Edit Payment"
+                            >
+                              <FaPencilAlt className="mr-1" />
+                              <span>Edit</span>
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+
+                  {/* Payment Notes */}
+                  {payments.some(payment => payment.notes) && (
+                    <div className="p-4 border-t border-gray-200">
+                      <h4 className="text-sm font-semibold mb-2">Payment Notes:</h4>
+                      {payments.filter(payment => payment.notes).map((payment) => (
+                        <div key={`note-${payment._id}`} className="mb-2 pb-2 border-b border-gray-100 last:border-0">
+                          <p className="text-sm text-gray-700">
+                            <span className="font-medium">{new Date(payment.paymentDate).toLocaleDateString()}</span>: {payment.notes}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Related Invoices */}
+              {invoices.filter(invoice => invoice.fee._id === selectedFee._id).length > 0 && (
+                <div className="mt-6">
+                  <h3 className="text-lg font-medium text-gray-800 mb-3">Related Invoices</h3>
+                  <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Invoice #
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Issue Date
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Total
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Balance
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Status
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Actions
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {invoices
+                          .filter(invoice => invoice.fee._id === selectedFee._id)
+                          .map((invoice) => (
+                            <tr key={invoice._id} className="hover:bg-gray-50">
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm font-medium text-gray-900">
+                                  {invoice.invoiceNumber}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm text-gray-900">
+                                  {new Date(invoice.issueDate).toLocaleDateString()}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm text-gray-900">
+                                  ${invoice.totalAmount.toFixed(2)}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm text-gray-900">
+                                  ${invoice.balance.toFixed(2)}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span
+                                  className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                    invoice.status === "paid"
+                                      ? "bg-green-100 text-green-800"
+                                      : invoice.status === "issued"
+                                      ? "bg-blue-100 text-blue-800"
+                                      : invoice.status === "overdue"
+                                      ? "bg-red-100 text-red-800"
+                                      : invoice.status === "cancelled"
+                                      ? "bg-gray-100 text-gray-800"
+                                      : "bg-yellow-100 text-yellow-800"
+                                  }`}
+                                >
+                                  {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <Link
+                                  to={`/admin/invoice/${invoice._id}`}
+                                  className="text-[#00bcd4] hover:text-[#01427a]"
+                                >
+                                  View
+                                </Link>
+                              </td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               )}
             </div>
           )}

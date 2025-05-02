@@ -187,38 +187,79 @@ const RecordPaymentForm = ({ fee, onSuccess, onCancel, onGenerateInvoice }) => {
       )}
 
       <div className="mb-4">
-        <div className="bg-gray-100 p-3 rounded mb-4">
-          <div className="flex justify-between mb-2">
-            <span className="font-medium">Student:</span>
-            <span>{fee.user.fullName}</span>
+        {/* Payment Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+          <div className="bg-blue-50 p-3 rounded-lg shadow-sm">
+            <h4 className="text-sm font-medium text-blue-800 mb-1">Total Fee</h4>
+            <p className="text-xl font-bold text-blue-900">${fee.amount.toFixed(2)}</p>
+            <p className="text-xs text-blue-700 mt-1">Due: {new Date(fee.dueDate).toLocaleDateString()}</p>
           </div>
-          <div className="flex justify-between mb-2">
-            <span className="font-medium">Course:</span>
-            <span>{fee.course.title}</span>
+
+          <div className="bg-green-50 p-3 rounded-lg shadow-sm">
+            <h4 className="text-sm font-medium text-green-800 mb-1">Amount Paid</h4>
+            <p className="text-xl font-bold text-green-900">
+              ${loadingPayments ? "Loading..." : (fee.amount - remainingAmount).toFixed(2)}
+            </p>
+            <p className="text-xs text-green-700 mt-1">{payments.length} payment(s) recorded</p>
           </div>
-          <div className="flex justify-between mb-2">
-            <span className="font-medium">Total Fee:</span>
-            <span>${fee.amount.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between mb-2">
-            <span className="font-medium">Remaining Balance:</span>
-            <span className="font-bold text-blue-700">
+
+          <div className={`p-3 rounded-lg shadow-sm ${remainingAmount <= 0 ? "bg-green-50" : "bg-red-50"}`}>
+            <h4 className={`text-sm font-medium mb-1 ${remainingAmount <= 0 ? "text-green-800" : "text-red-800"}`}>
+              {remainingAmount <= 0 ? "Fully Paid" : "Balance Due"}
+            </h4>
+            <p className={`text-xl font-bold ${remainingAmount <= 0 ? "text-green-900" : "text-red-900"}`}>
               ${loadingPayments ? "Loading..." : remainingAmount.toFixed(2)}
-            </span>
+            </p>
+            <div className="flex items-center mt-1">
+              <span
+                className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
+                  fee.status === "paid"
+                    ? "bg-green-100 text-green-800"
+                    : fee.status === "partial"
+                    ? "bg-yellow-100 text-yellow-800"
+                    : "bg-red-100 text-red-800"
+                }`}
+              >
+                {fee.status.charAt(0).toUpperCase() + fee.status.slice(1)}
+              </span>
+              {new Date(fee.dueDate) < new Date() && fee.status !== "paid" && (
+                <span className="ml-2 text-xs text-red-600 font-medium">Overdue</span>
+              )}
+            </div>
           </div>
-          <div className="flex justify-between">
-            <span className="font-medium">Status:</span>
-            <span
-              className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
-                fee.status === "paid"
-                  ? "bg-green-100 text-green-800"
-                  : fee.status === "partial"
-                  ? "bg-yellow-100 text-yellow-800"
-                  : "bg-red-100 text-red-800"
-              }`}
-            >
-              {fee.status.charAt(0).toUpperCase() + fee.status.slice(1)}
-            </span>
+        </div>
+
+        {/* Course and Student Details */}
+        <div className="bg-gray-100 p-3 rounded mb-4">
+          <div className="flex items-start">
+            {fee.course.thumbnail && (
+              <img
+                src={fee.course.thumbnail}
+                alt={fee.course.title}
+                className="w-12 h-12 rounded object-cover mr-3"
+              />
+            )}
+            <div className="flex-1">
+              <h3 className="text-md font-medium text-gray-800">{fee.course.title}</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+                <div>
+                  <p className="text-xs text-gray-600">
+                    <span className="font-medium">Student:</span> {fee.user.fullName}
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    <span className="font-medium">Email:</span> {fee.user.email}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-600">
+                    <span className="font-medium">Fee Created:</span> {new Date(fee.createdAt).toLocaleDateString()}
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    <span className="font-medium">Description:</span> {fee.description || "No description provided"}
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
