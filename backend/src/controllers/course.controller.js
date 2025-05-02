@@ -268,8 +268,45 @@ const getCourseById = asyncHandler(async (req, res) => {
         const isAuthenticated = !!req.user;
 
         // Add a flag to indicate if the user is enrolled (if authenticated)
-        const isEnrolled = isAuthenticated ?
-            course.enrolledStudents.includes(req.user._id) : false;
+        let isEnrolled = false;
+        if (isAuthenticated) {
+            // Debug the types of the IDs
+            console.log("DEBUG - Types:", {
+                userIdType: typeof req.user._id,
+                userIdIsObject: req.user._id instanceof Object,
+                userIdIsString: typeof req.user._id === 'string',
+                userIdToString: req.user._id.toString(),
+                enrolledStudentsTypes: course.enrolledStudents.map(id => ({
+                    idType: typeof id,
+                    idIsObject: id instanceof Object,
+                    idIsString: typeof id === 'string',
+                    idToString: id.toString()
+                }))
+            });
+
+            // Log raw values for comparison
+            console.log("DEBUG - Raw values:", {
+                userId: req.user._id,
+                enrolledStudents: course.enrolledStudents
+            });
+
+            // Convert ObjectIds to strings for proper comparison
+            isEnrolled = course.enrolledStudents.some(studentId => {
+                const studentIdStr = studentId.toString();
+                const userIdStr = req.user._id.toString();
+                const matches = studentIdStr === userIdStr;
+
+                console.log(`Comparing: ${studentIdStr} === ${userIdStr} => ${matches}`);
+
+                return matches;
+            });
+
+            console.log(`Checking enrollment for user ${req.user._id}:`, {
+                isEnrolled,
+                enrolledStudents: course.enrolledStudents.map(id => id.toString()),
+                userIdToString: req.user._id.toString()
+            });
+        }
 
         // Create a response object with the course data and authentication flags
         const responseData = {
@@ -277,6 +314,17 @@ const getCourseById = asyncHandler(async (req, res) => {
             isAuthenticated,
             isEnrolled
         };
+
+        // Double-check the isEnrolled flag for debugging
+        console.log(`Final response for course ${course._id}:`, {
+            userId: req.user?._id,
+            isAuthenticated,
+            isEnrolled,
+            enrolledStudentsCount: course.enrolledStudents.length,
+            // Force a manual check to verify
+            manualCheck: isAuthenticated ?
+                course.enrolledStudents.map(id => id.toString()).includes(req.user._id.toString()) : false
+        });
 
         return res.status(200).json(
             new ApiResponse(200, responseData, "Course fetched successfully")
@@ -507,17 +555,30 @@ const enrollInCourse = asyncHandler(async (req, res) => {
             throw new ApiError(400, "Cannot enroll in an unpublished course");
         }
 
-        // Check if user is already enrolled
-        if (course.enrolledStudents.includes(req.user._id)) {
+        // Check if user is already enrolled - convert ObjectIds to strings for proper comparison
+        const isAlreadyEnrolled = course.enrolledStudents.some(
+            studentId => studentId.toString() === req.user._id.toString()
+        );
+
+        if (isAlreadyEnrolled) {
+            console.log(`User ${req.user._id} is already enrolled in course ${courseId}`);
             throw new ApiError(400, "You are already enrolled in this course");
         }
+
+        console.log(`Enrolling user ${req.user._id} in course ${courseId}`);
 
         // Add user to enrolled students
         course.enrolledStudents.push(req.user._id);
         await course.save();
 
+        // Create a response object with the course data and enrollment flag
+        const responseData = {
+            ...course.toObject(),
+            isEnrolled: true
+        };
+
         return res.status(200).json(
-            new ApiResponse(200, course, "Enrolled in course successfully")
+            new ApiResponse(200, responseData, "Enrolled in course successfully")
         );
     } catch (error) {
         if (error instanceof ApiError) {

@@ -23,6 +23,7 @@ cd client
 # npm install --save-dev sharp terser vite-plugin-compression
 
 # Run optimized production build
+npm run build
 npm run build:prod
 cd ..
 

@@ -149,19 +149,13 @@ const getAllPrograms = asyncHandler(async (req, res) => {
             ];
         }
 
-        const options = {
-            page: parseInt(page, 10),
-            limit: parseInt(limit, 10),
-            sort: { createdAt: -1 },
-            populate: [
-                { path: "creator", select: "fullName username avatar" },
-                { path: "courses", select: "title thumbnail" }
-            ]
-        };
+        // Calculate pagination parameters
+        const pageNum = parseInt(page, 10);
+        const limitNum = parseInt(limit, 10);
 
         const programs = await Program.find(query)
-            .skip((parseInt(page, 10) - 1) * parseInt(limit, 10))
-            .limit(parseInt(limit, 10))
+            .skip((pageNum - 1) * limitNum)
+            .limit(limitNum)
             .sort({ createdAt: -1 })
             .populate("creator", "fullName username avatar")
             .populate("courses", "title thumbnail");
@@ -172,8 +166,8 @@ const getAllPrograms = asyncHandler(async (req, res) => {
             new ApiResponse(200, {
                 programs,
                 totalPrograms,
-                currentPage: parseInt(page, 10),
-                totalPages: Math.ceil(totalPrograms / parseInt(limit, 10))
+                currentPage: pageNum,
+                totalPages: Math.ceil(totalPrograms / limitNum)
             }, "Programs fetched successfully")
         );
     } catch (error) {
@@ -224,8 +218,18 @@ const getProgramById = asyncHandler(async (req, res) => {
         const isAuthenticated = !!req.user;
 
         // Add a flag to indicate if the user is enrolled (if authenticated)
-        const isEnrolled = isAuthenticated ?
-            program.enrolledStudents.includes(req.user._id) : false;
+        let isEnrolled = false;
+        if (isAuthenticated) {
+            // Convert ObjectIds to strings for proper comparison
+            isEnrolled = program.enrolledStudents.some(
+                studentId => studentId.toString() === req.user._id.toString()
+            );
+            console.log(`Checking enrollment for user ${req.user._id} in program ${programId}:`, {
+                isEnrolled,
+                enrolledStudents: program.enrolledStudents.map(id => id.toString()),
+                userIdToString: req.user._id.toString()
+            });
+        }
 
         // Create a response object with the program data and authentication flags
         const responseData = {
@@ -233,6 +237,17 @@ const getProgramById = asyncHandler(async (req, res) => {
             isAuthenticated,
             isEnrolled
         };
+
+        // Double-check the isEnrolled flag for debugging
+        console.log(`Final response for program ${program._id}:`, {
+            userId: req.user?._id,
+            isAuthenticated,
+            isEnrolled,
+            enrolledStudentsCount: program.enrolledStudents.length,
+            // Force a manual check to verify
+            manualCheck: isAuthenticated ?
+                program.enrolledStudents.map(id => id.toString()).includes(req.user._id.toString()) : false
+        });
 
         return res.status(200).json(
             new ApiResponse(200, responseData, "Program fetched successfully")
@@ -428,10 +443,17 @@ const enrollInProgram = asyncHandler(async (req, res) => {
             throw new ApiError(403, "This program is not published yet");
         }
 
-        // Check if user is already enrolled
-        if (program.enrolledStudents.includes(req.user._id)) {
+        // Check if user is already enrolled - convert ObjectIds to strings for proper comparison
+        const isAlreadyEnrolled = program.enrolledStudents.some(
+            studentId => studentId.toString() === req.user._id.toString()
+        );
+
+        if (isAlreadyEnrolled) {
+            console.log(`User ${req.user._id} is already enrolled in program ${programId}`);
             throw new ApiError(400, "You are already enrolled in this program");
         }
+
+        console.log(`Enrolling user ${req.user._id} in program ${programId}`);
 
         // Add user to enrolled students
         program.enrolledStudents.push(req.user._id);
@@ -443,8 +465,14 @@ const enrollInProgram = asyncHandler(async (req, res) => {
             { $addToSet: { enrolledStudents: req.user._id } }
         );
 
+        // Create a response object with the program data and enrollment flag
+        const responseData = {
+            ...program.toObject(),
+            isEnrolled: true
+        };
+
         return res.status(200).json(
-            new ApiResponse(200, program, "Enrolled in program successfully")
+            new ApiResponse(200, responseData, "Enrolled in program successfully")
         );
     } catch (error) {
         console.error("Error enrolling in program:", error);
