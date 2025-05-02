@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { FaSearch } from "react-icons/fa";
+import { FaSearch, FaPlus, FaSpinner } from "react-icons/fa";
 
 const AddFeeForm = ({ users, selectedUser, onSuccess, onCancel, selectedCourseId, disableUserSelection = false }) => {
   const [userId, setUserId] = useState(selectedUser ? selectedUser._id : "");
@@ -9,9 +9,13 @@ const AddFeeForm = ({ users, selectedUser, onSuccess, onCancel, selectedCourseId
   const [dueDate, setDueDate] = useState("");
   const [description, setDescription] = useState("");
   const [courses, setCourses] = useState([]);
+  const [allCourses, setAllCourses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [courseSearchQuery, setCourseSearchQuery] = useState("");
+  const [showAllCourses, setShowAllCourses] = useState(false);
+  const [enrollingInCourse, setEnrollingInCourse] = useState(false);
 
   // Set minimum due date to tomorrow
   const tomorrow = new Date();
@@ -32,13 +36,14 @@ const AddFeeForm = ({ users, selectedUser, onSuccess, onCancel, selectedCourseId
           });
 
           // Get all courses
-          const allCourses = response.data.data.courses || [];
+          const fetchedAllCourses = response.data.data.courses || [];
+          setAllCourses(fetchedAllCourses);
 
           // Filter courses where the user is enrolled
           const userCourses = [];
 
           // For each course, check if the user is enrolled
-          for (const course of allCourses) {
+          for (const course of fetchedAllCourses) {
             try {
               const courseDetailResponse = await axios.get(`/api/v1/courses/${course._id}`, {
                 headers: {
@@ -76,9 +81,60 @@ const AddFeeForm = ({ users, selectedUser, onSuccess, onCancel, selectedCourseId
     fetchUserCourses();
   }, [userId, selectedCourseId]);
 
+  // Function to enroll a user in a course
+  const enrollUserInCourse = async (courseId) => {
+    if (!userId || !courseId) {
+      setError("User and course are required for enrollment");
+      return;
+    }
+
+    setEnrollingInCourse(true);
+    setError("");
+
+    try {
+      // Admin endpoint to enroll a user in a course
+      await axios.post(
+        `/api/v1/admin/users/${userId}/enroll`,
+        { courseId },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`
+          }
+        }
+      );
+
+      // Show success message
+      setSuccess(`User successfully enrolled in the course`);
+
+      // Refresh the courses list
+      const updatedCourses = [...courses];
+      const enrolledCourse = allCourses.find(c => c._id === courseId);
+
+      if (enrolledCourse) {
+        updatedCourses.push(enrolledCourse);
+        setCourses(updatedCourses);
+        setCourseId(courseId); // Select the newly enrolled course
+      }
+
+      // Clear success message after a delay
+      setTimeout(() => {
+        setSuccess("");
+      }, 3000);
+
+    } catch (error) {
+      setError(
+        error.response?.data?.message ||
+        "Failed to enroll user in the course. Please try again."
+      );
+    } finally {
+      setEnrollingInCourse(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
 
     if (!userId || !courseId || !amount || !dueDate) {
       setError("All fields are required");
@@ -122,6 +178,12 @@ const AddFeeForm = ({ users, selectedUser, onSuccess, onCancel, selectedCourseId
         </div>
       )}
 
+      {success && (
+        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+          {success}
+        </div>
+      )}
+
       <div className="mb-4">
         <label className="block text-gray-700 text-sm font-bold mb-2">
           Student
@@ -160,7 +222,7 @@ const AddFeeForm = ({ users, selectedUser, onSuccess, onCancel, selectedCourseId
           Course
         </label>
 
-        {userId && courses.length > 0 && (
+        {userId && (
           <div className="mb-2 relative">
             <input
               type="text"
@@ -174,6 +236,21 @@ const AddFeeForm = ({ users, selectedUser, onSuccess, onCancel, selectedCourseId
           </div>
         )}
 
+        {userId && (
+          <div className="mb-2 flex items-center">
+            <label className="flex items-center text-sm text-gray-600 cursor-pointer">
+              <input
+                type="checkbox"
+                className="form-checkbox h-4 w-4 text-[#00bcd4] mr-2"
+                checked={showAllCourses}
+                onChange={() => setShowAllCourses(!showAllCourses)}
+                disabled={loading || !userId}
+              />
+              Show all available courses
+            </label>
+          </div>
+        )}
+
         <select
           className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
           value={courseId}
@@ -182,29 +259,61 @@ const AddFeeForm = ({ users, selectedUser, onSuccess, onCancel, selectedCourseId
           disabled={loading || !userId}
         >
           <option value="">Select a course</option>
-          {courses
+          {(showAllCourses ? allCourses : courses)
             .filter(course =>
               course.title.toLowerCase().includes(courseSearchQuery.toLowerCase())
             )
-            .map((course) => (
-              <option key={course._id} value={course._id}>
-                {course.title}
-              </option>
-            ))
+            .map((course) => {
+              const isEnrolled = courses.some(c => c._id === course._id);
+              return (
+                <option key={course._id} value={course._id}>
+                  {course.title} {isEnrolled ? "" : "(Not Enrolled)"}
+                </option>
+              );
+            })
           }
         </select>
+
         {!userId && (
           <p className="text-sm text-gray-500 mt-1">
             Please select a student first
           </p>
         )}
+
         {userId && courses.length === 0 && !loading && (
           <p className="text-sm text-red-500 mt-1">
             This student is not enrolled in any courses
           </p>
         )}
+
+        {userId && courseId && !courses.some(c => c._id === courseId) && (
+          <div className="mt-2">
+            <button
+              type="button"
+              onClick={() => enrollUserInCourse(courseId)}
+              className="bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded text-sm flex items-center"
+              disabled={enrollingInCourse}
+            >
+              {enrollingInCourse ? (
+                <>
+                  <FaSpinner className="animate-spin mr-1" /> Enrolling...
+                </>
+              ) : (
+                <>
+                  <FaPlus className="mr-1" /> Enroll in this course
+                </>
+              )}
+            </button>
+            <p className="text-xs text-gray-500 mt-1">
+              The student must be enrolled in the course before you can create a fee
+            </p>
+          </div>
+        )}
+
         {userId && courses.length > 0 && courseSearchQuery &&
-         !courses.some(course => course.title.toLowerCase().includes(courseSearchQuery.toLowerCase())) && (
+         !(showAllCourses ? allCourses : courses).some(course =>
+            course.title.toLowerCase().includes(courseSearchQuery.toLowerCase())
+          ) && (
           <p className="text-sm text-yellow-500 mt-1">
             No courses match your search
           </p>

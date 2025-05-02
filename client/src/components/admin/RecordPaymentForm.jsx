@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { FaMoneyBillWave, FaCheckCircle } from "react-icons/fa";
+import { FaMoneyBillWave, FaCheckCircle, FaFileInvoice } from "react-icons/fa";
 
-const RecordPaymentForm = ({ fee, onSuccess, onCancel }) => {
+const RecordPaymentForm = ({ fee, onSuccess, onCancel, onGenerateInvoice }) => {
   const [amount, setAmount] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [paymentDate, setPaymentDate] = useState(
@@ -16,6 +16,8 @@ const RecordPaymentForm = ({ fee, onSuccess, onCancel }) => {
   const [payments, setPayments] = useState([]);
   const [loadingPayments, setLoadingPayments] = useState(true);
   const [remainingAmount, setRemainingAmount] = useState(fee.amount);
+  const [generateInvoiceAfterPayment, setGenerateInvoiceAfterPayment] = useState(false);
+  const [generatingInvoice, setGeneratingInvoice] = useState(false);
 
   // Fetch existing payments for this fee
   useEffect(() => {
@@ -40,6 +42,39 @@ const RecordPaymentForm = ({ fee, onSuccess, onCancel }) => {
 
     fetchPayments();
   }, [fee._id, fee.amount]);
+
+  const handleGenerateInvoice = async () => {
+    setGeneratingInvoice(true);
+    try {
+      const response = await axios.post(
+        "/api/v1/fees/invoice",
+        {
+          feeId: fee._id,
+          notes: notes || `Invoice generated after payment on ${new Date().toLocaleDateString()}`
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`
+          }
+        }
+      );
+
+      // Call the parent component's onGenerateInvoice function if provided
+      if (onGenerateInvoice) {
+        onGenerateInvoice(response.data.data);
+      }
+
+      // Update success message
+      setSuccess(prev => prev + " Invoice generated successfully!");
+    } catch (error) {
+      setError(
+        error.response?.data?.message ||
+        "Payment recorded but failed to generate invoice. You can generate it manually later."
+      );
+    } finally {
+      setGeneratingInvoice(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -96,16 +131,33 @@ const RecordPaymentForm = ({ fee, onSuccess, onCancel }) => {
       setPayments([response.data.data.payment, ...payments]);
 
       // Update remaining amount
-      setRemainingAmount(remainingAmount - parseFloat(amount));
+      const newRemainingAmount = remainingAmount - parseFloat(amount);
+      setRemainingAmount(newRemainingAmount);
 
       // Show success message
       setError("");
       const amountValue = parseFloat(amount);
-      setSuccess(`Payment of $${amountValue.toFixed(2)} recorded successfully! The fee status is now ${newStatus.toUpperCase()}.`);
+      const newStatus = response.data.data.feeStatus;
+
+      let statusMessage = "";
+      if (newStatus === "paid") {
+        statusMessage = "PAID (fully paid)";
+      } else if (newStatus === "partial") {
+        statusMessage = "PARTIAL (partially paid)";
+      } else {
+        statusMessage = newStatus.toUpperCase();
+      }
+
+      setSuccess(`Payment of $${amountValue.toFixed(2)} recorded successfully! The fee status is now ${statusMessage}.`);
 
       // Call onSuccess immediately with the updated fee
       // This will update the fee list in the parent component
       onSuccess(updatedFee);
+
+      // If user opted to generate invoice automatically, do it now
+      if (generateInvoiceAfterPayment) {
+        handleGenerateInvoice();
+      }
 
       // Don't close the form yet, let the user see the success message and updated payment history
       // The form will be closed by the parent component
@@ -175,30 +227,52 @@ const RecordPaymentForm = ({ fee, onSuccess, onCancel }) => {
       {payments.length > 0 && (
         <div className="mb-4">
           <h3 className="text-sm font-bold text-gray-700 mb-2">Payment History</h3>
-          <div className="bg-gray-50 p-2 rounded max-h-40 overflow-y-auto">
-            {payments.map((payment, index) => (
-              <div key={payment._id || index} className="border-b border-gray-200 py-2 last:border-0">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center">
-                    <FaMoneyBillWave className="text-green-600 mr-2" />
-                    <div>
-                      <p className="text-sm font-medium">${payment.amount.toFixed(2)}</p>
-                      <p className="text-xs text-gray-500">
-                        {new Date(payment.paymentDate).toLocaleDateString()} • {payment.paymentMethod.replace('_', ' ')}
-                      </p>
-                    </div>
+          <div className="bg-gray-50 p-2 rounded max-h-60 overflow-y-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Method</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Transaction ID</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {payments.map((payment, index) => (
+                  <tr key={payment._id || index} className="hover:bg-gray-50">
+                    <td className="px-3 py-2 whitespace-nowrap text-xs">
+                      {new Date(payment.paymentDate).toLocaleDateString()}
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <FaMoneyBillWave className="text-green-600 mr-1" />
+                        <span className="text-sm font-medium">${payment.amount.toFixed(2)}</span>
+                      </div>
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap text-xs">
+                      {payment.paymentMethod.replace('_', ' ')}
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap text-xs">
+                      {payment.transactionId || "-"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {/* Notes section below the table */}
+            {payments.some(payment => payment.notes) && (
+              <div className="mt-2 pt-2 border-t border-gray-200">
+                <h4 className="text-xs font-semibold mb-1">Payment Notes:</h4>
+                {payments.filter(payment => payment.notes).map((payment, index) => (
+                  <div key={`note-${payment._id || index}`} className="mb-1 pb-1 border-b border-gray-100 last:border-0">
+                    <p className="text-xs text-gray-600">
+                      <span className="font-medium">{new Date(payment.paymentDate).toLocaleDateString()}</span>: {payment.notes}
+                    </p>
                   </div>
-                  {payment.transactionId && (
-                    <span className="text-xs bg-gray-200 px-2 py-1 rounded">
-                      ID: {payment.transactionId}
-                    </span>
-                  )}
-                </div>
-                {payment.notes && (
-                  <p className="text-xs text-gray-600 mt-1 italic">{payment.notes}</p>
-                )}
+                ))}
               </div>
-            ))}
+            )}
           </div>
         </div>
       )}
@@ -284,9 +358,39 @@ const RecordPaymentForm = ({ fee, onSuccess, onCancel }) => {
         ></textarea>
       </div>
 
+      <div className="mb-4">
+        <label className="flex items-center">
+          <input
+            type="checkbox"
+            className="form-checkbox h-5 w-5 text-[#00bcd4]"
+            checked={generateInvoiceAfterPayment}
+            onChange={(e) => setGenerateInvoiceAfterPayment(e.target.checked)}
+            disabled={success || loading}
+          />
+          <span className="ml-2 text-gray-700">Generate invoice automatically after payment</span>
+        </label>
+      </div>
+
       <div className="flex justify-between">
         {success ? (
-          <div className="flex justify-center w-full">
+          <div className="flex justify-center w-full space-x-4">
+            {!generateInvoiceAfterPayment && !generatingInvoice && !success.includes("Invoice generated") ? (
+              <button
+                type="button"
+                onClick={handleGenerateInvoice}
+                className="bg-[#00bcd4] hover:bg-[#01427a] text-white font-bold py-2 px-6 rounded focus:outline-none focus:shadow-outline flex items-center"
+                disabled={generatingInvoice}
+              >
+                {generatingInvoice ? (
+                  "Generating..."
+                ) : (
+                  <>
+                    <FaFileInvoice className="mr-2" />
+                    Generate Invoice
+                  </>
+                )}
+              </button>
+            ) : null}
             <button
               type="button"
               onClick={onCancel}

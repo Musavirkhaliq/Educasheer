@@ -114,30 +114,52 @@ const InvoiceGenerator = ({ fee, onSuccess, onCancel }) => {
       {payments.length > 0 && (
         <div className="mb-4">
           <h3 className="text-sm font-bold text-gray-700 mb-2">Payment History (Will be included in invoice)</h3>
-          <div className="bg-gray-50 p-2 rounded max-h-40 overflow-y-auto">
-            {payments.map((payment, index) => (
-              <div key={payment._id || index} className="bg-white p-2 rounded border border-gray-200 mb-2 last:mb-0">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center">
-                    <FaMoneyBillWave className="text-green-600 mr-2" />
-                    <div>
-                      <p className="font-medium">${payment.amount.toFixed(2)}</p>
-                      <p className="text-xs text-gray-500">
-                        {new Date(payment.paymentDate).toLocaleDateString()} • {payment.paymentMethod.replace('_', ' ')}
-                      </p>
-                    </div>
+          <div className="bg-gray-50 p-2 rounded max-h-60 overflow-y-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Method</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Transaction ID</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {payments.map((payment, index) => (
+                  <tr key={payment._id || index} className="hover:bg-gray-50">
+                    <td className="px-3 py-2 whitespace-nowrap text-xs">
+                      {new Date(payment.paymentDate).toLocaleDateString()}
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <FaMoneyBillWave className="text-green-600 mr-1" />
+                        <span className="text-sm font-medium">${payment.amount.toFixed(2)}</span>
+                      </div>
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap text-xs">
+                      {payment.paymentMethod.replace('_', ' ')}
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap text-xs">
+                      {payment.transactionId || "-"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {/* Notes section below the table */}
+            {payments.some(payment => payment.notes) && (
+              <div className="mt-2 pt-2 border-t border-gray-200">
+                <h4 className="text-xs font-semibold mb-1">Payment Notes:</h4>
+                {payments.filter(payment => payment.notes).map((payment, index) => (
+                  <div key={`note-${payment._id || index}`} className="mb-1 pb-1 border-b border-gray-100 last:border-0">
+                    <p className="text-xs text-gray-600">
+                      <span className="font-medium">{new Date(payment.paymentDate).toLocaleDateString()}</span>: {payment.notes}
+                    </p>
                   </div>
-                  {payment.transactionId && (
-                    <span className="text-xs bg-gray-200 px-2 py-1 rounded">
-                      ID: {payment.transactionId}
-                    </span>
-                  )}
-                </div>
-                {payment.notes && (
-                  <p className="text-xs text-gray-600 mt-1 italic">{payment.notes}</p>
-                )}
+                ))}
               </div>
-            ))}
+            )}
           </div>
         </div>
       )}
