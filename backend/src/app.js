@@ -5,6 +5,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { ApiError } from "./utils/ApiError.js";
 import { ApiResponse } from "./utils/ApiResponse.js";
+import { noCacheMiddleware, staticAssetCacheMiddleware, htmlNoCacheMiddleware } from "./middlewares/cache-control.middleware.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,14 +25,53 @@ app.use(express.json({ limit: "16kb" }));
 // Parse URL-encoded request body
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 
-// Serve static files from public directory
-app.use(express.static("public"));
+// Serve static files from public directory with cache control
+app.use(express.static("public", {
+  etag: true, // Enable ETag for conditional requests
+  lastModified: true, // Enable Last-Modified for conditional requests
+  maxAge: '1d', // Cache for 1 day (in milliseconds)
+  setHeaders: (res, path) => {
+    // For service worker, prevent caching
+    if (path.endsWith('service-worker.js')) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    }
+  }
+}));
 
-// Serve static files from client/dist directory
-app.use(express.static(clientDistPath));
+// Serve static files from client/dist directory with cache control
+app.use(express.static(clientDistPath, {
+  etag: true, // Enable ETag for conditional requests
+  lastModified: true, // Enable Last-Modified for conditional requests
+  maxAge: '1d', // Cache for 1 day (in milliseconds)
+  setHeaders: (res, path) => {
+    // For HTML files, prevent caching
+    if (path.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    }
+    // For service worker, prevent caching
+    else if (path.endsWith('service-worker.js')) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    }
+    // For JS and CSS files with version parameter, cache for longer
+    else if (path.match(/\.(js|css)$/) && res.req.query.v) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable'); // 1 year
+    }
+  }
+}));
 
 // Parse cookies
 app.use(cookieParser());
+
+// Apply cache control middleware
+app.use(noCacheMiddleware); // Prevent caching for API responses
+app.use(staticAssetCacheMiddleware); // Configure caching for static assets
+app.use(htmlNoCacheMiddleware); // Prevent caching for HTML content
 
 // Health check endpoint
 app.get("/api/v1/health", (req, res) => {
@@ -79,7 +119,10 @@ app.get("*", (req, res, next) => {
         return next();
     }
 
-    // Otherwise serve the frontend app
+    // Otherwise serve the frontend app with no-cache headers
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
     res.sendFile(path.join(clientDistPath, "index.html"));
 });
 
