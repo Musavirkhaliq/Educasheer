@@ -94,6 +94,7 @@ import courseMaterialRouter from "./routes/courseMaterial.routes.js";
 import attendanceRouter from "./routes/attendance.routes.js";
 import feeRouter from "./routes/fee.routes.js";
 import testimonialRouter from "./routes/testimonial.routes.js";
+import centerRouter from "./routes/center.routes.js";
 
 // Routes declaration
 app.use("/api/v1/users", userRouter);
@@ -111,6 +112,7 @@ app.use("/api/v1", courseMaterialRouter);
 app.use("/api/v1/attendance", attendanceRouter);
 app.use("/api/v1/fees", feeRouter);
 app.use("/api/v1/testimonials", testimonialRouter);
+app.use("/api/v1/centers", centerRouter);
 
 // Serve frontend for all non-API routes
 app.get("*", (req, res, next) => {

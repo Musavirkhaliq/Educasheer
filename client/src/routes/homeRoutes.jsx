@@ -24,6 +24,10 @@ import BlogEditPage from "../pages/BlogEditPage";
 import QRScannerTestPage from "../pages/QRScannerTestPage";
 import InvoiceView from "../components/admin/InvoiceView";
 import TestimonialPage from "../pages/TestimonialPage";
+import CentersPage from "../pages/CentersPage";
+import CenterDetailPage from "../pages/CenterDetailPage";
+import CenterCreatePage from "../pages/CenterCreatePage";
+import CenterEditPage from "../pages/CenterEditPage";
 
 export const homeRoutes = [
   {
@@ -249,6 +253,39 @@ export const homeRoutes = [
     element: (
       <Suspense fallback={<h1>Loading</h1>}>
         <TestimonialPage />
+      </Suspense>
+    ),
+  },
+  // Center routes
+  {
+    path: "centers",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <CentersPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: "centers/create",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <CenterCreatePage />
+      </Suspense>
+    ),
+  },
+  {
+    path: "centers/:centerId",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <CenterDetailPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: "centers/:centerId/edit",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <CenterEditPage />
       </Suspense>
     ),
   },

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { FaAngleDown, FaUserCircle, FaGraduationCap, FaVideo, FaBook, FaHeadset, FaEdit, FaLayerGroup } from "react-icons/fa";
+import { FaAngleDown, FaUserCircle, FaGraduationCap, FaVideo, FaBook, FaHeadset, FaEdit, FaLayerGroup, FaMapMarkerAlt } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
 import { motion } from "framer-motion";
 
@@ -168,6 +168,30 @@ const DesktopNav = () => {
               </motion.div>
               <span>Programs</span>
               {location.pathname.startsWith('/programs') && (
+                <motion.div
+                  layoutId="navbar-indicator"
+                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-primary to-secondary rounded-full shadow-neon"
+                  transition={{ type: 'spring', duration: 0.5 }}
+                />
+              )}
+            </Link>
+
+            <Link
+              to="/centers"
+              className={`relative flex items-center space-x-2 font-medium transition-all duration-300 py-1 ${
+                location.pathname.startsWith('/centers')
+                  ? 'neon-text'
+                  : 'text-gray-700 hover:text-primary'
+              }`}
+            >
+              <motion.div
+                whileHover={{ scale: 1.2, rotate: 5 }}
+                transition={{ type: "spring", stiffness: 400, damping: 10 }}
+              >
+                <FaMapMarkerAlt className={`${location.pathname.startsWith('/centers') ? 'text-primary animate-pulse-slow' : 'text-primary'}`} />
+              </motion.div>
+              <span>Centers</span>
+              {location.pathname.startsWith('/centers') && (
                 <motion.div
                   layoutId="navbar-indicator"
                   className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-primary to-secondary rounded-full shadow-neon"

@@ -4,6 +4,7 @@ import { Navigate } from "react-router-dom";
 import axios from "axios";
 import FeeManagement from "../components/admin/FeeManagement";
 import TestimonialManagement from "../components/admin/TestimonialManagement";
+import CenterManagement from "../components/admin/CenterManagement";
 
 const AdminDashboard = () => {
   const { currentUser, isAuthenticated, logout } = useAuth();
@@ -222,6 +223,16 @@ const AdminDashboard = () => {
           onClick={() => setActiveTab("users")}
         >
           Manage Users
+        </button>
+        <button
+          className={`py-2 px-4 font-medium ${
+            activeTab === "centers"
+              ? "text-[#00bcd4] border-b-2 border-[#00bcd4]"
+              : "text-gray-500 hover:text-gray-700"
+          }`}
+          onClick={() => setActiveTab("centers")}
+        >
+          Manage Centers
         </button>
         <button
           className={`py-2 px-4 font-medium ${
@@ -466,6 +477,11 @@ const AdminDashboard = () => {
           {/* Testimonial Management Tab */}
           {activeTab === "testimonials" && (
             <TestimonialManagement />
+          )}
+
+          {/* Center Management Tab */}
+          {activeTab === "centers" && (
+            <CenterManagement />
           )}
         </>
       )}

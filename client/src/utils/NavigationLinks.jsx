@@ -11,7 +11,7 @@ import {
   BookOpen,
   Receipt,
 } from "lucide-react";
-import { FaHome, FaLayerGroup } from "react-icons/fa";
+import { FaHome, FaLayerGroup, FaMapMarkerAlt } from "react-icons/fa";
 import { MdNotifications } from "react-icons/md";
 
 const navLinks = [
@@ -34,6 +34,11 @@ const navLinks = [
     name: "Programs",
     address: "/programs",
     icon: <FaLayerGroup />,
+  },
+  {
+    name: "Centers",
+    address: "/centers",
+    icon: <FaMapMarkerAlt />,
   },
   {
     name: "Categories",
@@ -102,6 +107,11 @@ const adminLinks = [
     icon: <FaLayerGroup />,
   },
   {
+    name: "Manage Centers",
+    address: "centers",
+    icon: <FaMapMarkerAlt />,
+  },
+  {
     name: "Tutor Applications",
     address: "tutor-applications",
     icon: <FileEdit />,
@@ -120,6 +130,11 @@ const adminLinks = [
     name: "Create Program",
     address: "/programs/create",
     icon: <FaLayerGroup />,
+  },
+  {
+    name: "Create Center",
+    address: "/centers/create",
+    icon: <FaMapMarkerAlt />,
   },
 ];
 
