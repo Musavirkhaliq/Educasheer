@@ -23,6 +23,7 @@ import BlogCreatePage from "../pages/BlogCreatePage";
 import BlogEditPage from "../pages/BlogEditPage";
 import QRScannerTestPage from "../pages/QRScannerTestPage";
 import InvoiceView from "../components/admin/InvoiceView";
+import TestimonialPage from "../pages/TestimonialPage";
 
 export const homeRoutes = [
   {
@@ -239,6 +240,15 @@ export const homeRoutes = [
     element: (
       <Suspense fallback={<h1>Loading</h1>}>
         <InvoiceView />
+      </Suspense>
+    ),
+  },
+  // Testimonial routes
+  {
+    path: "testimonials/add",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <TestimonialPage />
       </Suspense>
     ),
   },

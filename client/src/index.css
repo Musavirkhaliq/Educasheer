@@ -419,36 +419,25 @@ p {
 
 /* Logo styling */
 .logo-white {
-  /* Black logo instead of white */
-  filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.5));
+  /* Enhanced glow effect without box */
+  filter: drop-shadow(0 0 6px rgba(0, 188, 212, 0.7)) drop-shadow(0 0 10px rgba(1, 66, 122, 0.5));
   transition: all 0.3s ease;
-  background: linear-gradient(135deg, rgba(0, 188, 212, 0.7), rgba(1, 66, 122, 0.7));
-  padding: 6px;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 .logo-white:hover {
-  filter: drop-shadow(0 0 8px rgba(0, 188, 212, 0.8));
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+  filter: drop-shadow(0 0 10px rgba(0, 188, 212, 0.9)) drop-shadow(0 0 15px rgba(1, 66, 122, 0.7));
 }
 
 .logo-container {
   position: relative;
   overflow: hidden;
-  border-radius: 8px;
-  background: linear-gradient(135deg, rgba(0, 188, 212, 0.7), rgba(1, 66, 122, 0.7));
-  padding: 6px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  /* Removed background, border, and box shadow */
 }
 
 .logo-white-dark {
-  /* Black logo for dark backgrounds */
-  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.7));
-  background: linear-gradient(135deg, rgba(0, 188, 212, 0.8), rgba(1, 66, 122, 0.8));
-  padding: 6px;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  /* Enhanced glow effect for dark backgrounds without box */
+  filter: drop-shadow(0 0 8px rgba(0, 188, 212, 0.8)) drop-shadow(0 0 12px rgba(255, 255, 255, 0.6));
+  transition: all 0.3s ease;
 }
 
 /* Swipe indicators */

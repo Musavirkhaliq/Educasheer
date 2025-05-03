@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { Navigate } from "react-router-dom";
 import axios from "axios";
 import FeeManagement from "../components/admin/FeeManagement";
+import TestimonialManagement from "../components/admin/TestimonialManagement";
 
 const AdminDashboard = () => {
   const { currentUser, isAuthenticated, logout } = useAuth();
@@ -201,7 +202,7 @@ const AdminDashboard = () => {
       )}
 
       {/* Tabs */}
-      <div className="flex border-b border-gray-200 mb-6">
+      <div className="flex border-b border-gray-200 mb-6 overflow-x-auto">
         <button
           className={`py-2 px-4 font-medium ${
             activeTab === "applications"
@@ -231,6 +232,16 @@ const AdminDashboard = () => {
           onClick={() => setActiveTab("fees")}
         >
           Fee Management
+        </button>
+        <button
+          className={`py-2 px-4 font-medium ${
+            activeTab === "testimonials"
+              ? "text-[#00bcd4] border-b-2 border-[#00bcd4]"
+              : "text-gray-500 hover:text-gray-700"
+          }`}
+          onClick={() => setActiveTab("testimonials")}
+        >
+          Testimonials
         </button>
       </div>
 
@@ -450,6 +461,11 @@ const AdminDashboard = () => {
           {/* Fee Management Tab */}
           {activeTab === "fees" && (
             <FeeManagement />
+          )}
+
+          {/* Testimonial Management Tab */}
+          {activeTab === "testimonials" && (
+            <TestimonialManagement />
           )}
         </>
       )}

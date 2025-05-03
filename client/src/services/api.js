@@ -176,5 +176,15 @@ export const blogAPI = {
   likeComment: (commentId) => api.post(`/comments/${commentId}/like`),
 };
 
+// Testimonial API functions
+export const testimonialAPI = {
+  getApprovedTestimonials: (params) => api.get('/testimonials', { params }),
+  submitTestimonial: (data) => api.post('/testimonials', data),
+  deleteTestimonial: (id) => api.delete(`/testimonials/${id}`),
+  // Admin functions
+  getAllTestimonials: (params) => api.get('/testimonials/all', { params }),
+  reviewTestimonial: (id, data) => api.patch(`/testimonials/${id}/review`, data),
+};
+
 // Export the api instance for other API services
 export default api;
