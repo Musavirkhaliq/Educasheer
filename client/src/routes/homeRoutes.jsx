@@ -28,6 +28,7 @@ import CentersPage from "../pages/CentersPage";
 import CenterDetailPage from "../pages/CenterDetailPage";
 import CenterCreatePage from "../pages/CenterCreatePage";
 import CenterEditPage from "../pages/CenterEditPage";
+import ContactPage from "../pages/ContactPage";
 
 export const homeRoutes = [
   {
@@ -286,6 +287,15 @@ export const homeRoutes = [
     element: (
       <Suspense fallback={<h1>Loading</h1>}>
         <CenterEditPage />
+      </Suspense>
+    ),
+  },
+  // Contact route
+  {
+    path: "contact",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <ContactPage />
       </Suspense>
     ),
   },

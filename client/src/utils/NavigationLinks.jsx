@@ -52,7 +52,7 @@ const navLinks = [
   },
   {
     name: "Contact Us",
-    address: "/",
+    address: "/contact",
     icon: <FaCar />,
   },
 ];
