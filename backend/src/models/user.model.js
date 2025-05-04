@@ -1,6 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import jwt from "jsonwebtoken";
-import bcrypt from "bcryptjs"
+import bcrypt from "bcryptjs";
 
 const userSchema = new Schema({
     username: {
@@ -84,11 +84,27 @@ const userSchema = new Schema({
     },
     passwordResetExpiry: {
         type: Date
+    },
+    // Gamification fields
+    displayedBadges: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Badge'
+    }],
+    currentLevel: {
+        type: Number,
+        default: 1
+    },
+    lastLoginDate: {
+        type: Date
+    },
+    lastActivityDate: {
+        type: Date
     }
-}
-    , {
-        timestamps: true
-    })
+}, {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
+})
 
 userSchema.pre('save', async function (next) {
     if (!this.isModified('password')) return next();
@@ -148,4 +164,31 @@ userSchema.methods.generateRefreshToken = function () {
         }
     );
 }
+// Virtual properties for gamification
+userSchema.virtual('points', {
+    ref: 'UserPoints',
+    localField: '_id',
+    foreignField: 'user',
+    justOne: true
+});
+
+userSchema.virtual('badges', {
+    ref: 'UserBadge',
+    localField: '_id',
+    foreignField: 'user'
+});
+
+userSchema.virtual('streak', {
+    ref: 'Streak',
+    localField: '_id',
+    foreignField: 'user',
+    justOne: true
+});
+
+userSchema.virtual('challenges', {
+    ref: 'UserChallenge',
+    localField: '_id',
+    foreignField: 'user'
+});
+
 export const User = mongoose.model('User', userSchema);

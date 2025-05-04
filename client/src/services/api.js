@@ -186,5 +186,73 @@ export const testimonialAPI = {
   reviewTestimonial: (id, data) => api.patch(`/testimonials/${id}/review`, data),
 };
 
+// Gamification API functions
+export const gamificationAPI = {
+  // User functions
+  getUserProfile: () => api.get('/gamification/profile'),
+  getUserBadges: () => api.get('/gamification/badges'),
+  getUserPointsHistory: (params) => api.get('/gamification/points-history', { params }),
+  getUserStreak: () => api.get('/gamification/streak'),
+  getUserChallenges: (params) => api.get('/gamification/challenges', { params }),
+  getLeaderboard: (params) => api.get('/gamification/leaderboard', { params }),
+  updateDisplayedBadges: (data) => api.patch('/gamification/displayed-badges', data),
+
+  // Admin functions - Badges
+  createBadge: (data) => api.post('/gamification/badges', data),
+  updateBadge: (badgeId, data) => api.put(`/gamification/badges/${badgeId}`, data),
+  deleteBadge: (badgeId) => api.delete(`/gamification/badges/${badgeId}`),
+  getAllBadges: () => api.get('/gamification/admin/badges'),
+
+  // Admin functions - Challenges
+  createChallenge: (data) => api.post('/gamification/challenges', data),
+  updateChallenge: (challengeId, data) => api.put(`/gamification/challenges/${challengeId}`, data),
+  deleteChallenge: (challengeId) => api.delete(`/gamification/challenges/${challengeId}`),
+  getAllChallenges: (params) => api.get('/gamification/admin/challenges', { params }),
+
+  // Admin functions - User Rewards
+  awardBadge: (data) => api.post('/gamification/award-badge', data),
+  awardPoints: (data) => api.post('/gamification/award-points', data),
+
+  // Admin functions - Statistics
+  getGamificationStats: () => api.get('/gamification/admin/stats'),
+};
+
+// Rewards API functions
+export const rewardAPI = {
+  getAvailableRewards: (params) => api.get('/rewards/available', { params }),
+  getRedemptionHistory: () => api.get('/rewards/history'),
+  redeemReward: (rewardId) => api.post(`/rewards/redeem/${rewardId}`),
+  // Admin functions
+  getAllRewards: (params) => api.get('/rewards/admin/all', { params }),
+  createReward: (data) => {
+    const formData = new FormData();
+    Object.keys(data).forEach(key => {
+      if (key === 'image' && data[key] instanceof File) {
+        formData.append(key, data[key]);
+      } else if (data[key] !== undefined && data[key] !== null) {
+        formData.append(key, data[key]);
+      }
+    });
+    return api.post('/rewards', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+  },
+  updateReward: (rewardId, data) => {
+    const formData = new FormData();
+    Object.keys(data).forEach(key => {
+      if (key === 'image' && data[key] instanceof File) {
+        formData.append(key, data[key]);
+      } else if (data[key] !== undefined && data[key] !== null) {
+        formData.append(key, data[key]);
+      }
+    });
+    return api.patch(`/rewards/${rewardId}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+  },
+  verifyRedemptionCode: (code) => api.get(`/rewards/verify/${code}`),
+  markRedemptionUsed: (redemptionId) => api.patch(`/rewards/mark-used/${redemptionId}`)
+};
+
 // Export the api instance for other API services
 export default api;

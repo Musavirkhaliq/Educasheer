@@ -6,6 +6,7 @@ import { BiTime } from 'react-icons/bi';
 import { useAuth } from '../context/AuthContext';
 import { CommentSection } from '../components/comments';
 import { MaterialList } from '../components';
+import VideoProgressTracker from '../components/video/VideoProgressTracker';
 // Using default YouTube embed instead of custom VideoPlayer
 
 const CourseVideoPlayerPage = () => {
@@ -320,13 +321,16 @@ const CourseVideoPlayerPage = () => {
                 {/* Video Player */}
                 <div className="aspect-video w-full bg-black">
                   <iframe
-                    src={`https://www.youtube.com/embed/${currentVideo.videoId}?rel=0&color=white&modestbranding=1`}
+                    src={`https://www.youtube.com/embed/${currentVideo.videoId}?rel=0&color=white&modestbranding=1&enablejsapi=1`}
                     title={currentVideo.title}
                     style={{ border: 'none' }}
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                     className="w-full h-full"
                   ></iframe>
+
+                  {/* Video Progress Tracker - invisible component that tracks progress */}
+                  {isAuthenticated() && <VideoProgressTracker videoId={currentVideo._id} />}
                 </div>
 
                 {/* Video Info */}

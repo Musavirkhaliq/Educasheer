@@ -6,6 +6,7 @@ import { Video } from "../models/video.model.js";
 import { Course } from "../models/course.model.js";
 import { Blog } from "../models/blog.model.js";
 import { Program } from "../models/program.model.js";
+import { awardPoints, updateChallengeProgress, awardBadge } from "../services/gamification.service.js";
 import mongoose from "mongoose";
 
 // Add a comment to a video
@@ -33,6 +34,47 @@ const addVideoComment = asyncHandler(async (req, res) => {
 
         // Populate owner details
         const populatedComment = await Comment.findById(comment._id).populate("owner", "fullName username avatar");
+
+        // Award points for commenting
+        try {
+            // Award points
+            await awardPoints(
+                req.user._id,
+                20,
+                "comment",
+                `Added a comment on video: ${video.title}`,
+                {
+                    itemId: video._id,
+                    itemType: "Video"
+                }
+            );
+
+            // Update challenge progress
+            await updateChallengeProgress(
+                req.user._id,
+                "comment",
+                1,
+                {
+                    itemId: video._id,
+                    itemType: "Video"
+                }
+            );
+
+            // Check for social butterfly badge (first comment)
+            const commentCount = await Comment.countDocuments({ owner: req.user._id });
+            if (commentCount === 1) {
+                const socialButterflyBadge = await mongoose.model("Badge").findOne({
+                    criteria: "comment:post:1"
+                });
+
+                if (socialButterflyBadge) {
+                    await awardBadge(req.user._id, socialButterflyBadge._id);
+                }
+            }
+        } catch (gamificationError) {
+            console.error("Error awarding points for comment:", gamificationError);
+            // Continue even if gamification fails
+        }
 
         return res.status(201).json(
             new ApiResponse(201, populatedComment, "Comment added successfully")
@@ -70,6 +112,47 @@ const addCourseComment = asyncHandler(async (req, res) => {
 
         // Populate owner details
         const populatedComment = await Comment.findById(comment._id).populate("owner", "fullName username avatar");
+
+        // Award points for commenting
+        try {
+            // Award points
+            await awardPoints(
+                req.user._id,
+                20,
+                "comment",
+                `Added a comment on course: ${course.title}`,
+                {
+                    itemId: course._id,
+                    itemType: "Course"
+                }
+            );
+
+            // Update challenge progress
+            await updateChallengeProgress(
+                req.user._id,
+                "comment",
+                1,
+                {
+                    itemId: course._id,
+                    itemType: "Course"
+                }
+            );
+
+            // Check for social butterfly badge (first comment)
+            const commentCount = await Comment.countDocuments({ owner: req.user._id });
+            if (commentCount === 1) {
+                const socialButterflyBadge = await mongoose.model("Badge").findOne({
+                    criteria: "comment:post:1"
+                });
+
+                if (socialButterflyBadge) {
+                    await awardBadge(req.user._id, socialButterflyBadge._id);
+                }
+            }
+        } catch (gamificationError) {
+            console.error("Error awarding points for comment:", gamificationError);
+            // Continue even if gamification fails
+        }
 
         return res.status(201).json(
             new ApiResponse(201, populatedComment, "Comment added successfully")
@@ -359,6 +442,47 @@ const addBlogComment = asyncHandler(async (req, res) => {
         // Populate owner details
         const populatedComment = await Comment.findById(comment._id).populate("owner", "fullName username avatar");
 
+        // Award points for commenting
+        try {
+            // Award points
+            await awardPoints(
+                req.user._id,
+                20,
+                "comment",
+                `Added a comment on blog: ${blog.title}`,
+                {
+                    itemId: blog._id,
+                    itemType: "Blog"
+                }
+            );
+
+            // Update challenge progress
+            await updateChallengeProgress(
+                req.user._id,
+                "comment",
+                1,
+                {
+                    itemId: blog._id,
+                    itemType: "Blog"
+                }
+            );
+
+            // Check for social butterfly badge (first comment)
+            const commentCount = await Comment.countDocuments({ owner: req.user._id });
+            if (commentCount === 1) {
+                const socialButterflyBadge = await mongoose.model("Badge").findOne({
+                    criteria: "comment:post:1"
+                });
+
+                if (socialButterflyBadge) {
+                    await awardBadge(req.user._id, socialButterflyBadge._id);
+                }
+            }
+        } catch (gamificationError) {
+            console.error("Error awarding points for comment:", gamificationError);
+            // Continue even if gamification fails
+        }
+
         return res.status(201).json(
             new ApiResponse(201, populatedComment, "Comment added successfully")
         );
@@ -452,6 +576,47 @@ const addProgramComment = asyncHandler(async (req, res) => {
 
         // Populate owner details
         const populatedComment = await Comment.findById(comment._id).populate("owner", "fullName username avatar");
+
+        // Award points for commenting
+        try {
+            // Award points
+            await awardPoints(
+                req.user._id,
+                20,
+                "comment",
+                `Added a comment on program: ${program.title}`,
+                {
+                    itemId: program._id,
+                    itemType: "Program"
+                }
+            );
+
+            // Update challenge progress
+            await updateChallengeProgress(
+                req.user._id,
+                "comment",
+                1,
+                {
+                    itemId: program._id,
+                    itemType: "Program"
+                }
+            );
+
+            // Check for social butterfly badge (first comment)
+            const commentCount = await Comment.countDocuments({ owner: req.user._id });
+            if (commentCount === 1) {
+                const socialButterflyBadge = await mongoose.model("Badge").findOne({
+                    criteria: "comment:post:1"
+                });
+
+                if (socialButterflyBadge) {
+                    await awardBadge(req.user._id, socialButterflyBadge._id);
+                }
+            }
+        } catch (gamificationError) {
+            console.error("Error awarding points for comment:", gamificationError);
+            // Continue even if gamification fails
+        }
 
         return res.status(201).json(
             new ApiResponse(201, populatedComment, "Comment added successfully")

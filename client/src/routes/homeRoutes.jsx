@@ -29,6 +29,7 @@ import CenterDetailPage from "../pages/CenterDetailPage";
 import CenterCreatePage from "../pages/CenterCreatePage";
 import CenterEditPage from "../pages/CenterEditPage";
 import ContactPage from "../pages/ContactPage";
+import GamificationPage from "../pages/GamificationPage";
 
 export const homeRoutes = [
   {
@@ -296,6 +297,15 @@ export const homeRoutes = [
     element: (
       <Suspense fallback={<h1>Loading</h1>}>
         <ContactPage />
+      </Suspense>
+    ),
+  },
+  // Gamification route
+  {
+    path: "gamification",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <GamificationPage />
       </Suspense>
     ),
   },

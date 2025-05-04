@@ -6,6 +6,7 @@ import ProfileTabs from '../components/profile/ProfileTabs';
 import AccountSettings from '../components/profile/AccountSettings';
 import WatchHistory from '../components/profile/WatchHistory';
 import UserBlogs from '../components/profile/UserBlogs';
+import GamificationProfile from '../components/gamification/GamificationProfile';
 
 const ProfilePage = () => {
   const { currentUser, isAuthenticated, loading } = useAuth();
@@ -56,6 +57,7 @@ const ProfilePage = () => {
             {activeTab === 'account' && <AccountSettings user={currentUser} />}
             {activeTab === 'history' && <WatchHistory />}
             {activeTab === 'blogs' && <UserBlogs />}
+            {activeTab === 'gamification' && <GamificationProfile />}
           </div>
         </div>
       </div>

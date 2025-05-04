@@ -95,6 +95,10 @@ import attendanceRouter from "./routes/attendance.routes.js";
 import feeRouter from "./routes/fee.routes.js";
 import testimonialRouter from "./routes/testimonial.routes.js";
 import centerRouter from "./routes/center.routes.js";
+import gamificationRouter from "./routes/gamification.routes.js";
+import videoProgressRouter from "./routes/videoProgress.routes.js";
+import courseProgressRouter from "./routes/courseProgress.routes.js";
+import rewardRouter from "./routes/reward.routes.js";
 
 // Routes declaration
 app.use("/api/v1/users", userRouter);
@@ -113,6 +117,10 @@ app.use("/api/v1/attendance", attendanceRouter);
 app.use("/api/v1/fees", feeRouter);
 app.use("/api/v1/testimonials", testimonialRouter);
 app.use("/api/v1/centers", centerRouter);
+app.use("/api/v1/gamification", gamificationRouter);
+app.use("/api/v1/video-progress", videoProgressRouter);
+app.use("/api/v1/course-progress", courseProgressRouter);
+app.use("/api/v1/rewards", rewardRouter);
 
 // Serve frontend for all non-API routes
 app.get("*", (req, res, next) => {

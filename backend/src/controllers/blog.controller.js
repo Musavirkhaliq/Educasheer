@@ -4,6 +4,8 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { awardPoints, awardBadge, updateChallengeProgress } from "../services/gamification.service.js";
+import mongoose from "mongoose";
 
 // Helper function to generate a unique slug from title
 const generateUniqueSlug = (title) => {
@@ -78,6 +80,42 @@ const createBlog = asyncHandler(async (req, res) => {
             isPublished: isPublished === "true" || isPublished === true,
             readTime
         });
+
+        // Award points if blog is published
+        if (blog.isPublished) {
+            try {
+                // Award points for publishing a blog
+                await awardPoints(
+                    req.user._id,
+                    150,
+                    "blog",
+                    `Published a blog: ${blog.title}`,
+                    {
+                        itemId: blog._id,
+                        itemType: "Blog"
+                    }
+                );
+
+                // Check for blogger badge (first blog)
+                const blogCount = await Blog.countDocuments({
+                    author: req.user._id,
+                    isPublished: true
+                });
+
+                if (blogCount === 1) {
+                    const bloggerBadge = await mongoose.model("Badge").findOne({
+                        criteria: "blog:publish:1"
+                    });
+
+                    if (bloggerBadge) {
+                        await awardBadge(req.user._id, bloggerBadge._id);
+                    }
+                }
+            } catch (gamificationError) {
+                console.error("Error awarding points for blog publication:", gamificationError);
+                // Continue even if gamification fails
+            }
+        }
 
         return res.status(201).json(
             new ApiResponse(201, blog, "Blog created successfully")
@@ -291,6 +329,11 @@ const updateBlog = asyncHandler(async (req, res) => {
             readTime = calculateReadTime(content);
         }
 
+        // Check if blog is being published for the first time
+        const wasPublished = blog.isPublished;
+        const willBePublished = isPublished === "true" || isPublished === true || blog.isPublished;
+        const isNewlyPublished = !wasPublished && willBePublished;
+
         // Update blog
         const updatedBlog = await Blog.findByIdAndUpdate(
             blogId,
@@ -303,12 +346,48 @@ const updateBlog = asyncHandler(async (req, res) => {
                     excerpt: excerpt || blog.excerpt,
                     category: category || blog.category,
                     tags: processedTags,
-                    isPublished: isPublished === "true" || isPublished === true || blog.isPublished,
+                    isPublished: willBePublished,
                     readTime
                 }
             },
             { new: true }
         ).populate("author", "fullName username avatar");
+
+        // Award points if blog is being published for the first time
+        if (isNewlyPublished) {
+            try {
+                // Award points for publishing a blog
+                await awardPoints(
+                    req.user._id,
+                    150,
+                    "blog",
+                    `Published a blog: ${updatedBlog.title}`,
+                    {
+                        itemId: updatedBlog._id,
+                        itemType: "Blog"
+                    }
+                );
+
+                // Check for blogger badge (first blog)
+                const blogCount = await Blog.countDocuments({
+                    author: req.user._id,
+                    isPublished: true
+                });
+
+                if (blogCount === 1) {
+                    const bloggerBadge = await mongoose.model("Badge").findOne({
+                        criteria: "blog:publish:1"
+                    });
+
+                    if (bloggerBadge) {
+                        await awardBadge(req.user._id, bloggerBadge._id);
+                    }
+                }
+            } catch (gamificationError) {
+                console.error("Error awarding points for blog publication:", gamificationError);
+                // Continue even if gamification fails
+            }
+        }
 
         return res.status(200).json(
             new ApiResponse(200, updatedBlog, "Blog updated successfully")

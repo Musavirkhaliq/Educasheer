@@ -5,6 +5,7 @@ import axios from "axios";
 import FeeManagement from "../components/admin/FeeManagement";
 import TestimonialManagement from "../components/admin/TestimonialManagement";
 import CenterManagement from "../components/admin/CenterManagement";
+import GamificationAdmin from "../components/admin/gamification/GamificationAdmin";
 
 const AdminDashboard = () => {
   const { currentUser, isAuthenticated, logout } = useAuth();
@@ -254,6 +255,16 @@ const AdminDashboard = () => {
         >
           Testimonials
         </button>
+        <button
+          className={`py-2 px-4 font-medium ${
+            activeTab === "gamification"
+              ? "text-[#00bcd4] border-b-2 border-[#00bcd4]"
+              : "text-gray-500 hover:text-gray-700"
+          }`}
+          onClick={() => setActiveTab("gamification")}
+        >
+          Gamification
+        </button>
       </div>
 
       {/* Content */}
@@ -482,6 +493,11 @@ const AdminDashboard = () => {
           {/* Center Management Tab */}
           {activeTab === "centers" && (
             <CenterManagement />
+          )}
+
+          {/* Gamification Management Tab */}
+          {activeTab === "gamification" && (
+            <GamificationAdmin />
           )}
         </>
       )}

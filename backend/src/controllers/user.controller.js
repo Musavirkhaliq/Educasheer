@@ -5,6 +5,7 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { generateVerificationToken } from "../utils/crypto.js";
 import { sendVerificationEmail, sendPasswordResetEmail } from "../utils/emailService.js";
+import { initializeUserGamification } from "../services/gamification.service.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 
@@ -138,6 +139,15 @@ const registerUser = asyncHandler(async (req, res) => {
 
     if (!createdUser) {
       throw new ApiError(500, "Error creating user account");
+    }
+
+    // Initialize gamification for the new user
+    try {
+      await initializeUserGamification(user._id);
+      console.log("Gamification initialized for user:", user._id);
+    } catch (gamificationError) {
+      console.error("Error initializing gamification:", gamificationError);
+      // Continue with registration even if gamification initialization fails
     }
 
     // Send verification email
@@ -666,6 +676,15 @@ const googleLogin = asyncHandler(async (req, res) => {
           role: "learner",
           tutorStatus: "none"
         });
+
+        // Initialize gamification for the new Google user
+        try {
+          await initializeUserGamification(user._id);
+          console.log("Gamification initialized for Google user:", user._id);
+        } catch (gamificationError) {
+          console.error("Error initializing gamification for Google user:", gamificationError);
+          // Continue with login even if gamification initialization fails
+        }
       }
     }
 

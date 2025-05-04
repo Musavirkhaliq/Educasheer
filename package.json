@@ -3,6 +3,8 @@
     "date-fns": "^4.1.0",
     "html5-qrcode": "^2.3.8",
     "qrcode.react": "^4.2.0",
+    "react-chartjs-2": "^5.3.0",
+    "react-toastify": "^11.0.5",
     "terser": "^5.39.0",
     "vite-plugin-compression": "^0.5.1"
   }

@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "nodemon -r dotenv/config --experimental-json-modules server.js",
     "seed:admin": "node -r dotenv/config src/utils/seedAdmin.js",
+    "seed:gamification": "node -r dotenv/config src/scripts/seedGamification.js",
     "import:playlist": "node -r dotenv/config src/utils/importPlaylistVideos.js",
     "import:playlist:direct": "node -r dotenv/config src/utils/importPlaylistVideosDirectly.js"
   },

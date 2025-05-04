@@ -5,6 +5,7 @@ import { FaUser, FaEye, FaClock, FaEdit, FaTrash, FaFileAlt } from 'react-icons/
 import { useAuth } from '../context/AuthContext';
 import { CommentSection } from './comments';
 import { MaterialList } from './';
+import VideoProgressTracker from './video/VideoProgressTracker';
 import customFetch from '../utils/customFetch';
 
 const VideoDetail = () => {
@@ -98,12 +99,15 @@ const VideoDetail = () => {
           <iframe
             width="100%"
             height="100%"
-            src={`https://www.youtube.com/embed/${video.videoId}`}
+            src={`https://www.youtube.com/embed/${video.videoId}?enablejsapi=1`}
             title={video.title}
             frameBorder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
           ></iframe>
+
+          {/* Video Progress Tracker - invisible component that tracks progress */}
+          {isAuthenticated && <VideoProgressTracker videoId={video._id} />}
         </div>
 
         <div className="p-6">

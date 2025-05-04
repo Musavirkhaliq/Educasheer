@@ -4,6 +4,8 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { AttendanceRecord } from "../models/attendance.model.js";
 import { Course } from "../models/course.model.js";
 import { User } from "../models/user.model.js";
+import { awardPoints, awardBadge, updateChallengeProgress, updateUserStreak } from "../services/gamification.service.js";
+import mongoose from "mongoose";
 import crypto from "crypto";
 
 // Generate a unique QR code for a class session
@@ -34,7 +36,7 @@ const generateQrCode = asyncHandler(async (req, res) => {
 
         // Generate a unique QR code data
         const qrCodeData = crypto.randomBytes(32).toString('hex');
-        
+
         // Calculate expiry time
         const expiryTime = new Date();
         expiryTime.setMinutes(expiryTime.getMinutes() + parseInt(expiryMinutes));
@@ -126,11 +128,59 @@ const markAttendance = asyncHandler(async (req, res) => {
 
         await attendanceRecord.save();
 
+        // Award points for attendance
+        try {
+            // Award points
+            await awardPoints(
+                req.user._id,
+                50,
+                "attendance",
+                `Marked attendance for ${course.title} - ${attendanceRecord.session}`,
+                {
+                    itemId: course._id,
+                    itemType: "Course"
+                }
+            );
+
+            // Update streak
+            await updateUserStreak(req.user._id, ["attendance"]);
+
+            // Update challenge progress
+            await updateChallengeProgress(
+                req.user._id,
+                "attendance",
+                1,
+                {
+                    itemId: course._id,
+                    itemType: "Course"
+                }
+            );
+
+            // Check for perfect attendance badge (first attendance)
+            const attendanceCount = await AttendanceRecord.countDocuments({
+                "attendees.student": req.user._id
+            });
+
+            if (attendanceCount === 1) {
+                const perfectAttendanceBadge = await mongoose.model("Badge").findOne({
+                    criteria: "attendance:mark:1"
+                });
+
+                if (perfectAttendanceBadge) {
+                    await awardBadge(req.user._id, perfectAttendanceBadge._id);
+                }
+            }
+        } catch (gamificationError) {
+            console.error("Error awarding points for attendance:", gamificationError);
+            // Continue even if gamification fails
+        }
+
         return res.status(200).json(
             new ApiResponse(200, {
                 course: course.title,
                 session: attendanceRecord.session,
-                checkedInAt: new Date()
+                checkedInAt: new Date(),
+                pointsAwarded: 50
             }, "Attendance marked successfully")
         );
     } catch (error) {
@@ -205,8 +255,8 @@ const getStudentAttendance = asyncHandler(async (req, res) => {
                 session: record.session,
                 sessionDate: record.sessionDate,
                 attended: hasAttended,
-                checkedInAt: hasAttended ? 
-                    record.attendees.find(a => a.student.toString() === req.user._id.toString()).checkedInAt 
+                checkedInAt: hasAttended ?
+                    record.attendees.find(a => a.student.toString() === req.user._id.toString()).checkedInAt
                     : null
             };
         });

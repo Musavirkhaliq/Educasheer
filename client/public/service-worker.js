@@ -1,5 +1,5 @@
 // Service Worker for Educasheer
-const CACHE_NAME = 'educasheer-cache-v1746291031'; // Increment cache version to force refresh
+const CACHE_NAME = 'educasheer-cache-v1746356543'; // Increment cache version to force refresh
 const STATIC_ASSETS = [
   '/',
   '/index.html',
