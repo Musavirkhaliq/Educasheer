@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { BiTime } from 'react-icons/bi';
 import { FiVideo } from 'react-icons/fi';
-import { FaStar, FaArrowRight } from 'react-icons/fa';
+import { FaStar, FaArrowRight, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import axios from 'axios';
@@ -130,6 +130,26 @@ const PopularCourses = () => {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const scrollContainerRef = useRef(null);
+
+  // Scroll functions for navigation buttons
+  const scrollLeft = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({
+        left: -300,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  const scrollRight = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({
+        left: 300,
+        behavior: 'smooth'
+      });
+    }
+  };
 
   // Fetch courses from API
   useEffect(() => {
@@ -137,7 +157,7 @@ const PopularCourses = () => {
       try {
         const response = await axios.get('/api/v1/courses', {
           params: {
-            limit: 3, // Limit to 3 courses for the popular section
+            limit: 6, // Increased limit for horizontal scrolling
             sort: 'popular' // Sort by popularity (if supported by API)
           }
         });
@@ -213,10 +233,64 @@ const PopularCourses = () => {
             <p className="text-gray-500">No courses available at the moment.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
-            {courses.map((course, index) => (
-              <CourseCard key={course._id} course={course} index={index} />
-            ))}
+          <div className="relative">
+            {/* Left scroll button */}
+            <button
+              onClick={scrollLeft}
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 rounded-full p-2 shadow-md text-[#00bcd4] hover:bg-white hover:text-[#01427a] transition-all duration-300 hidden md:block"
+              aria-label="Scroll left"
+            >
+              <FaChevronLeft />
+            </button>
+
+            {/* Horizontal scrollable container */}
+            <div
+              ref={scrollContainerRef}
+              className="flex overflow-x-auto pb-8 pt-2 snap-x snap-mandatory hide-scrollbar"
+              style={{
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+                WebkitOverflowScrolling: 'touch',
+              }}
+            >
+              {courses.map((course, index) => (
+                <div
+                  key={course._id}
+                  className="flex-shrink-0 w-[85%] sm:w-[45%] md:w-[30%] lg:w-[23%] snap-start px-2 first:pl-4 last:pr-4"
+                >
+                  <CourseCard course={course} index={index} />
+                </div>
+              ))}
+            </div>
+
+            {/* Right scroll button */}
+            <button
+              onClick={scrollRight}
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 rounded-full p-2 shadow-md text-[#00bcd4] hover:bg-white hover:text-[#01427a] transition-all duration-300 hidden md:block"
+              aria-label="Scroll right"
+            >
+              <FaChevronRight />
+            </button>
+
+            {/* Swipe indicator */}
+            <div className="flex justify-center mt-2">
+              <motion.div
+                className="w-12 h-1 bg-gray-200 rounded-full relative overflow-hidden"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+              >
+                <motion.div
+                  className="absolute top-0 left-0 h-full w-4 bg-[#00bcd4] rounded-full"
+                  animate={{ x: [0, 32, 0] }}
+                  transition={{
+                    repeat: Infinity,
+                    duration: 1.5,
+                    ease: "easeInOut"
+                  }}
+                />
+              </motion.div>
+            </div>
           </div>
         )}
 

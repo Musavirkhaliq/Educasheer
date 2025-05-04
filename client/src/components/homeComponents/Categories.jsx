@@ -1,15 +1,22 @@
-import React from 'react';
-import { FaLaptopCode, FaCode, FaDatabase, FaChartLine, FaMobileAlt, FaGlobe, FaArrowRight } from 'react-icons/fa';
-import { motion } from 'framer-motion';
+import React, { useEffect, useState, useRef } from 'react';
+import { FaLaptopCode, FaCode, FaDatabase, FaChartLine, FaMobileAlt, FaGlobe, FaArrowRight, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { motion, useAnimation } from 'framer-motion';
 
 const CategoryCard = ({ icon: Icon, title, description, color, delay }) => {
+  // Check if we're on a mobile device
+  const isMobileDevice = () => {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay }}
+      whileTap={isMobileDevice() ? { scale: 0.98 } : {}}
       className="group relative bg-white p-4 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden"
+      style={{ touchAction: "manipulation" }}
     >
       <div className={`absolute top-0 left-0 w-full h-1 ${color}`}></div>
       <div className={`relative z-10 flex flex-col items-center text-center`}>
@@ -19,7 +26,7 @@ const CategoryCard = ({ icon: Icon, title, description, color, delay }) => {
         <h4 className="text-base sm:text-lg md:text-xl font-bold mb-2 sm:mb-3 text-gray-800 group-hover:text-[#00bcd4] transition-colors duration-300">{title}</h4>
         <p className="text-xs sm:text-sm md:text-base text-gray-600">{description}</p>
 
-        <div className="mt-4 sm:mt-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <div className="mt-4 sm:mt-6 opacity-0 group-hover:opacity-100 sm:group-hover:opacity-100 transition-opacity duration-300">
           <button className="flex items-center text-[#00bcd4] font-medium text-xs sm:text-sm">
             <span className="mr-2">Learn More</span>
             <FaArrowRight className="group-hover:translate-x-1 transition-transform duration-300" />
@@ -34,6 +41,28 @@ const CategoryCard = ({ icon: Icon, title, description, color, delay }) => {
 };
 
 const Categories = () => {
+  const scrollContainerRef = useRef(null);
+  const controls = useAnimation();
+
+  // Scroll functions for navigation buttons
+  const scrollLeft = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({
+        left: -300,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  const scrollRight = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({
+        left: 300,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   const categories = [
     {
       icon: FaLaptopCode,
@@ -118,17 +147,71 @@ const Categories = () => {
           </motion.p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
-          {categories.map((category, index) => (
-            <CategoryCard
-              key={index}
-              icon={category.icon}
-              title={category.title}
-              description={category.description}
-              color={category.color}
-              delay={0.1 + index * 0.05}
-            />
-          ))}
+        {/* Horizontal scrollable container for all screen sizes */}
+        <div className="relative">
+          {/* Left scroll button */}
+          <button
+            onClick={scrollLeft}
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 rounded-full p-2 shadow-md text-[#00bcd4] hover:bg-white hover:text-[#01427a] transition-all duration-300 hidden md:block"
+            aria-label="Scroll left"
+          >
+            <FaChevronLeft />
+          </button>
+
+          {/* Horizontal scrollable container */}
+          <motion.div
+            ref={scrollContainerRef}
+            className="flex overflow-x-auto pb-8 pt-2 snap-x snap-mandatory hide-scrollbar"
+            style={{
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+              WebkitOverflowScrolling: 'touch',
+            }}
+          >
+            {categories.map((category, index) => (
+              <div
+                key={index}
+                className="flex-shrink-0 w-[85%] sm:w-[45%] md:w-[30%] lg:w-[23%] snap-start px-2 first:pl-4 last:pr-4"
+              >
+                <CategoryCard
+                  icon={category.icon}
+                  title={category.title}
+                  description={category.description}
+                  color={category.color}
+                  delay={0.1 + index * 0.05}
+                />
+              </div>
+            ))}
+          </motion.div>
+
+          {/* Right scroll button */}
+          <button
+            onClick={scrollRight}
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 rounded-full p-2 shadow-md text-[#00bcd4] hover:bg-white hover:text-[#01427a] transition-all duration-300 hidden md:block"
+            aria-label="Scroll right"
+          >
+            <FaChevronRight />
+          </button>
+
+          {/* Swipe indicator for all screen sizes */}
+          <div className="flex justify-center mt-2">
+            <motion.div
+              className="w-12 h-1 bg-gray-200 rounded-full relative overflow-hidden"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+            >
+              <motion.div
+                className="absolute top-0 left-0 h-full w-4 bg-[#00bcd4] rounded-full"
+                animate={{ x: [0, 32, 0] }}
+                transition={{
+                  repeat: Infinity,
+                  duration: 1.5,
+                  ease: "easeInOut"
+                }}
+              />
+            </motion.div>
+          </div>
         </div>
 
         <motion.div

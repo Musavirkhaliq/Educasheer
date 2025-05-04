@@ -502,3 +502,35 @@ p {
   0%, 100% { transform: translateX(-1rem); }
   50% { transform: translateX(1rem); }
 }
+
+/* Hide scrollbar for horizontal scrolling containers */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* Horizontal scrolling container with snap points */
+.snap-x {
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.snap-start {
+  scroll-snap-align: start;
+}
+
+.snap-center {
+  scroll-snap-align: center;
+}
+
+/* Touch-friendly scrolling */
+@media (hover: none) {
+  .touch-scroll {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+}
