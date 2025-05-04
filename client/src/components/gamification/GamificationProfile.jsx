@@ -17,8 +17,17 @@ const GamificationProfile = () => {
     const fetchGamificationProfile = async () => {
       try {
         setLoading(true);
+        console.log('Fetching gamification profile...');
         const response = await gamificationAPI.getUserProfile();
         setProfile(response.data.data);
+        console.log('Gamification profile updated:', response.data.data);
+
+        // Log streak information specifically
+        if (response.data.data.streak) {
+          console.log('Current streak:', response.data.data.streak.currentStreak);
+          console.log('Longest streak:', response.data.data.streak.longestStreak);
+          console.log('Last activity date:', response.data.data.streak.lastActivityDate);
+        }
       } catch (err) {
         console.error('Error fetching gamification profile:', err);
         setError('Failed to load your gamification profile. Please try again later.');
@@ -27,7 +36,14 @@ const GamificationProfile = () => {
       }
     };
 
+    // Fetch immediately on mount
     fetchGamificationProfile();
+
+    // Then set up a refresh interval (every 30 seconds)
+    const refreshInterval = setInterval(fetchGamificationProfile, 30000);
+
+    // Clean up interval on component unmount
+    return () => clearInterval(refreshInterval);
   }, []);
 
   if (loading) {
@@ -75,11 +91,11 @@ const GamificationProfile = () => {
               {points.totalPoints} total points • Rank #{leaderboardPosition}
             </p>
           </div>
-          
+
           <div className="w-full md:w-1/2">
-            <LevelProgress 
-              currentPoints={points.currentLevelPoints} 
-              pointsToNextLevel={points.pointsToNextLevel} 
+            <LevelProgress
+              currentPoints={points.currentLevelPoints}
+              pointsToNextLevel={points.pointsToNextLevel}
             />
           </div>
         </div>
@@ -125,7 +141,7 @@ const GamificationProfile = () => {
                   </div>
                 </div>
               </div>
-              
+
               <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-lg shadow-sm">
                 <div className="flex items-center">
                   <div className="p-3 bg-orange-500 rounded-full text-white mr-4">
@@ -137,7 +153,7 @@ const GamificationProfile = () => {
                   </div>
                 </div>
               </div>
-              
+
               <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg shadow-sm">
                 <div className="flex items-center">
                   <div className="p-3 bg-purple-500 rounded-full text-white mr-4">
@@ -150,13 +166,13 @@ const GamificationProfile = () => {
                 </div>
               </div>
             </div>
-            
+
             {/* Recent Badges */}
             <div>
               <h3 className="text-xl font-semibold text-gray-800 mb-4">Recent Badges</h3>
               <BadgeDisplay badges={badges?.slice(0, 5) || []} />
             </div>
-            
+
             {/* Active Challenges */}
             <div>
               <h3 className="text-xl font-semibold text-gray-800 mb-4">Active Challenges</h3>
@@ -166,11 +182,11 @@ const GamificationProfile = () => {
         )}
 
         {activeTab === 'badges' && <BadgeDisplay badges={badges || []} showAll={true} />}
-        
+
         {activeTab === 'history' && <PointsHistory userId={profile.user._id} />}
-        
+
         {activeTab === 'streak' && <StreakCalendar streak={streak} />}
-        
+
         {activeTab === 'challenges' && <Challenges challenges={challenges || []} showAll={true} />}
       </div>
     </div>

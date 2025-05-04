@@ -17,7 +17,8 @@ import {
     adminAwardPoints,
     getAllBadges,
     getAllChallenges,
-    getGamificationStats
+    getGamificationStats,
+    forceUpdateStreak
 } from "../controllers/gamification.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { isAdmin } from "../middlewares/role.middleware.js";
@@ -31,6 +32,7 @@ router.get("/points-history", verifyJWT, getUserPointsHistory);
 router.get("/streak", verifyJWT, getUserStreak);
 router.get("/challenges", verifyJWT, getUserChallenges);
 router.patch("/displayed-badges", verifyJWT, updateDisplayedBadges);
+router.post("/force-update-streak", verifyJWT, forceUpdateStreak);
 
 // Public routes
 router.get("/leaderboard", getGamificationLeaderboard);

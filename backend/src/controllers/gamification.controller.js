@@ -101,15 +101,47 @@ const getUserStreak = asyncHandler(async (req, res) => {
             // Initialize streak if not exists
             const newStreak = await Streak.create({
                 user: userId,
-                currentStreak: 0,
-                longestStreak: 0,
+                currentStreak: 1, // Start with 1 since they're actively using the app
+                longestStreak: 1,
                 lastActivityDate: new Date(),
-                streakHistory: []
+                streakHistory: [{
+                    date: new Date(),
+                    activities: ["login"]
+                }]
             });
 
             return res.status(200).json(
                 new ApiResponse(200, newStreak, "User streak initialized successfully")
             );
+        }
+
+        // Always ensure streak is at least 1 for active users
+        // This is a more aggressive fix to ensure streaks are never 0 for active users
+        if (streak.currentStreak === 0 || streak.currentStreak < 1) {
+            console.log("Fixing zero streak for user:", userId);
+            streak.currentStreak = 1;
+            streak.longestStreak = Math.max(1, streak.longestStreak);
+            streak.lastActivityDate = new Date();
+
+            // Add today to history if not already there
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const hasTodayActivity = streak.streakHistory.some(entry => {
+                const entryDate = new Date(entry.date);
+                entryDate.setHours(0, 0, 0, 0);
+                return entryDate.getTime() === today.getTime();
+            });
+
+            if (!hasTodayActivity) {
+                streak.streakHistory.push({
+                    date: today,
+                    activities: ["login"]
+                });
+            }
+
+            await streak.save();
+            console.log("Updated streak to 1 for user:", userId);
         }
 
         return res.status(200).json(
@@ -690,6 +722,71 @@ const getGamificationStats = asyncHandler(async (req, res) => {
     }
 });
 
+// Force update user streak (for debugging/fixing)
+const forceUpdateStreak = asyncHandler(async (req, res) => {
+    try {
+        const userId = req.user._id;
+
+        // Get current streak
+        let streak = await Streak.findOne({ user: userId });
+
+        if (!streak) {
+            // Create new streak if not exists
+            streak = await Streak.create({
+                user: userId,
+                currentStreak: 1,
+                longestStreak: 1,
+                lastActivityDate: new Date(),
+                streakHistory: [{
+                    date: new Date(),
+                    activities: ["login"]
+                }]
+            });
+
+            return res.status(200).json(
+                new ApiResponse(200, streak, "New streak created successfully")
+            );
+        }
+
+        // Force update streak to at least 1
+        if (streak.currentStreak < 1) {
+            streak.currentStreak = 1;
+        }
+
+        // Update longest streak if needed
+        if (streak.currentStreak > streak.longestStreak) {
+            streak.longestStreak = streak.currentStreak;
+        }
+
+        // Add today to history if not already there
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const hasTodayActivity = streak.streakHistory.some(entry => {
+            const entryDate = new Date(entry.date);
+            entryDate.setHours(0, 0, 0, 0);
+            return entryDate.getTime() === today.getTime();
+        });
+
+        if (!hasTodayActivity) {
+            streak.streakHistory.push({
+                date: today,
+                activities: ["login"]
+            });
+        }
+
+        streak.lastActivityDate = new Date();
+        await streak.save();
+
+        return res.status(200).json(
+            new ApiResponse(200, streak, "Streak force updated successfully")
+        );
+    } catch (error) {
+        console.error("Error force updating streak:", error);
+        throw new ApiError(500, "Failed to force update streak");
+    }
+});
+
 export {
     getUserProfile,
     getUserBadges,
@@ -708,5 +805,6 @@ export {
     adminAwardPoints,
     getAllBadges,
     getAllChallenges,
-    getGamificationStats
+    getGamificationStats,
+    forceUpdateStreak
 };

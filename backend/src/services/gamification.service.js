@@ -22,7 +22,8 @@ export const initializeUserGamification = async (userId) => {
             user: userId,
             currentStreak: 0,
             longestStreak: 0,
-            lastActivityDate: new Date()
+            lastActivityDate: new Date(),
+            streakHistory: []
         });
 
         // Assign any welcome/starter badges
@@ -32,7 +33,7 @@ export const initializeUserGamification = async (userId) => {
         }
 
         // Assign active challenges to the user
-        const activeGlobalChallenges = await Challenge.find({ 
+        const activeGlobalChallenges = await Challenge.find({
             isActive: true,
             startDate: { $lte: new Date() },
             endDate: { $gte: new Date() }
@@ -69,7 +70,7 @@ export const awardPoints = async (userId, points, category, description, related
     try {
         // Get user points record or create if not exists
         let userPoints = await UserPoints.findOne({ user: userId }).session(session);
-        
+
         if (!userPoints) {
             userPoints = await UserPoints.create([{
                 user: userId,
@@ -138,8 +139,8 @@ export const awardPoints = async (userId, points, category, description, related
 
         // If user leveled up, update user record
         if (leveledUp) {
-            await User.findByIdAndUpdate(userId, { 
-                currentLevel: userPoints.level 
+            await User.findByIdAndUpdate(userId, {
+                currentLevel: userPoints.level
             }, { session });
 
             // Check for level-based badges
@@ -147,8 +148,8 @@ export const awardPoints = async (userId, points, category, description, related
         }
 
         // Update user's last activity date
-        await User.findByIdAndUpdate(userId, { 
-            lastActivityDate: new Date() 
+        await User.findByIdAndUpdate(userId, {
+            lastActivityDate: new Date()
         }, { session });
 
         // Update streak
@@ -176,12 +177,12 @@ export const awardPoints = async (userId, points, category, description, related
  */
 export const awardBadge = async (userId, badgeId, session = null) => {
     const useSession = session !== null;
-    
+
     try {
         // Check if user already has this badge
-        const existingBadge = await UserBadge.findOne({ 
-            user: userId, 
-            badge: badgeId 
+        const existingBadge = await UserBadge.findOne({
+            user: userId,
+            badge: badgeId
         }).session(useSession ? session : null);
 
         if (existingBadge) {
@@ -205,9 +206,9 @@ export const awardBadge = async (userId, badgeId, session = null) => {
         // If badge awards points, give them to the user
         if (badge.pointsAwarded > 0) {
             await awardPoints(
-                userId, 
-                badge.pointsAwarded, 
-                "other", 
+                userId,
+                badge.pointsAwarded,
+                "other",
                 `Earned ${badge.pointsAwarded} points for "${badge.name}" badge`,
                 null
             );
@@ -219,7 +220,7 @@ export const awardBadge = async (userId, badgeId, session = null) => {
             if (!user.displayedBadges) {
                 user.displayedBadges = [];
             }
-            
+
             // Only display up to 5 badges
             if (user.displayedBadges.length < 5) {
                 user.displayedBadges.push(badgeId);
@@ -227,8 +228,8 @@ export const awardBadge = async (userId, badgeId, session = null) => {
             }
         }
 
-        return { 
-            awarded: true, 
+        return {
+            awarded: true,
             badge: userBadge[0],
             pointsAwarded: badge.pointsAwarded
         };
@@ -278,7 +279,7 @@ export const updateUserStreak = async (userId, activities = [], session = null) 
         today.setHours(0, 0, 0, 0);
 
         let streak = await Streak.findOne({ user: userId }).session(session || null);
-        
+
         if (!streak) {
             streak = await Streak.create([{
                 user: userId,
@@ -290,20 +291,20 @@ export const updateUserStreak = async (userId, activities = [], session = null) 
                     activities
                 }]
             }], { session: session || null });
-            
+
             return streak[0];
         }
 
         // Check if user already has activity today
         const lastActivityDate = new Date(streak.lastActivityDate);
         lastActivityDate.setHours(0, 0, 0, 0);
-        
+
         if (lastActivityDate.getTime() === today.getTime()) {
             // Already has activity today, just update the activities
             const todayHistoryIndex = streak.streakHistory.findIndex(
                 h => new Date(h.date).setHours(0, 0, 0, 0) === today.getTime()
             );
-            
+
             if (todayHistoryIndex >= 0) {
                 // Add any new activity types
                 activities.forEach(activity => {
@@ -323,48 +324,60 @@ export const updateUserStreak = async (userId, activities = [], session = null) 
             const yesterday = new Date(today);
             yesterday.setDate(yesterday.getDate() - 1);
             yesterday.setHours(0, 0, 0, 0);
-            
+
             if (lastActivityDate.getTime() === yesterday.getTime()) {
                 // Consecutive day, increment streak
                 streak.currentStreak += 1;
                 if (streak.currentStreak > streak.longestStreak) {
                     streak.longestStreak = streak.currentStreak;
                 }
-            } else if (lastActivityDate < yesterday) {
-                // Streak broken, reset to 1
+            } else if (lastActivityDate < yesterday || streak.currentStreak === 0) {
+                // Streak broken or first activity, set to 1
                 streak.currentStreak = 1;
+
+                // If this is the first activity ever, also update longest streak
+                if (streak.longestStreak === 0) {
+                    streak.longestStreak = 1;
+                }
             }
-            
+
             // Add today to history
             streak.streakHistory.push({
                 date: today,
                 activities
             });
-            
+
             // Trim history to keep only last 30 days
             if (streak.streakHistory.length > 30) {
                 streak.streakHistory = streak.streakHistory.slice(-30);
             }
         }
-        
+
+        // Ensure streak is never 0 for active users
+        if (streak.currentStreak === 0 || streak.currentStreak < 1) {
+            streak.currentStreak = 1;
+            streak.longestStreak = Math.max(1, streak.longestStreak);
+            console.log("Fixed zero streak in updateUserStreak for user:", userId);
+        }
+
         streak.lastActivityDate = new Date();
         await streak.save({ session: session || null });
-        
+
         // Check for streak-based badges
-        if (streak.currentStreak === 3 || 
-            streak.currentStreak === 7 || 
-            streak.currentStreak === 30 || 
+        if (streak.currentStreak === 3 ||
+            streak.currentStreak === 7 ||
+            streak.currentStreak === 30 ||
             streak.currentStreak === 100) {
-            
+
             const streakBadges = await Badge.find({
                 criteria: { $regex: `streak:${streak.currentStreak}` }
             }).session(session || null);
-            
+
             for (const badge of streakBadges) {
                 await awardBadge(userId, badge._id, session);
             }
         }
-        
+
         return streak;
     } catch (error) {
         console.error("Error updating streak:", error);
@@ -389,37 +402,37 @@ export const updateChallengeProgress = async (userId, activityType, incrementAmo
         })
         .populate('challenge')
         .session(session || null);
-        
+
         const updatedChallenges = [];
-        
+
         for (const userChallenge of userChallenges) {
             const challenge = userChallenge.challenge;
-            
+
             // Skip if challenge is not active or not matching activity type
             if (!challenge.isActive || challenge.criteria.activityType !== activityType) {
                 continue;
             }
-            
+
             // Check if challenge has specific items and if current item matches
             if (challenge.criteria.specificItems && challenge.criteria.specificItems.length > 0) {
                 if (!relatedItem) continue;
-                
-                const matchingItem = challenge.criteria.specificItems.find(item => 
-                    item.itemId.toString() === relatedItem.itemId.toString() && 
+
+                const matchingItem = challenge.criteria.specificItems.find(item =>
+                    item.itemId.toString() === relatedItem.itemId.toString() &&
                     item.itemType === relatedItem.itemType
                 );
-                
+
                 if (!matchingItem) continue;
             }
-            
+
             // Update progress
             userChallenge.progress += incrementAmount;
-            
+
             // Check if challenge is completed
             if (userChallenge.progress >= challenge.criteria.targetCount && !userChallenge.isCompleted) {
                 userChallenge.isCompleted = true;
                 userChallenge.completedAt = new Date();
-                
+
                 // Award points for completing challenge
                 if (challenge.reward.points > 0) {
                     await awardPoints(
@@ -430,17 +443,17 @@ export const updateChallengeProgress = async (userId, activityType, incrementAmo
                         null
                     );
                 }
-                
+
                 // Award badge if applicable
                 if (challenge.reward.badge) {
                     await awardBadge(userId, challenge.reward.badge, session);
                 }
             }
-            
+
             await userChallenge.save({ session: session || null });
             updatedChallenges.push(userChallenge);
         }
-        
+
         return updatedChallenges;
     } catch (error) {
         console.error("Error updating challenge progress:", error);
@@ -483,27 +496,27 @@ export const getUserGamificationProfile = async (userId) => {
                 }
             })
             .populate('displayedBadges');
-            
+
         if (!user) {
             throw new Error(`User with ID ${userId} not found`);
         }
-        
+
         // Get recent point transactions
         const recentTransactions = await PointTransaction.find({ user: userId })
             .sort({ createdAt: -1 })
             .limit(10);
-            
+
         // Get leaderboard position
         const userPoints = await UserPoints.findOne({ user: userId });
         let leaderboardPosition = null;
-        
+
         if (userPoints) {
             const higherPointsUsers = await UserPoints.countDocuments({
                 totalPoints: { $gt: userPoints.totalPoints }
             });
             leaderboardPosition = higherPointsUsers + 1;
         }
-        
+
         return {
             user: {
                 _id: user._id,
@@ -534,15 +547,15 @@ export const getUserGamificationProfile = async (userId) => {
 export const getLeaderboard = async (limit = 10, page = 1) => {
     try {
         const skip = (page - 1) * limit;
-        
+
         const leaderboard = await UserPoints.find()
             .sort({ totalPoints: -1, level: -1 })
             .skip(skip)
             .limit(limit)
             .populate('user', 'username fullName avatar currentLevel displayedBadges');
-            
+
         const total = await UserPoints.countDocuments();
-        
+
         return {
             leaderboard,
             pagination: {

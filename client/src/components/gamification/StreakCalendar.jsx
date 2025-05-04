@@ -46,7 +46,7 @@ const StreakCalendar = ({ streak }) => {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-lg shadow-sm">
           <div className="flex items-center">
             <div className="p-4 bg-purple-500 rounded-full text-white mr-5">
@@ -66,7 +66,7 @@ const StreakCalendar = ({ streak }) => {
           <FaCalendarAlt className="text-gray-500 mr-2" />
           <h3 className="text-lg font-semibold text-gray-800">Activity Calendar</h3>
         </div>
-        
+
         <div className="p-6">
           <div className="grid grid-cols-7 gap-2">
             {/* Day labels */}
@@ -75,31 +75,31 @@ const StreakCalendar = ({ streak }) => {
                 {day}
               </div>
             ))}
-            
+
             {/* Calendar days */}
             {last30Days.map(date => {
               const dateTime = date.getTime();
               const hasActivity = activityDatesMap.has(dateTime);
               const activities = hasActivity ? activityDatesMap.get(dateTime) : [];
               const isToday = date.toDateString() === today.toDateString();
-              
+
               return (
-                <div 
-                  key={dateTime} 
+                <div
+                  key={dateTime}
                   className={`aspect-square rounded-md flex flex-col items-center justify-center ${
-                    isToday 
-                      ? 'border-2 border-[#00bcd4]' 
+                    isToday
+                      ? 'border-2 border-[#00bcd4]'
                       : 'border border-gray-200'
                   } ${
-                    hasActivity 
-                      ? 'bg-gradient-to-br from-orange-50 to-orange-100' 
+                    hasActivity
+                      ? 'bg-gradient-to-br from-orange-50 to-orange-100'
                       : 'bg-gray-50'
                   }`}
                 >
                   <span className={`text-xs font-medium ${hasActivity ? 'text-orange-800' : 'text-gray-500'}`}>
                     {date.getDate()}
                   </span>
-                  
+
                   {hasActivity && (
                     <div className="mt-1 flex justify-center">
                       <FaFire className="text-orange-500 text-xs" />

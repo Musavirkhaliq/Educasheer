@@ -5,7 +5,8 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { generateVerificationToken } from "../utils/crypto.js";
 import { sendVerificationEmail, sendPasswordResetEmail } from "../utils/emailService.js";
-import { initializeUserGamification } from "../services/gamification.service.js";
+import { initializeUserGamification, updateUserStreak } from "../services/gamification.service.js";
+import { Streak } from "../models/gamification.model.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 
@@ -265,6 +266,94 @@ const loginUser = asyncHandler(async (req, res) => {
     const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
       user._id
     );
+
+    // Update user streak for login activity - DIRECT DATABASE UPDATE
+    try {
+      // First try the regular update function
+      await updateUserStreak(user._id, ["login"]);
+      console.log("User streak updated for login activity via function");
+
+      // Then also do a direct database update to ensure it works
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      // Find the user's streak
+      let streak = await Streak.findOne({ user: user._id });
+
+      if (!streak) {
+        // Create a new streak if it doesn't exist
+        streak = await Streak.create({
+          user: user._id,
+          currentStreak: 1,
+          longestStreak: 1,
+          lastActivityDate: new Date(),
+          streakHistory: [{
+            date: today,
+            activities: ["login"]
+          }]
+        });
+        console.log("Created new streak for user:", user._id);
+      } else {
+        // Update existing streak
+        const lastActivityDate = new Date(streak.lastActivityDate);
+        lastActivityDate.setHours(0, 0, 0, 0);
+
+        if (lastActivityDate.getTime() === today.getTime()) {
+          // Already logged in today, just update activities if needed
+          const todayHistoryIndex = streak.streakHistory.findIndex(
+            h => new Date(h.date).setHours(0, 0, 0, 0) === today.getTime()
+          );
+
+          if (todayHistoryIndex >= 0) {
+            if (!streak.streakHistory[todayHistoryIndex].activities.includes("login")) {
+              streak.streakHistory[todayHistoryIndex].activities.push("login");
+            }
+          } else {
+            streak.streakHistory.push({
+              date: today,
+              activities: ["login"]
+            });
+          }
+          console.log("Updated today's streak activities for user:", user._id);
+        } else {
+          // Check if this is consecutive day
+          const yesterday = new Date(today);
+          yesterday.setDate(yesterday.getDate() - 1);
+          yesterday.setHours(0, 0, 0, 0);
+
+          if (lastActivityDate.getTime() === yesterday.getTime()) {
+            // Consecutive day, increment streak
+            streak.currentStreak += 1;
+            if (streak.currentStreak > streak.longestStreak) {
+              streak.longestStreak = streak.currentStreak;
+            }
+            console.log("Incremented streak to", streak.currentStreak, "for user:", user._id);
+          } else {
+            // Streak broken, reset to 1
+            streak.currentStreak = 1;
+            console.log("Reset streak to 1 for user:", user._id);
+          }
+
+          // Add today to history
+          streak.streakHistory.push({
+            date: today,
+            activities: ["login"]
+          });
+
+          // Trim history to keep only last 30 days
+          if (streak.streakHistory.length > 30) {
+            streak.streakHistory = streak.streakHistory.slice(-30);
+          }
+        }
+
+        streak.lastActivityDate = new Date();
+        await streak.save();
+        console.log("Saved streak update for user:", user._id, "Current streak:", streak.currentStreak);
+      }
+    } catch (streakError) {
+      console.error("Error updating streak:", streakError);
+      // Continue with login even if streak update fails
+    }
 
     // Get user data without sensitive fields
     const loggedInUser = await User.findById(user._id).select(
@@ -690,6 +779,94 @@ const googleLogin = asyncHandler(async (req, res) => {
 
     // Generate tokens
     const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
+
+    // Update user streak for login activity - DIRECT DATABASE UPDATE
+    try {
+      // First try the regular update function
+      await updateUserStreak(user._id, ["login"]);
+      console.log("User streak updated for Google login activity via function");
+
+      // Then also do a direct database update to ensure it works
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      // Find the user's streak
+      let streak = await Streak.findOne({ user: user._id });
+
+      if (!streak) {
+        // Create a new streak if it doesn't exist
+        streak = await Streak.create({
+          user: user._id,
+          currentStreak: 1,
+          longestStreak: 1,
+          lastActivityDate: new Date(),
+          streakHistory: [{
+            date: today,
+            activities: ["login"]
+          }]
+        });
+        console.log("Created new streak for Google user:", user._id);
+      } else {
+        // Update existing streak
+        const lastActivityDate = new Date(streak.lastActivityDate);
+        lastActivityDate.setHours(0, 0, 0, 0);
+
+        if (lastActivityDate.getTime() === today.getTime()) {
+          // Already logged in today, just update activities if needed
+          const todayHistoryIndex = streak.streakHistory.findIndex(
+            h => new Date(h.date).setHours(0, 0, 0, 0) === today.getTime()
+          );
+
+          if (todayHistoryIndex >= 0) {
+            if (!streak.streakHistory[todayHistoryIndex].activities.includes("login")) {
+              streak.streakHistory[todayHistoryIndex].activities.push("login");
+            }
+          } else {
+            streak.streakHistory.push({
+              date: today,
+              activities: ["login"]
+            });
+          }
+          console.log("Updated today's streak activities for Google user:", user._id);
+        } else {
+          // Check if this is consecutive day
+          const yesterday = new Date(today);
+          yesterday.setDate(yesterday.getDate() - 1);
+          yesterday.setHours(0, 0, 0, 0);
+
+          if (lastActivityDate.getTime() === yesterday.getTime()) {
+            // Consecutive day, increment streak
+            streak.currentStreak += 1;
+            if (streak.currentStreak > streak.longestStreak) {
+              streak.longestStreak = streak.currentStreak;
+            }
+            console.log("Incremented streak to", streak.currentStreak, "for Google user:", user._id);
+          } else {
+            // Streak broken, reset to 1
+            streak.currentStreak = 1;
+            console.log("Reset streak to 1 for Google user:", user._id);
+          }
+
+          // Add today to history
+          streak.streakHistory.push({
+            date: today,
+            activities: ["login"]
+          });
+
+          // Trim history to keep only last 30 days
+          if (streak.streakHistory.length > 30) {
+            streak.streakHistory = streak.streakHistory.slice(-30);
+          }
+        }
+
+        streak.lastActivityDate = new Date();
+        await streak.save();
+        console.log("Saved streak update for Google user:", user._id, "Current streak:", streak.currentStreak);
+      }
+    } catch (streakError) {
+      console.error("Error updating streak for Google login:", streakError);
+      // Continue with login even if streak update fails
+    }
 
     // Get user data without sensitive fields
     const loggedInUser = await User.findById(user._id).select("-password -refreshToken");

@@ -11,8 +11,10 @@ const GamificationWidget = () => {
   useEffect(() => {
     const fetchGamificationData = async () => {
       try {
+        console.log('Fetching gamification data...');
         const response = await gamificationAPI.getUserProfile();
         setGamificationData(response.data.data);
+        console.log('Gamification data updated:', response.data.data);
       } catch (error) {
         console.error('Error fetching gamification data:', error);
       } finally {
@@ -20,7 +22,14 @@ const GamificationWidget = () => {
       }
     };
 
+    // Fetch immediately on mount
     fetchGamificationData();
+
+    // Then set up a refresh interval (every 30 seconds)
+    const refreshInterval = setInterval(fetchGamificationData, 30000);
+
+    // Clean up interval on component unmount
+    return () => clearInterval(refreshInterval);
   }, []);
 
   if (loading) {
@@ -47,7 +56,7 @@ const GamificationWidget = () => {
   const progressPercentage = Math.min(100, Math.round((points?.currentLevelPoints / points?.pointsToNextLevel) * 100));
 
   return (
-    <motion.div 
+    <motion.div
       className="bg-white rounded-lg shadow-sm overflow-hidden"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -61,12 +70,12 @@ const GamificationWidget = () => {
             <span>{points?.totalPoints || 0} pts</span>
           </div>
         </div>
-        
+
         {/* Progress bar */}
         <div className="mt-2">
           <div className="w-full bg-white/20 rounded-full h-2">
-            <div 
-              className="bg-white h-2 rounded-full" 
+            <div
+              className="bg-white h-2 rounded-full"
               style={{ width: `${progressPercentage}%` }}
             ></div>
           </div>
@@ -76,7 +85,7 @@ const GamificationWidget = () => {
           </div>
         </div>
       </div>
-      
+
       <div className="p-4">
         {/* Streak */}
         <div className="flex items-center mb-4">
@@ -88,24 +97,24 @@ const GamificationWidget = () => {
             <p className="font-medium">{streak?.currentStreak || 0} days</p>
           </div>
         </div>
-        
+
         {/* Badges */}
         <div className="mb-4">
           <div className="flex items-center mb-2">
             <FaMedal className="text-purple-500 mr-2" />
             <h4 className="text-sm font-medium text-gray-700">Recent Badges</h4>
           </div>
-          
+
           {displayBadges.length > 0 ? (
             <div className="flex space-x-2">
               {displayBadges.map((userBadge) => (
-                <div 
-                  key={userBadge._id} 
+                <div
+                  key={userBadge._id}
                   className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center"
                   title={userBadge.badge.name}
                 >
-                  <img 
-                    src={userBadge.badge.icon} 
+                  <img
+                    src={userBadge.badge.icon}
                     alt={userBadge.badge.name}
                     className="w-6 h-6"
                     onError={(e) => {
@@ -120,22 +129,22 @@ const GamificationWidget = () => {
             <p className="text-sm text-gray-500">No badges earned yet</p>
           )}
         </div>
-        
+
         {/* Active Challenges */}
         <div className="mb-4">
           <div className="flex items-center mb-2">
             <FaTrophy className="text-yellow-500 mr-2" />
             <h4 className="text-sm font-medium text-gray-700">Active Challenges</h4>
           </div>
-          
+
           {gamificationData.challenges && gamificationData.challenges.length > 0 ? (
             <div className="text-sm text-gray-600">
               {gamificationData.challenges[0].challenge.title}
               <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1">
-                <div 
-                  className="bg-gradient-to-r from-[#00bcd4] to-[#01427a] h-1.5 rounded-full" 
-                  style={{ 
-                    width: `${Math.min(100, Math.round((gamificationData.challenges[0].progress / gamificationData.challenges[0].challenge.criteria.targetCount) * 100))}%` 
+                <div
+                  className="bg-gradient-to-r from-[#00bcd4] to-[#01427a] h-1.5 rounded-full"
+                  style={{
+                    width: `${Math.min(100, Math.round((gamificationData.challenges[0].progress / gamificationData.challenges[0].challenge.criteria.targetCount) * 100))}%`
                   }}
                 ></div>
               </div>
@@ -144,9 +153,9 @@ const GamificationWidget = () => {
             <p className="text-sm text-gray-500">No active challenges</p>
           )}
         </div>
-        
+
         {/* View Profile Link */}
-        <Link 
+        <Link
           to="/gamification"
           className="block w-full text-center py-2 bg-gradient-to-r from-[#00bcd4] to-[#01427a] text-white rounded-lg font-medium hover:shadow-lg transition-all duration-300"
         >
