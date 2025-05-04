@@ -244,7 +244,7 @@ const Hero = () => {
             variants={fadeInUp}
             className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-[#0c0c0d] leading-tight mb-3 sm:mb-4 md:mb-6"
           >
-            Reinventing <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary-dark">Education</span> for <span className="text-transparent bg-clip-text bg-gradient-to-r from-secondary to-secondary-dark">Humanity</span>
+            Reinventing <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary-dark">Education</span> for better <span className="text-transparent bg-clip-text bg-gradient-to-r from-secondary to-secondary-dark">Tomorrow</span>
           </motion.h1>
 
           <motion.p
@@ -254,7 +254,7 @@ const Hero = () => {
             variants={fadeInUp}
             className="text-sm sm:text-base md:text-lg text-gray-600 max-w-2xl mx-auto mb-6 sm:mb-8 leading-relaxed px-1"
           >
-            We believe in education that helps students reinvent concepts for themselves, not just serve capitalism. Explore our online and offline courses in computer science, AI, and more.
+            We believe in education that helps students reinvent concepts for themselves. Explore our online and offline courses in computer science, AI, and more.
           </motion.p>
 
           {/* Enhanced Search Bar with Glass Effect - Mobile Optimized */}

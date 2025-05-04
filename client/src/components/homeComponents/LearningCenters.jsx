@@ -1,6 +1,6 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { FaArrowRight, FaChevronLeft, FaChevronRight, FaGraduationCap, FaUsers, FaStar } from 'react-icons/fa';
+import { FaArrowRight, FaGraduationCap, FaUsers, FaStar } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 
 // Center Card component for individual center display
@@ -19,7 +19,7 @@ const CenterCard = ({ center, index }) => {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay: 0.1 + index * 0.1 }}
-      className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 border border-gray-100 group h-full"
+      className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-500 border border-gray-100 group h-full"
       whileHover={!isMobile() ? {
         y: -5,
         transition: { duration: 0.2 }
@@ -27,48 +27,53 @@ const CenterCard = ({ center, index }) => {
       whileTap={isMobile() ? { scale: 0.98 } : {}}
     >
       <div className="relative">
-        <div className="relative overflow-hidden">
+        <div className="relative overflow-hidden h-48 sm:h-52 md:h-56">
           <img
             src={center.image}
             alt={center.name}
-            className="w-full h-40 sm:h-44 md:h-48 object-cover transition-transform duration-500 group-hover:scale-105"
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
-            <div className="p-3 sm:p-4 w-full">
-              <span className="inline-block bg-white/20 backdrop-blur-sm text-white px-2 py-1 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm">
-                View Center
-              </span>
-            </div>
-          </div>
-        </div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent"></div>
 
-        {/* Center Badge */}
-        <div className="absolute top-2 sm:top-4 right-2 sm:right-4">
-          <span className={`text-xs font-semibold px-2 py-0.5 sm:px-3 sm:py-1 rounded-full
-            bg-${center.badgeColor} text-white`}>
-            {center.badge}
-          </span>
+          {/* Center Badge */}
+          <div className="absolute top-3 right-3">
+            <span className={`text-xs font-semibold px-2 py-1 rounded-full
+              bg-${center.badgeColor} text-white shadow-lg backdrop-blur-sm flex items-center`}>
+              <FaGraduationCap className="mr-1 text-[10px]" /> {center.badge}
+            </span>
+          </div>
+
+          {/* Center Name Overlay */}
+          <div className="absolute bottom-0 left-0 right-0 p-4">
+            <h3 className="font-bold text-lg sm:text-xl text-white mb-0 drop-shadow-md">{center.name}</h3>
+          </div>
         </div>
       </div>
 
-      <div className="p-3 sm:p-4 md:p-5">
-        <h3 className="font-semibold text-base sm:text-lg mb-2 sm:mb-3 text-gray-800 hover:text-[#00bcd4] transition-colors line-clamp-2">{center.name}</h3>
-        
-        <p className="text-gray-600 text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2">
+      <div className="p-4 sm:p-5">
+        <p className="text-gray-600 text-xs sm:text-sm mb-4 line-clamp-3">
           {center.description}
         </p>
 
-        <div className="space-y-2 mb-3">
-          {center.features.map((feature, idx) => (
-            <div key={idx} className="flex items-center text-xs text-gray-600 gap-1">
-              <feature.icon className={`w-3 h-3 sm:w-3.5 sm:h-3.5 text-${feature.iconColor}`} />
-              <span>{feature.text}</span>
-            </div>
-          ))}
+        <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-4 mb-4 shadow-inner">
+          <h4 className="font-medium text-gray-800 mb-3 text-xs sm:text-sm border-b border-gray-200 pb-2">What We Offer:</h4>
+          <div className="space-y-3">
+            {center.features.map((feature, idx) => (
+              <div key={idx} className="flex items-start text-xs sm:text-sm text-gray-700 gap-3">
+                <span className={`w-6 h-6 rounded-full bg-${feature.iconBg} flex items-center justify-center shadow-sm mt-0.5`}>
+                  <feature.icon className={`text-${feature.iconColor} text-xs`} />
+                </span>
+                <span className="flex-1">{feature.text}</span>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div className="pt-3 sm:pt-4 border-t border-gray-100">
-          <Link to={center.actionLink} className="flex items-center justify-center w-full bg-gradient-to-r from-[#00bcd4]/10 to-[#01427a]/10 text-[#01427a] py-1.5 sm:py-2 rounded-lg text-sm sm:text-base font-medium group-hover:bg-gradient-to-r group-hover:from-[#00bcd4] group-hover:to-[#01427a] group-hover:text-white transition-all duration-300">
+        <div className="pt-3 border-t border-gray-100">
+          <Link
+            to={center.actionLink}
+            className="flex items-center justify-center w-full bg-gradient-to-r from-[#00bcd4]/10 to-[#01427a]/10 text-[#01427a] py-2.5 rounded-lg text-sm font-medium hover:bg-gradient-to-r hover:from-[#00bcd4] hover:to-[#01427a] hover:text-white transition-all duration-300 group shadow-sm hover:shadow"
+          >
             <span>{center.actionText}</span>
             <FaArrowRight className="ml-2 group-hover:translate-x-1 transition-transform duration-300" />
           </Link>
@@ -79,77 +84,47 @@ const CenterCard = ({ center, index }) => {
 };
 
 const LearningCenters = () => {
-  const scrollContainerRef = useRef(null);
-
-  // Scroll functions for navigation buttons
-  const scrollLeft = () => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({
-        left: -300,
-        behavior: 'smooth'
-      });
-    }
-  };
-
-  const scrollRight = () => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({
-        left: 300,
-        behavior: 'smooth'
-      });
-    }
-  };
 
   // Centers data
   const centers = [
     {
       name: "Educasheers SiliconSpark",
-      description: "Cutting-edge computing labs with specialized AI and CS equipment. Perfect for hands-on learning and practical skill development.",
+      description: "Our computing centers provide cutting-edge AI chips, embedded systems, and specialized hardware for hands-on learning in computer science, AI, and machine learning.",
       image: "https://images.unsplash.com/photo-1581092921461-39b9d08a9b21?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80",
       badge: "15+ Centers",
       badgeColor: "primary",
       features: [
-        { icon: FaGraduationCap, text: "Advanced computing hardware", iconBg: "green-100", iconColor: "green-600" },
-        { icon: FaUsers, text: "Small batch sizes (max 15 students)", iconBg: "blue-100", iconColor: "blue-600" }
+        { icon: FaGraduationCap, text: "AI accelerator chips & GPU clusters", iconBg: "green-100", iconColor: "green-600" },
+        { icon: FaUsers, text: "Embedded systems & IoT workstations", iconBg: "blue-100", iconColor: "blue-600" },
+        { icon: FaStar, text: "Robotics & automation equipment", iconBg: "purple-100", iconColor: "purple-600" }
       ],
       actionText: "Find a SiliconSpark Center",
       actionLink: "/centers",
     },
     {
       name: "Educasheer Hikmah Learning Lounge",
-      description: "Comfortable learning spaces with comprehensive study resources. Designed for focused learning and collaborative projects.",
+      description: "Our learning lounges offer comprehensive library resources, collaborative spaces, and a peaceful environment designed for focused study, research, and knowledge sharing.",
       image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1471&q=80",
       badge: "10+ Centers",
       badgeColor: "secondary",
       features: [
-        { icon: FaStar, text: "Extensive library resources", iconBg: "purple-100", iconColor: "purple-600" },
-        { icon: FaGraduationCap, text: "Quiet study and group work areas", iconBg: "green-100", iconColor: "green-600" }
+        { icon: FaStar, text: "Extensive digital & physical libraries", iconBg: "purple-100", iconColor: "purple-600" },
+        { icon: FaGraduationCap, text: "Quiet study & collaborative zones", iconBg: "green-100", iconColor: "green-600" },
+        { icon: FaUsers, text: "Research assistance & mentorship", iconBg: "blue-100", iconColor: "blue-600" }
       ],
       actionText: "Find a Hikmah Learning Lounge",
       actionLink: "/centers",
     },
     {
-      name: "Educasheer Tech Hub",
-      description: "State-of-the-art technology centers with the latest equipment for programming, robotics, and digital creation.",
-      image: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80",
-      badge: "8+ Centers",
-      badgeColor: "blue-500",
-      features: [
-        { icon: FaGraduationCap, text: "Latest programming tools", iconBg: "blue-100", iconColor: "blue-600" },
-        { icon: FaUsers, text: "Robotics and AI labs", iconBg: "purple-100", iconColor: "purple-600" }
-      ],
-      actionText: "Find a Tech Hub",
-      actionLink: "/centers",
-    },
-    {
       name: "Educasheer Science Labs",
-      description: "Fully equipped science laboratories for physics, chemistry, and biology experiments and practical learning.",
+      description: "Our science laboratories foster a research mindset through hands-on experimentation, providing state-of-the-art equipment for physics, chemistry, and biology exploration.",
       image: "https://images.unsplash.com/photo-1532094349884-543bc11b234d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80",
       badge: "12+ Centers",
       badgeColor: "green-500",
       features: [
-        { icon: FaGraduationCap, text: "Modern lab equipment", iconBg: "green-100", iconColor: "green-600" },
-        { icon: FaUsers, text: "Supervised experiments", iconBg: "blue-100", iconColor: "blue-600" }
+        { icon: FaGraduationCap, text: "Advanced scientific instruments", iconBg: "green-100", iconColor: "green-600" },
+        { icon: FaUsers, text: "Research project mentorship", iconBg: "blue-100", iconColor: "blue-600" },
+        { icon: FaStar, text: "Experimental design workshops", iconBg: "purple-100", iconColor: "purple-600" }
       ],
       actionText: "Find a Science Lab",
       actionLink: "/centers",
@@ -172,7 +147,7 @@ const LearningCenters = () => {
               transition={{ duration: 0.5 }}
               className="inline-block px-3 py-1 bg-gradient-to-r from-[#00bcd4]/20 to-[#01427a]/20 rounded-full text-[#01427a] text-xs sm:text-sm font-medium mb-3 sm:mb-4"
             >
-              Nationwide Presence
+              Specialized Offline Facilities
             </motion.span>
 
             <motion.h2
@@ -184,6 +159,16 @@ const LearningCenters = () => {
             >
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00bcd4] to-[#01427a]">Learning</span> Centers
             </motion.h2>
+
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="text-sm text-gray-600 max-w-md mt-2 hidden md:block"
+            >
+              Our nationwide centers offer specialized facilities for computing, research, and hands-on experimentation
+            </motion.p>
           </div>
 
           <motion.div
@@ -212,62 +197,13 @@ const LearningCenters = () => {
           <div className="absolute inset-0 bg-gradient-to-r from-[#01427a]/5 to-[#00bcd4]/5 rounded-3xl transform -rotate-1 scale-105 -z-10"></div>
 
           <div className="bg-white p-4 sm:p-6 md:p-8 rounded-2xl shadow-lg relative">
-            {/* Left scroll button */}
-            <button
-              onClick={scrollLeft}
-              className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/80 rounded-full p-2 shadow-md text-[#00bcd4] hover:bg-white hover:text-[#01427a] transition-all duration-300 hidden md:block"
-              aria-label="Scroll left"
-            >
-              <FaChevronLeft />
-            </button>
-
-            {/* Horizontal scrollable container */}
-            <div
-              ref={scrollContainerRef}
-              className="flex overflow-x-auto pb-4 pt-2 snap-x snap-mandatory hide-scrollbar"
-              style={{
-                scrollbarWidth: 'none',
-                msOverflowStyle: 'none',
-                WebkitOverflowScrolling: 'touch',
-              }}
-            >
+            {/* Centers grid container */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-2">
               {centers.map((center, index) => (
-                <div
-                  key={index}
-                  className="flex-shrink-0 w-[85%] sm:w-[45%] md:w-[30%] lg:w-[23%] snap-start px-2 first:pl-4 last:pr-4"
-                >
+                <div key={index} className="flex-1">
                   <CenterCard center={center} index={index} />
                 </div>
               ))}
-            </div>
-
-            {/* Right scroll button */}
-            <button
-              onClick={scrollRight}
-              className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/80 rounded-full p-2 shadow-md text-[#00bcd4] hover:bg-white hover:text-[#01427a] transition-all duration-300 hidden md:block"
-              aria-label="Scroll right"
-            >
-              <FaChevronRight />
-            </button>
-
-            {/* Swipe indicator */}
-            <div className="flex justify-center mt-2">
-              <motion.div
-                className="w-12 h-1 bg-gray-200 rounded-full relative overflow-hidden"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
-              >
-                <motion.div
-                  className="absolute top-0 left-0 h-full w-4 bg-[#00bcd4] rounded-full"
-                  animate={{ x: [0, 32, 0] }}
-                  transition={{
-                    repeat: Infinity,
-                    duration: 1.5,
-                    ease: "easeInOut"
-                  }}
-                />
-              </motion.div>
             </div>
           </div>
         </motion.div>
@@ -283,7 +219,7 @@ const LearningCenters = () => {
             to="/centers/contact"
             className="inline-flex items-center text-[#01427a] hover:text-[#00bcd4] transition-colors duration-300 font-medium text-sm sm:text-base"
           >
-            <span>Interested in partnering with us? Contact us to establish a center in your area</span>
+            <span>Experience hands-on learning with our specialized facilities. Visit a center near you today!</span>
             <FaArrowRight className="ml-2 group-hover:translate-x-1 transition-transform duration-300" />
           </Link>
         </motion.div>
