@@ -88,7 +88,7 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Performance optimizations for mobile */
+/* Performance optimizations and responsive design for mobile */
 @media (max-width: 768px) {
   /* Use content-visibility to improve rendering performance for off-screen content */
   section, footer {
@@ -104,6 +104,34 @@ html {
   /* Optimize paint performance */
   .glass-card, .glass-effect, .btn-glass {
     will-change: transform;
+  }
+
+  /* Improve container padding for mobile */
+  .container {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  /* Add bottom padding to account for mobile navigation */
+  body {
+    padding-bottom: 4rem;
+  }
+
+  /* Adjust grid spacing for mobile */
+  .grid {
+    gap: 1rem !important;
+  }
+
+  /* Improve card spacing on mobile */
+  .glass-card {
+    padding: 1rem !important;
+    margin-bottom: 1rem;
+  }
+
+  /* Ensure proper touch targets for mobile */
+  button, a {
+    min-height: 44px;
+    min-width: 44px;
   }
 }
 /* Updated heading styles */
