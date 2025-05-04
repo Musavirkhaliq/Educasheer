@@ -11,7 +11,7 @@ import VideoProgressTracker from '../components/video/VideoProgressTracker';
 
 const CourseVideoPlayerPage = () => {
   const { courseId, videoId } = useParams();
-  const { currentUser } = useAuth();
+  const { currentUser, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   const [course, setCourse] = useState(null);
@@ -330,7 +330,7 @@ const CourseVideoPlayerPage = () => {
                   ></iframe>
 
                   {/* Video Progress Tracker - invisible component that tracks progress */}
-                  {isAuthenticated() && <VideoProgressTracker videoId={currentVideo._id} />}
+                  {isAuthenticated && <VideoProgressTracker videoId={currentVideo._id} />}
                 </div>
 
                 {/* Video Info */}
