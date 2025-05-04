@@ -9,7 +9,7 @@ const BlogEditPage = () => {
   const { blogId } = useParams();
   const { currentUser, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  
+
   const [blog, setBlog] = useState(null);
   const [formData, setFormData] = useState({
     title: '',
@@ -19,19 +19,19 @@ const BlogEditPage = () => {
     tags: '',
     isPublished: false
   });
-  
+
   const [thumbnail, setThumbnail] = useState(null);
   const [thumbnailPreview, setThumbnailPreview] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  
+
   // Redirect if not authenticated
   if (!isAuthenticated) {
     navigate('/login');
     return null;
   }
-  
+
   // Fetch blog data
   useEffect(() => {
     const fetchBlog = async () => {
@@ -39,13 +39,13 @@ const BlogEditPage = () => {
         const response = await blogAPI.getBlogById(blogId);
         const blogData = response.data.data;
         setBlog(blogData);
-        
+
         // Check if user is author or admin
         if (currentUser._id !== blogData.author._id && currentUser.role !== 'admin') {
           navigate(`/blogs/${blogData.slug}`);
           return;
         }
-        
+
         // Set form data
         setFormData({
           title: blogData.title,
@@ -55,7 +55,7 @@ const BlogEditPage = () => {
           tags: blogData.tags?.join(', ') || '',
           isPublished: blogData.isPublished
         });
-        
+
         // Set thumbnail preview
         setThumbnailPreview(blogData.thumbnail);
       } catch (error) {
@@ -65,12 +65,12 @@ const BlogEditPage = () => {
         setLoading(false);
       }
     };
-    
+
     if (blogId) {
       fetchBlog();
     }
   }, [blogId, currentUser, navigate]);
-  
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData({
@@ -78,14 +78,14 @@ const BlogEditPage = () => {
       [name]: type === 'checkbox' ? checked : value
     });
   };
-  
+
   const handleContentChange = (content) => {
     setFormData({
       ...formData,
       content
     });
   };
-  
+
   const handleThumbnailChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -93,34 +93,31 @@ const BlogEditPage = () => {
       setThumbnailPreview(URL.createObjectURL(file));
     }
   };
-  
+
   const removeThumbnail = () => {
     setThumbnail(null);
     setThumbnailPreview('');
   };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Validate form
     if (!formData.title.trim()) {
       setError('Title is required');
       return;
     }
-    
+
     if (!formData.content.trim()) {
       setError('Content is required');
       return;
     }
-    
-    if (!thumbnailPreview) {
-      setError('Thumbnail image is required');
-      return;
-    }
-    
+
+    // Thumbnail is optional
+
     setSubmitting(true);
     setError('');
-    
+
     try {
       // Create FormData object
       const blogFormData = new FormData();
@@ -129,20 +126,20 @@ const BlogEditPage = () => {
       blogFormData.append('excerpt', formData.excerpt);
       blogFormData.append('category', formData.category);
       blogFormData.append('isPublished', formData.isPublished);
-      
+
       // Process tags
       if (formData.tags) {
         blogFormData.append('tags', formData.tags);
       }
-      
+
       // Add thumbnail if changed
       if (thumbnail) {
         blogFormData.append('thumbnail', thumbnail);
       }
-      
+
       // Submit the form
       const response = await blogAPI.updateBlog(blogId, blogFormData);
-      
+
       // Redirect to the updated blog
       navigate(`/blogs/${response.data.data.slug}`);
     } catch (error) {
@@ -152,7 +149,7 @@ const BlogEditPage = () => {
       setSubmitting(false);
     }
   };
-  
+
   if (loading) {
     return (
       <div className="flex justify-center items-center py-20">
@@ -160,7 +157,7 @@ const BlogEditPage = () => {
       </div>
     );
   }
-  
+
   if (error && !blog) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -176,7 +173,7 @@ const BlogEditPage = () => {
       </div>
     );
   }
-  
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">
@@ -192,7 +189,7 @@ const BlogEditPage = () => {
             </Link>
             <h1 className="text-3xl font-bold text-gray-800">Edit Blog</h1>
           </div>
-          
+
           <button
             type="button"
             onClick={handleSubmit}
@@ -203,20 +200,20 @@ const BlogEditPage = () => {
             {submitting ? 'Saving...' : 'Save Changes'}
           </button>
         </div>
-        
+
         {/* Error message */}
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
             {error}
           </div>
         )}
-        
+
         {/* Blog Form */}
         <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md overflow-hidden">
           {/* Thumbnail Section */}
           <div className="p-6 border-b border-gray-200">
             <h2 className="text-xl font-semibold mb-4">Blog Thumbnail</h2>
-            
+
             {thumbnailPreview ? (
               <div className="relative">
                 <img
@@ -235,24 +232,35 @@ const BlogEditPage = () => {
             ) : (
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
                 <FaImage className="mx-auto text-gray-400 text-4xl mb-4" />
-                <p className="text-gray-500 mb-4">Upload a thumbnail image for your blog</p>
-                <label className="bg-[#00bcd4] text-white px-6 py-2 rounded-lg font-medium hover:bg-[#01427a] transition-colors cursor-pointer inline-block">
-                  Select Image
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleThumbnailChange}
-                    className="hidden"
-                  />
-                </label>
+                <p className="text-gray-500 mb-4">
+                  Upload a thumbnail image for your blog or use the default cover
+                </p>
+                <div className="flex flex-col sm:flex-row justify-center gap-4">
+                  <label className="bg-[#00bcd4] text-white px-6 py-2 rounded-lg font-medium hover:bg-[#01427a] transition-colors cursor-pointer inline-block">
+                    Select Image
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleThumbnailChange}
+                      className="hidden"
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setThumbnailPreview("https://via.placeholder.com/800x400?text=Blog+Thumbnail")}
+                    className="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg font-medium hover:bg-gray-300 transition-colors"
+                  >
+                    Use Default Cover
+                  </button>
+                </div>
               </div>
             )}
           </div>
-          
+
           {/* Blog Details */}
           <div className="p-6 border-b border-gray-200">
             <h2 className="text-xl font-semibold mb-4">Blog Details</h2>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="md:col-span-2">
                 <label htmlFor="title" className="block text-gray-700 font-medium mb-2">
@@ -269,7 +277,7 @@ const BlogEditPage = () => {
                   required
                 />
               </div>
-              
+
               <div>
                 <label htmlFor="category" className="block text-gray-700 font-medium mb-2">
                   Category
@@ -290,7 +298,7 @@ const BlogEditPage = () => {
                   <option value="Tutorials">Tutorials</option>
                 </select>
               </div>
-              
+
               <div>
                 <label htmlFor="tags" className="block text-gray-700 font-medium mb-2">
                   Tags
@@ -305,7 +313,7 @@ const BlogEditPage = () => {
                   placeholder="Enter tags separated by commas"
                 />
               </div>
-              
+
               <div className="md:col-span-2">
                 <label htmlFor="excerpt" className="block text-gray-700 font-medium mb-2">
                   Excerpt
@@ -319,7 +327,7 @@ const BlogEditPage = () => {
                   placeholder="Brief summary of your blog"
                 />
               </div>
-              
+
               <div className="md:col-span-2 flex items-center">
                 <input
                   type="checkbox"
@@ -335,16 +343,16 @@ const BlogEditPage = () => {
               </div>
             </div>
           </div>
-          
+
           {/* Blog Content */}
           <div className="p-6">
             <h2 className="text-xl font-semibold mb-4">Blog Content *</h2>
-            <BlogEditor 
-              initialContent={formData.content} 
-              onChange={handleContentChange} 
+            <BlogEditor
+              initialContent={formData.content}
+              onChange={handleContentChange}
             />
           </div>
-          
+
           {/* Submit Button */}
           <div className="p-6 bg-gray-50 flex justify-end">
             <button

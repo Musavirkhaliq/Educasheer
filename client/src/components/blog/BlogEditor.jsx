@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
+import BlogEditorHelp from './BlogEditorHelp';
 
-// Simple rich text editor component
-// In a real application, you might want to use a more robust solution like TinyMCE, CKEditor, or Quill
+// Simple rich text editor component using a textarea instead of contentEditable
+// This approach avoids text direction issues
 const BlogEditor = ({ initialContent = '', onChange }) => {
   const [content, setContent] = useState(initialContent);
-  
+  const [showHelp, setShowHelp] = useState(false);
+
   useEffect(() => {
     if (initialContent) {
       setContent(initialContent);
     }
   }, [initialContent]);
-  
+
   const handleChange = (e) => {
     const newContent = e.target.value;
     setContent(newContent);
@@ -18,129 +20,50 @@ const BlogEditor = ({ initialContent = '', onChange }) => {
       onChange(newContent);
     }
   };
-  
-  const handleBold = () => {
-    document.execCommand('bold', false, null);
+
+  const toggleHelp = () => {
+    setShowHelp(!showHelp);
   };
-  
-  const handleItalic = () => {
-    document.execCommand('italic', false, null);
-  };
-  
-  const handleUnderline = () => {
-    document.execCommand('underline', false, null);
-  };
-  
-  const handleHeading = (level) => {
-    document.execCommand('formatBlock', false, `h${level}`);
-  };
-  
-  const handleList = (type) => {
-    document.execCommand(type === 'ordered' ? 'insertOrderedList' : 'insertUnorderedList', false, null);
-  };
-  
-  const handleLink = () => {
-    const url = prompt('Enter URL:');
-    if (url) {
-      document.execCommand('createLink', false, url);
-    }
-  };
-  
+
   return (
     <div className="border border-gray-300 rounded-lg overflow-hidden">
-      {/* Toolbar */}
-      <div className="flex flex-wrap gap-1 p-2 bg-gray-50 border-b border-gray-300">
+      {/* Editor toolbar */}
+      <div className="bg-gray-50 p-2 border-b border-gray-300 flex justify-between items-center">
+        <h3 className="text-sm font-medium text-gray-700">HTML Editor</h3>
         <button
           type="button"
-          onClick={handleBold}
-          className="p-2 rounded hover:bg-gray-200"
-          title="Bold"
+          onClick={toggleHelp}
+          className="text-sm text-blue-600 hover:text-blue-800"
         >
-          <strong>B</strong>
-        </button>
-        <button
-          type="button"
-          onClick={handleItalic}
-          className="p-2 rounded hover:bg-gray-200"
-          title="Italic"
-        >
-          <em>I</em>
-        </button>
-        <button
-          type="button"
-          onClick={handleUnderline}
-          className="p-2 rounded hover:bg-gray-200"
-          title="Underline"
-        >
-          <u>U</u>
-        </button>
-        <div className="border-r border-gray-300 mx-1 h-8"></div>
-        <button
-          type="button"
-          onClick={() => handleHeading(2)}
-          className="p-2 rounded hover:bg-gray-200"
-          title="Heading 2"
-        >
-          H2
-        </button>
-        <button
-          type="button"
-          onClick={() => handleHeading(3)}
-          className="p-2 rounded hover:bg-gray-200"
-          title="Heading 3"
-        >
-          H3
-        </button>
-        <button
-          type="button"
-          onClick={() => handleHeading(4)}
-          className="p-2 rounded hover:bg-gray-200"
-          title="Heading 4"
-        >
-          H4
-        </button>
-        <div className="border-r border-gray-300 mx-1 h-8"></div>
-        <button
-          type="button"
-          onClick={() => handleList('unordered')}
-          className="p-2 rounded hover:bg-gray-200"
-          title="Bullet List"
-        >
-          • List
-        </button>
-        <button
-          type="button"
-          onClick={() => handleList('ordered')}
-          className="p-2 rounded hover:bg-gray-200"
-          title="Numbered List"
-        >
-          1. List
-        </button>
-        <div className="border-r border-gray-300 mx-1 h-8"></div>
-        <button
-          type="button"
-          onClick={handleLink}
-          className="p-2 rounded hover:bg-gray-200"
-          title="Insert Link"
-        >
-          Link
+          Formatting Help
         </button>
       </div>
-      
-      {/* Editor */}
-      <div
-        contentEditable
-        className="min-h-[400px] p-4 focus:outline-none"
-        dangerouslySetInnerHTML={{ __html: content }}
-        onInput={(e) => handleChange({ target: { value: e.currentTarget.innerHTML } })}
-      />
-      
-      {/* Hidden textarea to store HTML content */}
+
+      {/* Simple textarea editor */}
       <textarea
         value={content}
         onChange={handleChange}
-        className="hidden"
+        className="w-full min-h-[400px] p-4 focus:outline-none border-none resize-y"
+        placeholder="Write your blog content here using HTML tags for formatting..."
+        dir="ltr"
       />
+
+      {/* Help text */}
+      <div className="bg-gray-50 p-2 text-xs text-gray-500 border-t border-gray-300 flex justify-between items-center">
+        <div>
+          <p>Use HTML tags for formatting. Click "Formatting Help" for a complete guide.</p>
+        </div>
+        <button
+          type="button"
+          onClick={toggleHelp}
+          className="text-xs bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded"
+        >
+          Show Help
+        </button>
+      </div>
+
+      {/* Help modal */}
+      {showHelp && <BlogEditorHelp onClose={toggleHelp} />}
     </div>
   );
 };

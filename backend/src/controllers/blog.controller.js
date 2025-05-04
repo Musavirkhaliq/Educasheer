@@ -35,20 +35,23 @@ const createBlog = asyncHandler(async (req, res) => {
             throw new ApiError(400, "Title and content are required");
         }
 
-        if (!thumbnailLocalPath) {
-            throw new ApiError(400, "Thumbnail image is required");
-        }
+        // Thumbnail is optional, will use default if not provided
 
-        // Upload thumbnail to cloudinary
-        const thumbnail = await uploadOnCloudinary(thumbnailLocalPath);
+        // Handle thumbnail
+        let thumbnailUrl = "https://via.placeholder.com/800x400?text=Blog+Thumbnail";
 
-        // If Cloudinary upload fails, use a placeholder URL for development
-        let thumbnailUrl;
-        if (!thumbnail || !thumbnail.url) {
-            console.warn("Cloudinary upload failed, using placeholder image");
-            thumbnailUrl = "https://via.placeholder.com/800x400?text=Blog+Thumbnail";
+        if (thumbnailLocalPath) {
+            // Upload thumbnail to cloudinary if provided
+            const thumbnail = await uploadOnCloudinary(thumbnailLocalPath);
+
+            // Use uploaded URL if successful
+            if (thumbnail && thumbnail.url) {
+                thumbnailUrl = thumbnail.url;
+            } else {
+                console.warn("Cloudinary upload failed, using default image");
+            }
         } else {
-            thumbnailUrl = thumbnail.url;
+            console.log("No thumbnail provided, using default image");
         }
 
         // Process tags
@@ -295,15 +298,19 @@ const updateBlog = asyncHandler(async (req, res) => {
             throw new ApiError(403, "You are not authorized to update this blog");
         }
 
-        // Update thumbnail if provided
+        // Handle thumbnail
         let thumbnailUrl = blog.thumbnail;
+
         if (thumbnailLocalPath) {
+            // Upload thumbnail to cloudinary if provided
             const thumbnail = await uploadOnCloudinary(thumbnailLocalPath);
-            if (!thumbnail || !thumbnail.url) {
+
+            // Use uploaded URL if successful
+            if (thumbnail && thumbnail.url) {
+                thumbnailUrl = thumbnail.url;
+            } else {
                 console.warn("Cloudinary upload failed during update, using placeholder image");
                 thumbnailUrl = "https://via.placeholder.com/800x400?text=Blog+Thumbnail";
-            } else {
-                thumbnailUrl = thumbnail.url;
             }
         }
 

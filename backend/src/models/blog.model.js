@@ -20,7 +20,8 @@ const blogSchema = new Schema({
     },
     thumbnail: {
         type: String,
-        required: true
+        required: false,
+        default: "https://via.placeholder.com/800x400?text=Blog+Thumbnail"
     },
     excerpt: {
         type: String,
