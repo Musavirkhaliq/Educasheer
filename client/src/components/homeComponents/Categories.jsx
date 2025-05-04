@@ -1,6 +1,7 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useRef } from 'react';
 import { FaLaptopCode, FaCode, FaDatabase, FaChartLine, FaMobileAlt, FaGlobe, FaArrowRight, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
-import { motion, useAnimation } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
 const CategoryCard = ({ icon: Icon, title, description, color, delay }) => {
   // Check if we're on a mobile device
@@ -42,7 +43,6 @@ const CategoryCard = ({ icon: Icon, title, description, color, delay }) => {
 
 const Categories = () => {
   const scrollContainerRef = useRef(null);
-  const controls = useAnimation();
 
   // Scroll functions for navigation buttons
   const scrollLeft = () => {
@@ -109,122 +109,141 @@ const Categories = () => {
   ];
 
   return (
-    <section className="py-10 sm:py-16 md:py-20 relative overflow-hidden">
+    <section className="py-12 sm:py-16 md:py-20 relative overflow-hidden">
       {/* Background decorations */}
-      <div className="absolute top-0 right-0 -mr-10 sm:-mr-20 -mt-10 sm:-mt-20 w-40 sm:w-64 h-40 sm:h-64 rounded-full bg-gradient-to-br from-[#00bcd4]/5 to-[#01427a]/5 blur-2xl sm:blur-3xl"></div>
-      <div className="absolute bottom-0 left-0 -ml-10 sm:-ml-20 -mb-10 sm:-mb-20 w-40 sm:w-64 h-40 sm:h-64 rounded-full bg-gradient-to-tr from-[#01427a]/5 to-[#00bcd4]/5 blur-2xl sm:blur-3xl"></div>
+      <div className="absolute top-0 left-0 -ml-20 -mt-20 w-64 h-64 rounded-full bg-gradient-to-br from-[#01427a]/5 to-[#00bcd4]/5 blur-3xl"></div>
+      <div className="absolute bottom-0 right-0 -mr-20 -mb-20 w-64 h-64 rounded-full bg-gradient-to-tr from-[#00bcd4]/5 to-[#01427a]/5 blur-3xl"></div>
 
       <div className="container mx-auto px-4 sm:px-6">
-        <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-12 md:mb-16">
-          <motion.span
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="inline-block px-2 sm:px-3 py-1 bg-gradient-to-r from-[#00bcd4]/20 to-[#01427a]/20 rounded-full text-[#01427a] text-xs sm:text-sm font-medium mb-3 sm:mb-4"
-          >
-            Diverse Learning Paths
-          </motion.span>
+        <div className="flex flex-col md:flex-row justify-between items-center mb-8 sm:mb-12 md:mb-16">
+          <div className="text-center md:text-left mb-6 md:mb-0">
+            <motion.span
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="inline-block px-3 py-1 bg-gradient-to-r from-[#00bcd4]/20 to-[#01427a]/20 rounded-full text-[#01427a] text-xs sm:text-sm font-medium mb-3 sm:mb-4"
+            >
+              Diverse Learning Paths
+            </motion.span>
 
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-xl sm:text-2xl md:text-3xl font-bold mb-3 sm:mb-4 text-gray-900"
-          >
-            Explore Our <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00bcd4] to-[#01427a]">Course Categories</span>
-          </motion.h2>
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900"
+            >
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00bcd4] to-[#01427a]">Explore</span> Our Course Categories
+            </motion.h2>
+          </div>
 
-          <motion.p
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-xs sm:text-sm md:text-base text-gray-600"
           >
-            Find the perfect learning path tailored to your interests and career goals
-          </motion.p>
-        </div>
-
-        {/* Horizontal scrollable container for all screen sizes */}
-        <div className="relative">
-          {/* Left scroll button */}
-          <button
-            onClick={scrollLeft}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 rounded-full p-2 shadow-md text-[#00bcd4] hover:bg-white hover:text-[#01427a] transition-all duration-300 hidden md:block"
-            aria-label="Scroll left"
-          >
-            <FaChevronLeft />
-          </button>
-
-          {/* Horizontal scrollable container */}
-          <motion.div
-            ref={scrollContainerRef}
-            className="flex overflow-x-auto pb-8 pt-2 snap-x snap-mandatory hide-scrollbar"
-            style={{
-              scrollbarWidth: 'none',
-              msOverflowStyle: 'none',
-              WebkitOverflowScrolling: 'touch',
-            }}
-          >
-            {categories.map((category, index) => (
-              <div
-                key={index}
-                className="flex-shrink-0 w-[85%] sm:w-[45%] md:w-[30%] lg:w-[23%] snap-start px-2 first:pl-4 last:pr-4"
-              >
-                <CategoryCard
-                  icon={category.icon}
-                  title={category.title}
-                  description={category.description}
-                  color={category.color}
-                  delay={0.1 + index * 0.05}
-                />
-              </div>
-            ))}
-          </motion.div>
-
-          {/* Right scroll button */}
-          <button
-            onClick={scrollRight}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 rounded-full p-2 shadow-md text-[#00bcd4] hover:bg-white hover:text-[#01427a] transition-all duration-300 hidden md:block"
-            aria-label="Scroll right"
-          >
-            <FaChevronRight />
-          </button>
-
-          {/* Swipe indicator for all screen sizes */}
-          <div className="flex justify-center mt-2">
-            <motion.div
-              className="w-12 h-1 bg-gray-200 rounded-full relative overflow-hidden"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
+            <Link
+              to="/categories"
+              className="flex items-center bg-white px-4 sm:px-6 py-2 sm:py-3 rounded-full shadow-md text-[#00bcd4] hover:text-white hover:bg-gradient-to-r hover:from-[#00bcd4] hover:to-[#01427a] transition-all duration-300 group text-sm sm:text-base"
             >
-              <motion.div
-                className="absolute top-0 left-0 h-full w-4 bg-[#00bcd4] rounded-full"
-                animate={{ x: [0, 32, 0] }}
-                transition={{
-                  repeat: Infinity,
-                  duration: 1.5,
-                  ease: "easeInOut"
-                }}
-              />
-            </motion.div>
-          </div>
+              <span className="mr-2 font-medium">View All Categories</span>
+              <FaArrowRight className="group-hover:translate-x-1 transition-transform duration-300" />
+            </Link>
+          </motion.div>
         </div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-          className="text-center mt-8 sm:mt-12 md:mt-16"
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="relative"
         >
-          <button className="bg-gradient-to-r from-[#00bcd4] to-[#01427a] text-white px-6 sm:px-8 py-2 sm:py-3 rounded-full font-medium hover:shadow-lg transition-all duration-300 flex items-center mx-auto group text-xs sm:text-sm">
-            <span>Explore All Categories</span>
+          <div className="absolute inset-0 bg-gradient-to-r from-[#01427a]/5 to-[#00bcd4]/5 rounded-3xl transform -rotate-1 scale-105 -z-10"></div>
+
+          <div className="bg-white p-4 sm:p-6 md:p-8 rounded-2xl shadow-lg relative">
+            {/* Left scroll button */}
+            <button
+              onClick={scrollLeft}
+              className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/80 rounded-full p-2 shadow-md text-[#00bcd4] hover:bg-white hover:text-[#01427a] transition-all duration-300 hidden md:block"
+              aria-label="Scroll left"
+            >
+              <FaChevronLeft />
+            </button>
+
+            {/* Horizontal scrollable container */}
+            <div
+              ref={scrollContainerRef}
+              className="flex overflow-x-auto pb-4 pt-2 snap-x snap-mandatory hide-scrollbar"
+              style={{
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+                WebkitOverflowScrolling: 'touch',
+              }}
+            >
+              {categories.map((category, index) => (
+                <div
+                  key={index}
+                  className="flex-shrink-0 w-[85%] sm:w-[45%] md:w-[30%] lg:w-[23%] snap-start px-2 first:pl-4 last:pr-4"
+                >
+                  <CategoryCard
+                    icon={category.icon}
+                    title={category.title}
+                    description={category.description}
+                    color={category.color}
+                    delay={0.1 + index * 0.05}
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* Right scroll button */}
+            <button
+              onClick={scrollRight}
+              className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/80 rounded-full p-2 shadow-md text-[#00bcd4] hover:bg-white hover:text-[#01427a] transition-all duration-300 hidden md:block"
+              aria-label="Scroll right"
+            >
+              <FaChevronRight />
+            </button>
+
+            {/* Swipe indicator */}
+            <div className="flex justify-center mt-2">
+              <motion.div
+                className="w-12 h-1 bg-gray-200 rounded-full relative overflow-hidden"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+              >
+                <motion.div
+                  className="absolute top-0 left-0 h-full w-4 bg-[#00bcd4] rounded-full"
+                  animate={{ x: [0, 32, 0] }}
+                  transition={{
+                    repeat: Infinity,
+                    duration: 1.5,
+                    ease: "easeInOut"
+                  }}
+                />
+              </motion.div>
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className="text-center mt-8 sm:mt-10 md:mt-12"
+        >
+          <Link
+            to="/categories/suggest"
+            className="inline-flex items-center text-[#01427a] hover:text-[#00bcd4] transition-colors duration-300 font-medium text-sm sm:text-base"
+          >
+            <span>Can't find what you're looking for? Suggest a new category</span>
             <FaArrowRight className="ml-2 group-hover:translate-x-1 transition-transform duration-300" />
-          </button>
+          </Link>
         </motion.div>
       </div>
     </section>

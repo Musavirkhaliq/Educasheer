@@ -220,24 +220,20 @@ const PopularCourses = () => {
           </motion.div>
         </div>
 
-        {loading ? (
-          <div className="flex justify-center items-center py-12 sm:py-16">
-            <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-t-2 border-b-2 border-[#00bcd4]"></div>
-          </div>
-        ) : error ? (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg text-center">
-            {error}
-          </div>
-        ) : courses.length === 0 ? (
-          <div className="text-center py-8 sm:py-10 bg-gray-50 rounded-lg">
-            <p className="text-gray-500">No courses available at the moment.</p>
-          </div>
-        ) : (
-          <div className="relative">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="relative"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-[#01427a]/5 to-[#00bcd4]/5 rounded-3xl transform -rotate-1 scale-105 -z-10"></div>
+
+          <div className="bg-white p-4 sm:p-6 md:p-8 rounded-2xl shadow-lg relative">
             {/* Left scroll button */}
             <button
               onClick={scrollLeft}
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 rounded-full p-2 shadow-md text-[#00bcd4] hover:bg-white hover:text-[#01427a] transition-all duration-300 hidden md:block"
+              className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/80 rounded-full p-2 shadow-md text-[#00bcd4] hover:bg-white hover:text-[#01427a] transition-all duration-300 hidden md:block"
               aria-label="Scroll left"
             >
               <FaChevronLeft />
@@ -246,27 +242,43 @@ const PopularCourses = () => {
             {/* Horizontal scrollable container */}
             <div
               ref={scrollContainerRef}
-              className="flex overflow-x-auto pb-8 pt-2 snap-x snap-mandatory hide-scrollbar"
+              className="flex overflow-x-auto pb-4 pt-2 snap-x snap-mandatory hide-scrollbar"
               style={{
                 scrollbarWidth: 'none',
                 msOverflowStyle: 'none',
                 WebkitOverflowScrolling: 'touch',
               }}
             >
-              {courses.map((course, index) => (
-                <div
-                  key={course._id}
-                  className="flex-shrink-0 w-[85%] sm:w-[45%] md:w-[30%] lg:w-[23%] snap-start px-2 first:pl-4 last:pr-4"
-                >
-                  <CourseCard course={course} index={index} />
+              {loading ? (
+                <div className="flex justify-center items-center py-8 w-full">
+                  <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-t-2 border-b-2 border-[#00bcd4]"></div>
                 </div>
-              ))}
+              ) : error ? (
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg text-center w-full">
+                  {error}
+                </div>
+              ) : courses.length === 0 ? (
+                <div className="text-center py-8 sm:py-10 bg-gray-50 rounded-lg w-full">
+                  <p className="text-gray-500">No courses available at the moment.</p>
+                </div>
+              ) : (
+                <>
+                  {courses.map((course, index) => (
+                    <div
+                      key={course._id}
+                      className="flex-shrink-0 w-[85%] sm:w-[45%] md:w-[30%] lg:w-[23%] snap-start px-2 first:pl-4 last:pr-4"
+                    >
+                      <CourseCard course={course} index={index} />
+                    </div>
+                  ))}
+                </>
+              )}
             </div>
 
             {/* Right scroll button */}
             <button
               onClick={scrollRight}
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 rounded-full p-2 shadow-md text-[#00bcd4] hover:bg-white hover:text-[#01427a] transition-all duration-300 hidden md:block"
+              className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/80 rounded-full p-2 shadow-md text-[#00bcd4] hover:bg-white hover:text-[#01427a] transition-all duration-300 hidden md:block"
               aria-label="Scroll right"
             >
               <FaChevronRight />
@@ -292,7 +304,7 @@ const PopularCourses = () => {
               </motion.div>
             </div>
           </div>
-        )}
+        </motion.div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
