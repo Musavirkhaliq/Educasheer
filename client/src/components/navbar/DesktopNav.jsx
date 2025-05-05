@@ -347,7 +347,7 @@ const DesktopNav = () => {
                         My Profile
                       </Link>
                       <Link
-                        to="/my-courses"
+                        to="/courses"
                         className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-white/30 hover:text-primary transition-all duration-200"
                       >
                         <motion.div

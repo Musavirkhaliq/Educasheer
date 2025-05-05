@@ -186,6 +186,11 @@ export const testimonialAPI = {
   reviewTestimonial: (id, data) => api.patch(`/testimonials/${id}/review`, data),
 };
 
+// Tutor API functions
+export const tutorAPI = {
+  getApprovedTutors: (params) => api.get('/tutors', { params }),
+};
+
 // Gamification API functions
 export const gamificationAPI = {
   // User functions

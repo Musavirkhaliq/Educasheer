@@ -81,6 +81,7 @@ app.get("/api/v1/health", (req, res) => {
 
 import userRouter from "./routes/user.routes.js";
 import tutorApplicationRouter from "./routes/tutorApplication.routes.js";
+import tutorRouter from "./routes/tutor.routes.js";
 import adminRouter from "./routes/admin.routes.js";
 import videoRouter from "./routes/video.routes.js";
 import courseRouter from "./routes/course.routes.js";
@@ -103,6 +104,7 @@ import rewardRouter from "./routes/reward.routes.js";
 // Routes declaration
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/tutor-applications", tutorApplicationRouter);
+app.use("/api/v1/tutors", tutorRouter);
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/videos", videoRouter);
 app.use("/api/v1/courses", courseRouter);

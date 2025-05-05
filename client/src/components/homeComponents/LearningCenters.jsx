@@ -89,14 +89,14 @@ const LearningCenters = () => {
   const centers = [
     {
       name: "Educasheers SiliconSpark",
-      description: "Our computing centers provide cutting-edge AI chips, embedded systems, and specialized hardware for hands-on learning in computer science, AI, and machine learning.",
-      image: "https://images.unsplash.com/photo-1581092921461-39b9d08a9b21?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80",
+      description: "SiliconSpark are modern computing labs where students are introduced to computer science from the ground up—ranging from basic digital literacy to advanced AI, embedded systems, and robotics. Each center is designed to foster creativity, innovation, and practical learning through hands-on experiences.",
+      image: "https://images.unsplash.com/photo-1581091870632-6c5f9583143c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80",
       badge: "15+ Centers",
       badgeColor: "primary",
       features: [
-        { icon: FaGraduationCap, text: "AI accelerator chips & GPU clusters", iconBg: "green-100", iconColor: "green-600" },
-        { icon: FaUsers, text: "Embedded systems & IoT workstations", iconBg: "blue-100", iconColor: "blue-600" },
-        { icon: FaStar, text: "Robotics & automation equipment", iconBg: "purple-100", iconColor: "purple-600" }
+        { icon: FaGraduationCap, text: "Progressive learning from basics to AI", iconBg: "green-100", iconColor: "green-600" },
+        { icon: FaUsers, text: "Dedicated embedded systems & IoT Programming", iconBg: "blue-100", iconColor: "blue-600" },
+        { icon: FaStar, text: "Hands-on robotics and automation modules", iconBg: "purple-100", iconColor: "purple-600" }
       ],
       actionText: "Find a SiliconSpark Center",
       actionLink: "/centers",
