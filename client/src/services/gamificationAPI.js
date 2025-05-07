@@ -22,6 +22,9 @@ export const gamificationAPI = {
   // Get leaderboard
   getLeaderboard: (params) => api.get('/gamification/leaderboard', { params }),
 
+  // Get streaks for leaderboard users
+  getLeaderboardStreaks: (userIds) => api.post('/gamification/leaderboard-streaks', { userIds }),
+
   // Update displayed badges
   updateDisplayedBadges: (data) => api.patch('/gamification/displayed-badges', data),
 

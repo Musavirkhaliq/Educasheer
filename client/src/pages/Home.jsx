@@ -1,6 +1,6 @@
 import React from "react";
 
-import { Categories, Hero, PopularCourses, FeaturedVideos, LearningCenters, Testimonials } from "../components";
+import { Categories, Hero, PopularCourses, FeaturedVideos, LearningCenters, Testimonials, HomeLeaderboard } from "../components";
 
 const Home = () => {
   return (
@@ -8,6 +8,7 @@ const Home = () => {
       <Hero />
       <Categories />
       <FeaturedVideos />
+      <HomeLeaderboard />
       <PopularCourses />
       <LearningCenters />
       <Testimonials />

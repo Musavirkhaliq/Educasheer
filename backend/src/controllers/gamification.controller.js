@@ -198,6 +198,28 @@ const getGamificationLeaderboard = asyncHandler(async (req, res) => {
     }
 });
 
+// Get streak data for multiple users (for leaderboard)
+const getLeaderboardStreaks = asyncHandler(async (req, res) => {
+    try {
+        const { userIds } = req.body;
+
+        if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
+            throw new ApiError(400, "User IDs must be provided as a non-empty array");
+        }
+
+        // Get streak data for the specified users
+        const streaks = await Streak.find({ user: { $in: userIds } })
+            .select('user currentStreak longestStreak lastActivityDate');
+
+        return res.status(200).json(
+            new ApiResponse(200, { streaks }, "Streak data fetched successfully")
+        );
+    } catch (error) {
+        console.error("Error fetching streak data:", error);
+        throw new ApiError(500, "Failed to fetch streak data");
+    }
+});
+
 // Update displayed badges
 const updateDisplayedBadges = asyncHandler(async (req, res) => {
     try {
@@ -794,6 +816,7 @@ export {
     getUserStreak,
     getUserChallenges,
     getGamificationLeaderboard,
+    getLeaderboardStreaks,
     updateDisplayedBadges,
     createBadge,
     updateBadge,

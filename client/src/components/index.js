@@ -12,6 +12,7 @@ export {default as PopularCourses} from "./homeComponents/PopularCourses";
 export {default as FeaturedVideos} from "./homeComponents/FeaturedVideos";
 export {default as LearningCenters} from "./homeComponents/LearningCenters";
 export {default as HomeSidebar} from "./homeComponents/HomeSidebar";
+export {default as HomeLeaderboard} from "./homeComponents/HomeLeaderboard";
 
 // Video components
 export {default as VideoList} from "./VideoList";

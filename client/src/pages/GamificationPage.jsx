@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import GamificationProfile from '../components/gamification/GamificationProfile';
 import Leaderboard from '../components/gamification/Leaderboard';
@@ -7,7 +7,15 @@ import { FaTrophy, FaUsers } from 'react-icons/fa';
 
 const GamificationPage = () => {
   const { currentUser, isAuthenticated, loading } = useAuth();
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState('profile');
+
+  // Check if we have a tab specified in the location state
+  useEffect(() => {
+    if (location.state && location.state.activeTab) {
+      setActiveTab(location.state.activeTab);
+    }
+  }, [location.state]);
 
   // Show loading indicator while auth state is being determined
   if (loading) {
@@ -36,7 +44,7 @@ const GamificationPage = () => {
     <div className="container mx-auto py-8 px-4">
       <div className="max-w-5xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-800 mb-6">Gamification</h1>
-        
+
         {/* Tabs */}
         <div className="flex mb-6 border-b border-gray-200">
           <button
@@ -62,7 +70,7 @@ const GamificationPage = () => {
             Leaderboard
           </button>
         </div>
-        
+
         {/* Content */}
         {activeTab === 'profile' && <GamificationProfile />}
         {activeTab === 'leaderboard' && <Leaderboard />}

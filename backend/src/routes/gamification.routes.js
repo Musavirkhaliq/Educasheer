@@ -6,6 +6,7 @@ import {
     getUserStreak,
     getUserChallenges,
     getGamificationLeaderboard,
+    getLeaderboardStreaks,
     updateDisplayedBadges,
     createBadge,
     updateBadge,
@@ -36,6 +37,7 @@ router.post("/force-update-streak", verifyJWT, forceUpdateStreak);
 
 // Public routes
 router.get("/leaderboard", getGamificationLeaderboard);
+router.post("/leaderboard-streaks", getLeaderboardStreaks);
 
 // Admin routes (require admin role)
 // Badge management
