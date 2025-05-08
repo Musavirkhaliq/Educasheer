@@ -16,9 +16,11 @@ const Testimonials = ({ limit = 6, showAddButton = true }) => {
       try {
         const response = await testimonialAPI.getApprovedTestimonials({ limit });
         setTestimonials(response.data.testimonials || []);
+        setError(""); // Clear any previous errors
       } catch (error) {
         console.error("Error fetching testimonials:", error);
-        setError("Failed to load testimonials");
+        // Don't set error message since we'll show fallback testimonials
+        // Just log the error for debugging purposes
       } finally {
         setLoading(false);
       }
@@ -33,17 +35,17 @@ const Testimonials = ({ limit = 6, showAddButton = true }) => {
     : [
         {
           content: "This platform transformed my career path! The courses are well-structured and the instructors are knowledgeable.",
-          authorName: "John D.",
+          authorName: "Fazil Ahmad.",
           rating: 5
         },
         {
           content: "The video lessons are easy to follow and comprehensive! I've learned so much in just a few weeks.",
-          authorName: "Sarah W.",
+          authorName: "Malik Nasir.",
           rating: 5
         },
         {
           content: "Best investment in my education journey! The community support is amazing.",
-          authorName: "Mike R.",
+          authorName: "Mohmmad Aamir.",
           rating: 5
         },
         {
@@ -53,7 +55,7 @@ const Testimonials = ({ limit = 6, showAddButton = true }) => {
         },
         {
           content: "The interactive learning approach keeps me engaged throughout the courses.",
-          authorName: "David L.",
+          authorName: "Sahil.",
           rating: 5
         },
         {
@@ -85,13 +87,8 @@ const Testimonials = ({ limit = 6, showAddButton = true }) => {
     );
   }
 
-  if (error) {
-    return (
-      <div className="text-center py-8">
-        <p className="text-red-500">{error}</p>
-      </div>
-    );
-  }
+  // We don't need to show an error message since we'll display fallback testimonials
+  // if there's an error fetching from the API
 
   return (
     <div className="py-12">

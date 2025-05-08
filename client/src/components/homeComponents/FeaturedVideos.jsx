@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { FaArrowRight, FaPlay, FaChevronLeft, FaChevronRight, FaEye } from 'react-icons/fa';
 import { BiTime } from 'react-icons/bi';
 import { motion } from 'framer-motion';
-import axios from 'axios';
+import { publicApi } from '../../services/api';
 
 // VideoCard component for individual video display
 const VideoCard = ({ video, showOwner = true }) => {
@@ -75,7 +75,7 @@ const FeaturedVideos = () => {
   useEffect(() => {
     const fetchVideos = async () => {
       try {
-        const response = await axios.get('/api/v1/videos', {
+        const response = await publicApi.get('/videos', {
           params: {
             limit: 6 // Limit to 6 videos for the featured section
           }

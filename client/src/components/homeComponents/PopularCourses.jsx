@@ -4,7 +4,7 @@ import { FiVideo } from 'react-icons/fi';
 import { FaStar, FaArrowRight, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import axios from 'axios';
+import { publicApi } from '../../services/api';
 
 // Function to get background color based on category
 const getCategoryColor = (category) => {
@@ -155,7 +155,7 @@ const PopularCourses = () => {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const response = await axios.get('/api/v1/courses', {
+        const response = await publicApi.get('/courses', {
           params: {
             limit: 6, // Increased limit for horizontal scrolling
             sort: 'popular' // Sort by popularity (if supported by API)

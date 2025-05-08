@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-// Create an axios instance with default config
+// Create an axios instance with default config for authenticated requests
 const api = axios.create({
   baseURL: '/api/v1',
   headers: {
@@ -8,7 +8,15 @@ const api = axios.create({
   },
 });
 
-// Add a request interceptor to add the auth token to requests
+// Create a separate axios instance for public endpoints that don't require authentication
+const publicApi = axios.create({
+  baseURL: '/api/v1',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Add a request interceptor to add the auth token to requests (only for authenticated api)
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('accessToken');
@@ -152,8 +160,12 @@ export const profileAPI = {
 
 // Blog API functions
 export const blogAPI = {
-  getAllBlogs: (params) => api.get('/blogs', { params }),
-  getBlogBySlug: (slug) => api.get(`/blogs/slug/${slug}`),
+  // Public endpoints that don't require authentication
+  getAllBlogs: (params) => publicApi.get('/blogs', { params }),
+  getBlogBySlug: (slug) => publicApi.get(`/blogs/slug/${slug}`),
+  getBlogComments: (blogId, params) => publicApi.get(`/comments/blog/${blogId}`, { params }),
+
+  // Protected endpoints that require authentication
   getBlogById: (id) => api.get(`/blogs/${id}`),
   createBlog: (formData) => api.post('/blogs', formData, {
     headers: {
@@ -168,9 +180,9 @@ export const blogAPI = {
   deleteBlog: (id) => api.delete(`/blogs/${id}`),
   getMyBlogs: (params) => api.get('/blogs/my/blogs', { params }),
   getBlogsByAuthor: (userId, params) => api.get(`/blogs/author/${userId}`, { params }),
-  getBlogComments: (blogId, params) => api.get(`/comments/blog/${blogId}`, { params }),
   addBlogComment: (blogId, data) => api.post(`/comments/blog/${blogId}`, data),
-  // Comment operations
+
+  // Comment operations (require authentication)
   addCommentReply: (commentId, data) => api.post(`/comments/reply/${commentId}`, data),
   deleteComment: (commentId) => api.delete(`/comments/${commentId}`),
   likeComment: (commentId) => api.post(`/comments/${commentId}/like`),
@@ -178,7 +190,9 @@ export const blogAPI = {
 
 // Testimonial API functions
 export const testimonialAPI = {
-  getApprovedTestimonials: (params) => api.get('/testimonials', { params }),
+  // Use publicApi for fetching approved testimonials (no auth required)
+  getApprovedTestimonials: (params) => publicApi.get('/testimonials', { params }),
+  // These operations still require authentication
   submitTestimonial: (data) => api.post('/testimonials', data),
   deleteTestimonial: (id) => api.delete(`/testimonials/${id}`),
   // Admin functions
@@ -188,7 +202,8 @@ export const testimonialAPI = {
 
 // Tutor API functions
 export const tutorAPI = {
-  getApprovedTutors: (params) => api.get('/tutors', { params }),
+  // Use publicApi for fetching approved tutors (no auth required)
+  getApprovedTutors: (params) => publicApi.get('/tutors', { params }),
 };
 
 // Gamification API functions
@@ -224,7 +239,9 @@ export const gamificationAPI = {
 
 // Rewards API functions
 export const rewardAPI = {
-  getAvailableRewards: (params) => api.get('/rewards/available', { params }),
+  // Public endpoint that doesn't require authentication
+  getAvailableRewards: (params) => publicApi.get('/rewards/available', { params }),
+  // Protected endpoints that require authentication
   getRedemptionHistory: () => api.get('/rewards/history'),
   redeemReward: (rewardId) => api.post(`/rewards/redeem/${rewardId}`),
   // Admin functions
@@ -259,5 +276,6 @@ export const rewardAPI = {
   markRedemptionUsed: (redemptionId) => api.patch(`/rewards/mark-used/${redemptionId}`)
 };
 
-// Export the api instance for other API services
+// Export the api instances for other API services
+export { publicApi };
 export default api;

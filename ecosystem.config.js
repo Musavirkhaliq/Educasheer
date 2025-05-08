@@ -11,7 +11,7 @@ module.exports = {
         PORT: 5000,
         MONGO_URL: "mongodb://localhost:27017",
         DB_NAME: "educasheer",
-        CORS_ORIGIN: "https://learn.sukoonsphere.org",
+        CORS_ORIGIN: "https://learn.sukoonsphere.org,https://educasheer.in,https://www.educasheer.in",
         ACCESS_TOKEN_SECRET: "your-access-token-secret",
         REFRESH_TOKEN_SECRET: "your-refresh-token-secret",
         ACCESS_TOKEN_EXPIRES_IN: "1d",
@@ -25,14 +25,14 @@ module.exports = {
         EMAIL_USER: "8b7bc7001@smtp-brevo.com",
         EMAIL_PASS: "7ZYwMhrzsjybBWgK",
         EMAIL_FROM: "sukoonsphere@gmail.com",
-        CLIENT_URL: "https://learn.sukoonsphere.org"
+        CLIENT_URL: "https://educasheer.in"
       },
       env_production: {
         NODE_ENV: "production",
         PORT: 5000,
         MONGO_URL: "mongodb://localhost:27017",
         DB_NAME: "educasheer",
-        CORS_ORIGIN: "https://learn.sukoonsphere.org",
+        CORS_ORIGIN: "https://learn.sukoonsphere.org,https://educasheer.in,https://www.educasheer.in",
         ACCESS_TOKEN_SECRET: "your-access-token-secret",
         REFRESH_TOKEN_SECRET: "your-refresh-token-secret",
         ACCESS_TOKEN_EXPIRES_IN: "1d",
