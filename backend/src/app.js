@@ -100,6 +100,7 @@ import gamificationRouter from "./routes/gamification.routes.js";
 import videoProgressRouter from "./routes/videoProgress.routes.js";
 import courseProgressRouter from "./routes/courseProgress.routes.js";
 import rewardRouter from "./routes/reward.routes.js";
+import quizRouter from "./routes/quiz.routes.js";
 
 // Routes declaration
 app.use("/api/v1/users", userRouter);
@@ -123,6 +124,7 @@ app.use("/api/v1/gamification", gamificationRouter);
 app.use("/api/v1/video-progress", videoProgressRouter);
 app.use("/api/v1/course-progress", courseProgressRouter);
 app.use("/api/v1/rewards", rewardRouter);
+app.use("/api/v1/quizzes", quizRouter);
 
 // Serve frontend for all non-API routes
 app.get("*", (req, res, next) => {

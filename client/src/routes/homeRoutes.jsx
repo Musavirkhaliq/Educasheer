@@ -25,6 +25,12 @@ import QRScannerTestPage from "../pages/QRScannerTestPage";
 import InvoiceView from "../components/admin/InvoiceView";
 import TestimonialPage from "../pages/TestimonialPage";
 import CentersPage from "../pages/CentersPage";
+import QuizManagementPage from "../pages/QuizManagementPage";
+import QuizCreatePage from "../pages/QuizCreatePage";
+import QuizEditPage from "../pages/QuizEditPage";
+import QuizTakerPage from "../pages/QuizTakerPage";
+import QuizResultsPage from "../pages/QuizResultsPage";
+import QuizAttemptsPage from "../pages/QuizAttemptsPage";
 import CenterDetailPage from "../pages/CenterDetailPage";
 import CenterCreatePage from "../pages/CenterCreatePage";
 import CenterEditPage from "../pages/CenterEditPage";
@@ -306,6 +312,56 @@ export const homeRoutes = [
     element: (
       <Suspense fallback={<h1>Loading</h1>}>
         <GamificationPage />
+      </Suspense>
+    ),
+  },
+  // Quiz management routes (admin)
+  {
+    path: "admin/quizzes",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <QuizManagementPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: "admin/quizzes/create",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <QuizCreatePage />
+      </Suspense>
+    ),
+  },
+  {
+    path: "admin/quizzes/edit/:quizId",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <QuizEditPage />
+      </Suspense>
+    ),
+  },
+  // Quiz routes (student)
+  {
+    path: "courses/:courseId/quizzes/:quizId",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <QuizTakerPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: "courses/:courseId/quizzes/:quizId/results/:attemptId",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <QuizResultsPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: "courses/:courseId/quizzes/:quizId/attempts",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <QuizAttemptsPage />
       </Suspense>
     ),
   },

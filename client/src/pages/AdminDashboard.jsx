@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { Navigate } from "react-router-dom";
+import { Navigate, Link } from "react-router-dom";
 import axios from "axios";
 import FeeManagement from "../components/admin/FeeManagement";
 import TestimonialManagement from "../components/admin/TestimonialManagement";
 import CenterManagement from "../components/admin/CenterManagement";
 import GamificationAdmin from "../components/admin/gamification/GamificationAdmin";
+import QuizManagement from "../components/admin/QuizManagement";
 
 const AdminDashboard = () => {
   const { currentUser, isAuthenticated, logout } = useAuth();
@@ -257,6 +258,16 @@ const AdminDashboard = () => {
         </button>
         <button
           className={`py-2 px-4 font-medium ${
+            activeTab === "quizzes"
+              ? "text-[#00bcd4] border-b-2 border-[#00bcd4]"
+              : "text-gray-500 hover:text-gray-700"
+          }`}
+          onClick={() => setActiveTab("quizzes")}
+        >
+          Quizzes & Exams
+        </button>
+        <button
+          className={`py-2 px-4 font-medium ${
             activeTab === "gamification"
               ? "text-[#00bcd4] border-b-2 border-[#00bcd4]"
               : "text-gray-500 hover:text-gray-700"
@@ -493,6 +504,11 @@ const AdminDashboard = () => {
           {/* Center Management Tab */}
           {activeTab === "centers" && (
             <CenterManagement />
+          )}
+
+          {/* Quiz Management Tab */}
+          {activeTab === "quizzes" && (
+            <QuizManagement />
           )}
 
           {/* Gamification Management Tab */}

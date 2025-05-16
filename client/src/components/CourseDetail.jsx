@@ -3,7 +3,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { BiTime, BiCategory } from 'react-icons/bi';
 import { FiVideo } from 'react-icons/fi';
-import { FaEdit, FaPlay, FaChalkboardTeacher, FaSignal, FaLock, FaMapMarkerAlt, FaCalendarAlt, FaClock, FaBook, FaListUl } from 'react-icons/fa';
+import { FaEdit, FaPlay, FaChalkboardTeacher, FaSignal, FaLock, FaMapMarkerAlt, FaCalendarAlt, FaClock, FaBook, FaListUl, FaClipboardList } from 'react-icons/fa';
 import QRCodeGenerator from './QRCodeGenerator';
 import AttendanceRecords from './AttendanceRecords';
 import StudentAttendance from './StudentAttendance';
@@ -11,6 +11,7 @@ import { useAuth } from '../context/AuthContext';
 import { CommentSection } from './comments';
 import DiscussionForum from './DiscussionForum';
 import CourseMaterials from './CourseMaterials';
+import CourseQuizzes from './CourseQuizzes';
 import customFetch from '../utils/customFetch';
 
 const CourseDetail = () => {
@@ -588,6 +589,20 @@ const CourseDetail = () => {
                     </h2>
 
                     <DiscussionForum courseId={course._id} />
+                  </div>
+
+                  {/* Quizzes & Exams Section */}
+                  <div className="mt-8">
+                    <h2 className="text-xl font-semibold mb-6 inline-block relative">
+                      Quizzes & Exams
+                      <span className="absolute bottom-0 left-0 w-1/3 h-1 bg-[#00bcd4] rounded-full"></span>
+                    </h2>
+
+                    <CourseQuizzes
+                      courseId={course._id}
+                      courseName={course.title}
+                      isInstructor={canEdit()}
+                    />
                   </div>
 
                   {/* Attendance Tracking Section */}
