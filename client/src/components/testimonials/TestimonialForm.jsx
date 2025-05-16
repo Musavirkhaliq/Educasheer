@@ -14,21 +14,22 @@ const TestimonialForm = ({ onSuccess }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!content.trim()) {
       setError('Please share your experience');
       return;
     }
-    
+
     setIsSubmitting(true);
     setError('');
-    
+
     try {
-      await testimonialAPI.submitTestimonial({ content, rating });
-      setSuccess('Thank you for your testimonial! It will be reviewed and published soon.');
+      const response = await testimonialAPI.submitTestimonial({ content, rating });
+      console.log('Testimonial submission response:', response);
+      setSuccess('Thank you for your testimonial! It has been submitted and is now pending admin approval. Once approved, it will appear in the testimonials section.');
       setContent('');
       setRating(5);
-      
+
       if (onSuccess) {
         onSuccess();
       }
@@ -51,19 +52,20 @@ const TestimonialForm = ({ onSuccess }) => {
   return (
     <div className="bg-white rounded-lg shadow-sm p-6">
       <h3 className="text-xl font-semibold mb-4">Share Your Experience</h3>
-      
+
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
           {error}
         </div>
       )}
-      
+
       {success && (
-        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-4">
-          {success}
+        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-4 rounded-lg mb-6">
+          <h4 className="font-semibold mb-2">Testimonial Submitted!</h4>
+          <p>{success}</p>
         </div>
       )}
-      
+
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label htmlFor="rating" className="block text-gray-700 mb-2">
@@ -79,18 +81,18 @@ const TestimonialForm = ({ onSuccess }) => {
                 onMouseEnter={() => setHoveredRating(star)}
                 onMouseLeave={() => setHoveredRating(0)}
               >
-                <FaStar 
+                <FaStar
                   className={`${
-                    (hoveredRating || rating) >= star 
-                      ? 'text-yellow-400' 
+                    (hoveredRating || rating) >= star
+                      ? 'text-yellow-400'
                       : 'text-gray-300'
-                  }`} 
+                  }`}
                 />
               </button>
             ))}
           </div>
         </div>
-        
+
         <div className="mb-4">
           <label htmlFor="content" className="block text-gray-700 mb-2">
             Your Testimonial
@@ -105,7 +107,7 @@ const TestimonialForm = ({ onSuccess }) => {
             required
           />
         </div>
-        
+
         <div className="flex justify-end">
           <button
             type="submit"

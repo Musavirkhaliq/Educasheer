@@ -15,12 +15,19 @@ const Testimonials = ({ limit = 6, showAddButton = true }) => {
     const fetchTestimonials = async () => {
       try {
         const response = await testimonialAPI.getApprovedTestimonials({ limit });
-        setTestimonials(response.data.testimonials || []);
+        console.log("Approved testimonials response:", response);
+
+        // Handle both possible response formats
+        const fetchedTestimonials = Array.isArray(response.data)
+          ? response.data
+          : (response.data.testimonials || []);
+
+        console.log("Fetched approved testimonials:", fetchedTestimonials);
+        setTestimonials(fetchedTestimonials);
         setError(""); // Clear any previous errors
       } catch (error) {
         console.error("Error fetching testimonials:", error);
-        // Don't set error message since we'll show fallback testimonials
-        // Just log the error for debugging purposes
+        setError("Failed to load testimonials");
       } finally {
         setLoading(false);
       }
@@ -29,41 +36,8 @@ const Testimonials = ({ limit = 6, showAddButton = true }) => {
     fetchTestimonials();
   }, [limit]);
 
-  // Fallback to demo testimonials if none are available from the API
-  const displayTestimonials = testimonials.length > 0
-    ? testimonials
-    : [
-        {
-          content: "This platform transformed my career path! The courses are well-structured and the instructors are knowledgeable.",
-          authorName: "Fazil Ahmad.",
-          rating: 5
-        },
-        {
-          content: "The video lessons are easy to follow and comprehensive! I've learned so much in just a few weeks.",
-          authorName: "Malik Nasir.",
-          rating: 5
-        },
-        {
-          content: "Best investment in my education journey! The community support is amazing.",
-          authorName: "Mohmmad Aamir.",
-          rating: 5
-        },
-        {
-          content: "I appreciate how the platform makes complex topics accessible to everyone.",
-          authorName: "Aisha K.",
-          rating: 4
-        },
-        {
-          content: "The interactive learning approach keeps me engaged throughout the courses.",
-          authorName: "Sahil.",
-          rating: 5
-        },
-        {
-          content: "EduCasheer has helped me transition into a new career field with confidence.",
-          authorName: "Priya S.",
-          rating: 5
-        }
-      ];
+  // Use actual testimonials from the API
+  const displayTestimonials = testimonials;
 
   const totalPages = Math.ceil(displayTestimonials.length / testimonialsPerPage);
   const currentTestimonials = displayTestimonials.slice(
@@ -87,8 +61,28 @@ const Testimonials = ({ limit = 6, showAddButton = true }) => {
     );
   }
 
-  // We don't need to show an error message since we'll display fallback testimonials
-  // if there's an error fetching from the API
+  if (error) {
+    return (
+      <div className="py-12">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl font-bold text-gray-800 mb-4">What Our Students Say</h2>
+        </div>
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 max-w-2xl mx-auto">
+          {error}
+        </div>
+        {showAddButton && (
+          <div className="text-center mt-6">
+            <Link
+              to="/testimonials/add"
+              className="inline-block bg-gradient-to-r from-[#00bcd4] to-[#01427a] text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all duration-300"
+            >
+              Share Your Experience
+            </Link>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="py-12">
@@ -121,43 +115,57 @@ const Testimonials = ({ limit = 6, showAddButton = true }) => {
         )}
 
         {/* Testimonials grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {currentTestimonials.map((testimonial, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="bg-white rounded-lg shadow-sm p-6 relative"
-            >
-              <div className="absolute -top-3 -left-3 text-[#00bcd4] opacity-20">
-                <FaQuoteLeft size={24} />
-              </div>
-              <div className="mb-4 flex">
-                {[...Array(5)].map((_, i) => (
-                  <FaStar
-                    key={i}
-                    className={`${
-                      i < (testimonial.rating || 5)
-                        ? "text-yellow-400"
-                        : "text-gray-300"
-                    }`}
-                  />
-                ))}
-              </div>
-              <p className="text-gray-700 italic mb-4">"{testimonial.content}"</p>
-              <p className="text-[#01427a] font-medium">
-                – {testimonial.authorName}
-              </p>
-              <div className="absolute -bottom-3 -right-3 text-[#00bcd4] opacity-20">
-                <FaQuoteRight size={24} />
-              </div>
-            </motion.div>
-          ))}
-        </div>
+        {displayTestimonials.length === 0 ? (
+          <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+            <p className="text-gray-700 mb-4">No testimonials available yet. Be the first to share your experience!</p>
+            {showAddButton && (
+              <Link
+                to="/testimonials/add"
+                className="inline-block bg-gradient-to-r from-[#00bcd4] to-[#01427a] text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all duration-300"
+              >
+                Share Your Experience
+              </Link>
+            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {currentTestimonials.map((testimonial, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className="bg-white rounded-lg shadow-sm p-6 relative"
+              >
+                <div className="absolute -top-3 -left-3 text-[#00bcd4] opacity-20">
+                  <FaQuoteLeft size={24} />
+                </div>
+                <div className="mb-4 flex">
+                  {[...Array(5)].map((_, i) => (
+                    <FaStar
+                      key={i}
+                      className={`${
+                        i < (testimonial.rating || 5)
+                          ? "text-yellow-400"
+                          : "text-gray-300"
+                      }`}
+                    />
+                  ))}
+                </div>
+                <p className="text-gray-700 italic mb-4">"{testimonial.content}"</p>
+                <p className="text-[#01427a] font-medium">
+                  – {testimonial.authorName}
+                </p>
+                <div className="absolute -bottom-3 -right-3 text-[#00bcd4] opacity-20">
+                  <FaQuoteRight size={24} />
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
 
-        {/* Pagination dots */}
-        {totalPages > 1 && (
+        {/* Pagination dots - only show when there are testimonials */}
+        {displayTestimonials.length > 0 && totalPages > 1 && (
           <div className="flex justify-center mt-8">
             {[...Array(totalPages)].map((_, i) => (
               <button
@@ -172,8 +180,8 @@ const Testimonials = ({ limit = 6, showAddButton = true }) => {
           </div>
         )}
 
-        {/* Add testimonial button */}
-        {showAddButton && (
+        {/* Add testimonial button - only show when not already shown in empty state */}
+        {showAddButton && displayTestimonials.length > 0 && (
           <div className="text-center mt-10">
             <Link
               to="/testimonials/add"

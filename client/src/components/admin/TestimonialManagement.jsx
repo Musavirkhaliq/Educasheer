@@ -16,8 +16,20 @@ const TestimonialManagement = () => {
   const fetchTestimonials = async () => {
     try {
       setLoading(true);
+      console.log('Fetching testimonials with filter:', filter);
       const response = await testimonialAPI.getAllTestimonials({ status: filter !== 'all' ? filter : '' });
-      setTestimonials(response.data.testimonials || []);
+      console.log('Admin testimonials response:', response);
+
+      // Handle both possible response formats
+      const fetchedTestimonials = Array.isArray(response.data)
+        ? response.data
+        : (response.data.testimonials || []);
+
+      console.log('Fetched testimonials:', fetchedTestimonials);
+      setTestimonials(fetchedTestimonials);
+
+      // Clear any previous errors
+      setError('');
     } catch (error) {
       console.error('Error fetching testimonials:', error);
       setError('Failed to load testimonials. Please try again.');

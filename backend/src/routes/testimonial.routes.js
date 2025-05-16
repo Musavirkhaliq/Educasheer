@@ -4,7 +4,8 @@ import {
     getApprovedTestimonials,
     getAllTestimonials,
     reviewTestimonial,
-    deleteTestimonial
+    deleteTestimonial,
+    getUserTestimonials
 } from "../controllers/testimonial.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { isAdmin } from "../middlewares/role.middleware.js";
@@ -16,6 +17,7 @@ router.route("/").get(getApprovedTestimonials);
 
 // Protected routes (require authentication)
 router.route("/").post(verifyJWT, submitTestimonial);
+router.route("/my-testimonials").get(verifyJWT, getUserTestimonials);
 router.route("/:testimonialId").delete(verifyJWT, deleteTestimonial);
 
 // Admin routes

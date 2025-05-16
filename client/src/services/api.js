@@ -194,6 +194,7 @@ export const testimonialAPI = {
   getApprovedTestimonials: (params) => publicApi.get('/testimonials', { params }),
   // These operations still require authentication
   submitTestimonial: (data) => api.post('/testimonials', data),
+  getUserTestimonials: () => api.get('/testimonials/my-testimonials'),
   deleteTestimonial: (id) => api.delete(`/testimonials/${id}`),
   // Admin functions
   getAllTestimonials: (params) => api.get('/testimonials/all', { params }),

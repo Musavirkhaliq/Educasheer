@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import TestimonialForm from '../components/testimonials/TestimonialForm';
+import UserTestimonials from '../components/testimonials/UserTestimonials';
 import Testimonials from '../components/homeComponents/Testimonials';
 
 const TestimonialPage = () => {
   const { isAuthenticated } = useAuth();
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // Redirect to login if not authenticated
   if (!isAuthenticated) {
@@ -22,8 +24,15 @@ const TestimonialPage = () => {
           </p>
         </div>
 
+        <div className="mb-8">
+          <UserTestimonials key={refreshKey} />
+        </div>
+
         <div className="mb-12">
-          <TestimonialForm onSuccess={() => window.scrollTo(0, 0)} />
+          <TestimonialForm onSuccess={() => {
+            window.scrollTo(0, 0);
+            setRefreshKey(prevKey => prevKey + 1);
+          }} />
         </div>
 
         <div className="mt-16">

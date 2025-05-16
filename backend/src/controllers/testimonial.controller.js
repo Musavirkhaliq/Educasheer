@@ -40,27 +40,23 @@ const submitTestimonial = asyncHandler(async (req, res) => {
 const getApprovedTestimonials = asyncHandler(async (req, res) => {
     try {
         const { page = 1, limit = 10 } = req.query;
-        
+
         const testimonials = await Testimonial.find({ isApproved: true })
             .sort({ approvedAt: -1 })
             .skip((page - 1) * limit)
             .limit(parseInt(limit))
             .populate("author", "fullName username avatar");
 
+        // Log the testimonials for debugging
+        console.log(`Found ${testimonials.length} approved testimonials`);
+
         const totalTestimonials = await Testimonial.countDocuments({ isApproved: true });
 
         return res.status(200).json(
-            new ApiResponse(200, {
-                testimonials,
-                pagination: {
-                    page: parseInt(page),
-                    limit: parseInt(limit),
-                    totalTestimonials,
-                    totalPages: Math.ceil(totalTestimonials / limit)
-                }
-            }, "Testimonials fetched successfully")
+            new ApiResponse(200, testimonials, "Testimonials fetched successfully")
         );
     } catch (error) {
+        console.error("Error in getApprovedTestimonials:", error);
         if (error instanceof ApiError) {
             throw error;
         }
@@ -72,14 +68,16 @@ const getApprovedTestimonials = asyncHandler(async (req, res) => {
 const getAllTestimonials = asyncHandler(async (req, res) => {
     try {
         const { page = 1, limit = 10, status } = req.query;
-        
+
         const filter = {};
         if (status === "approved") {
             filter.isApproved = true;
         } else if (status === "pending") {
             filter.isApproved = false;
         }
-        
+
+        console.log("Admin fetching testimonials with filter:", filter);
+
         const testimonials = await Testimonial.find(filter)
             .sort({ createdAt: -1 })
             .skip((page - 1) * limit)
@@ -87,20 +85,16 @@ const getAllTestimonials = asyncHandler(async (req, res) => {
             .populate("author", "fullName username avatar")
             .populate("approvedBy", "fullName username");
 
+        // Log the testimonials for debugging
+        console.log(`Found ${testimonials.length} testimonials for admin with filter:`, filter);
+
         const totalTestimonials = await Testimonial.countDocuments(filter);
 
         return res.status(200).json(
-            new ApiResponse(200, {
-                testimonials,
-                pagination: {
-                    page: parseInt(page),
-                    limit: parseInt(limit),
-                    totalTestimonials,
-                    totalPages: Math.ceil(totalTestimonials / limit)
-                }
-            }, "All testimonials fetched successfully")
+            new ApiResponse(200, testimonials, "All testimonials fetched successfully")
         );
     } catch (error) {
+        console.error("Error in getAllTestimonials:", error);
         if (error instanceof ApiError) {
             throw error;
         }
@@ -113,19 +107,19 @@ const reviewTestimonial = asyncHandler(async (req, res) => {
     try {
         const { testimonialId } = req.params;
         const { isApproved } = req.body;
-        
+
         if (isApproved === undefined) {
             throw new ApiError(400, "Approval status is required");
         }
 
         const testimonial = await Testimonial.findById(testimonialId);
-        
+
         if (!testimonial) {
             throw new ApiError(404, "Testimonial not found");
         }
 
         testimonial.isApproved = isApproved;
-        
+
         if (isApproved) {
             testimonial.approvedBy = req.user._id;
             testimonial.approvedAt = new Date();
@@ -151,9 +145,9 @@ const reviewTestimonial = asyncHandler(async (req, res) => {
 const deleteTestimonial = asyncHandler(async (req, res) => {
     try {
         const { testimonialId } = req.params;
-        
+
         const testimonial = await Testimonial.findById(testimonialId);
-        
+
         if (!testimonial) {
             throw new ApiError(404, "Testimonial not found");
         }
@@ -176,10 +170,34 @@ const deleteTestimonial = asyncHandler(async (req, res) => {
     }
 });
 
+// Get user's own testimonials
+const getUserTestimonials = asyncHandler(async (req, res) => {
+    try {
+        const userId = req.user._id;
+
+        const testimonials = await Testimonial.find({ author: userId })
+            .sort({ createdAt: -1 });
+
+        // Log the testimonials for debugging
+        console.log(`Found ${testimonials.length} testimonials for user ${userId}`);
+
+        return res.status(200).json(
+            new ApiResponse(200, testimonials, "User testimonials fetched successfully")
+        );
+    } catch (error) {
+        console.error("Error in getUserTestimonials:", error);
+        if (error instanceof ApiError) {
+            throw error;
+        }
+        throw new ApiError(500, "Something went wrong while fetching user testimonials");
+    }
+});
+
 export {
     submitTestimonial,
     getApprovedTestimonials,
     getAllTestimonials,
     reviewTestimonial,
-    deleteTestimonial
+    deleteTestimonial,
+    getUserTestimonials
 };
