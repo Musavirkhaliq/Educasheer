@@ -60,18 +60,26 @@ const QuizManagement = () => {
   // Handle publish/unpublish quiz
   const handleTogglePublish = async (quizId, currentStatus) => {
     try {
-      await quizAPI.toggleQuizPublishStatus(quizId, !currentStatus);
+      console.log(`Toggling publish status for quiz ${quizId} from ${currentStatus} to ${!currentStatus}`);
+
+      const response = await quizAPI.toggleQuizPublishStatus(quizId, !currentStatus);
+      console.log('Toggle publish response:', response.data);
 
       // Update local state
       setQuizzes(prevQuizzes =>
-        prevQuizzes.map(quiz =>
-          quiz._id === quizId ? { ...quiz, isPublished: !currentStatus } : quiz
-        )
+        prevQuizzes.map(quiz => {
+          if (quiz._id === quizId) {
+            console.log(`Updating quiz in state: ${quiz.title}, isPublished: ${currentStatus} -> ${!currentStatus}`);
+            return { ...quiz, isPublished: !currentStatus };
+          }
+          return quiz;
+        })
       );
 
       toast.success(`Quiz ${!currentStatus ? 'published' : 'unpublished'} successfully`);
     } catch (err) {
       console.error('Error toggling publish status:', err);
+      console.error('Error details:', err.response?.data || err.message);
       toast.error('Failed to update quiz status');
     }
   };

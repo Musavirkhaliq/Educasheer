@@ -52,11 +52,38 @@ export const quizAPI = {
   deleteQuiz: (quizId) => api.delete(`/quizzes/${quizId}`),
 
   // Admin: Publish/unpublish quiz
-  toggleQuizPublishStatus: (quizId, isPublished) =>
-    api.patch(`/quizzes/${quizId}/publish`, { isPublished }),
+  toggleQuizPublishStatus: async (quizId, isPublished) => {
+    try {
+      console.log(`API call: Toggling quiz ${quizId} publish status to ${isPublished}`);
+      const response = await api.patch(`/quizzes/${quizId}/publish`, { isPublished });
+      console.log('API response:', response.data);
+      return response;
+    } catch (error) {
+      console.error(`Error toggling publish status for quiz ${quizId}:`, error);
+      if (error.response) {
+        console.error('Error response:', error.response.data);
+      }
+      throw error;
+    }
+  },
 
   // Get quizzes for a course
-  getCourseQuizzes: (courseId) => api.get(`/quizzes/course/${courseId}`),
+  getCourseQuizzes: async (courseId) => {
+    try {
+      console.log(`API call: Getting quizzes for course ${courseId}`);
+      const response = await api.get(`/quizzes/course/${courseId}`);
+      console.log('API response:', response);
+      return response;
+    } catch (error) {
+      console.error(`Error getting quizzes for course ${courseId}:`, error);
+      // If the endpoint returns an error, return an empty array
+      if (error.response) {
+        console.error('Error response:', error.response.data);
+      }
+      // Re-throw the error to be handled by the component
+      throw error;
+    }
+  },
 
   // Start a quiz attempt
   startQuizAttempt: (quizId) => api.post(`/quizzes/${quizId}/attempts`),

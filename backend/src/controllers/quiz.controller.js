@@ -59,19 +59,19 @@ const createQuiz = asyncHandler(async (req, res) => {
 const getAllQuizzes = asyncHandler(async (req, res) => {
     try {
         const { course, published, type } = req.query;
-        
+
         const filter = {};
-        
+
         // Apply filters if provided
         if (course) filter.course = course;
         if (published !== undefined) filter.isPublished = published === 'true';
         if (type) filter.quizType = type;
-        
+
         const quizzes = await Quiz.find(filter)
             .populate("course", "title slug")
             .populate("creator", "username fullName")
             .sort({ createdAt: -1 });
-            
+
         return res.status(200).json(
             new ApiResponse(200, quizzes, "Quizzes fetched successfully")
         );
@@ -88,20 +88,20 @@ const getAllQuizzes = asyncHandler(async (req, res) => {
 const getQuizById = asyncHandler(async (req, res) => {
     try {
         const { quizId } = req.params;
-        
+
         const quiz = await Quiz.findById(quizId)
             .populate("course", "title slug")
             .populate("creator", "username fullName");
-            
+
         if (!quiz) {
             throw new ApiError(404, "Quiz not found");
         }
-        
+
         // Check access permissions
         if (!quiz.isPublished && req.user.role !== "admin" && quiz.creator.toString() !== req.user._id.toString()) {
             throw new ApiError(403, "You don't have permission to access this quiz");
         }
-        
+
         return res.status(200).json(
             new ApiResponse(200, quiz, "Quiz fetched successfully")
         );
@@ -119,26 +119,26 @@ const updateQuiz = asyncHandler(async (req, res) => {
     try {
         const { quizId } = req.params;
         const updateData = req.body;
-        
+
         // Find the quiz
         const quiz = await Quiz.findById(quizId);
-        
+
         if (!quiz) {
             throw new ApiError(404, "Quiz not found");
         }
-        
+
         // Check if user is admin or quiz creator
         if (req.user.role !== "admin" && quiz.creator.toString() !== req.user._id.toString()) {
             throw new ApiError(403, "You don't have permission to update this quiz");
         }
-        
+
         // Update quiz
         const updatedQuiz = await Quiz.findByIdAndUpdate(
             quizId,
             updateData,
             { new: true, runValidators: true }
         );
-        
+
         return res.status(200).json(
             new ApiResponse(200, updatedQuiz, "Quiz updated successfully")
         );
@@ -158,25 +158,25 @@ const updateQuiz = asyncHandler(async (req, res) => {
 const deleteQuiz = asyncHandler(async (req, res) => {
     try {
         const { quizId } = req.params;
-        
+
         // Find the quiz
         const quiz = await Quiz.findById(quizId);
-        
+
         if (!quiz) {
             throw new ApiError(404, "Quiz not found");
         }
-        
+
         // Check if user is admin or quiz creator
         if (req.user.role !== "admin" && quiz.creator.toString() !== req.user._id.toString()) {
             throw new ApiError(403, "You don't have permission to delete this quiz");
         }
-        
+
         // Delete quiz
         await Quiz.findByIdAndDelete(quizId);
-        
+
         // Also delete all attempts for this quiz
         await QuizAttempt.deleteMany({ quiz: quizId });
-        
+
         return res.status(200).json(
             new ApiResponse(200, {}, "Quiz deleted successfully")
         );
@@ -194,30 +194,41 @@ const toggleQuizPublishStatus = asyncHandler(async (req, res) => {
     try {
         const { quizId } = req.params;
         const { isPublished } = req.body;
-        
+
         if (isPublished === undefined) {
             throw new ApiError(400, "isPublished field is required");
         }
-        
+
         // Find the quiz
         const quiz = await Quiz.findById(quizId);
-        
+
         if (!quiz) {
             throw new ApiError(404, "Quiz not found");
         }
-        
+
         // Check if user is admin or quiz creator
         if (req.user.role !== "admin" && quiz.creator.toString() !== req.user._id.toString()) {
             throw new ApiError(403, "You don't have permission to update this quiz");
         }
-        
+
         // Update publish status
-        quiz.isPublished = isPublished;
-        await quiz.save();
-        
-        return res.status(200).json(
-            new ApiResponse(200, quiz, `Quiz ${isPublished ? 'published' : 'unpublished'} successfully`)
+        console.log(`Updating quiz ${quizId} publish status to: ${isPublished}`);
+
+        // Use findByIdAndUpdate to ensure the update is applied
+        const updatedQuiz = await Quiz.findByIdAndUpdate(
+            quizId,
+            { isPublished: isPublished },
+            { new: true, runValidators: true }
         );
+
+        console.log(`Quiz after update: isPublished=${updatedQuiz.isPublished}`);
+
+        // Return the updated quiz
+        return res.status(200).json(
+            new ApiResponse(200, updatedQuiz, `Quiz ${isPublished ? 'published' : 'unpublished'} successfully`)
+        );
+
+        // Response is sent in the code above
     } catch (error) {
         throw new ApiError(error.statusCode || 500, error.message || "Failed to update quiz publish status");
     }
@@ -225,33 +236,56 @@ const toggleQuizPublishStatus = asyncHandler(async (req, res) => {
 
 /**
  * Get quizzes for a course
- * @route GET /api/v1/courses/:courseId/quizzes
+ * @route GET /api/v1/quizzes/course/:courseId
  * @access Authenticated
  */
 const getCourseQuizzes = asyncHandler(async (req, res) => {
     try {
         const { courseId } = req.params;
-        
+
+        console.log(`Fetching quizzes for course: ${courseId}`);
+        console.log(`User role: ${req.user.role}, User ID: ${req.user._id}`);
+
         // Check if course exists
         const course = await Course.findById(courseId);
         if (!course) {
+            console.log(`Course not found: ${courseId}`);
             throw new ApiError(404, "Course not found");
         }
-        
+
+        console.log(`Course creator: ${course.creator}`);
+
         // Get published quizzes for the course (or all quizzes if admin)
         const filter = { course: courseId };
-        if (req.user.role !== "admin" && course.creator.toString() !== req.user._id.toString()) {
+        const isAdmin = req.user.role === "admin";
+        const isCreator = course.creator && course.creator.toString() === req.user._id.toString();
+
+        if (!isAdmin && !isCreator) {
+            // For regular students, only show published quizzes
             filter.isPublished = true;
         }
-        
+
+        console.log(`Filter applied:`, filter);
+        console.log(`Is admin: ${isAdmin}, Is creator: ${isCreator}`);
+
+        // Debug: Check if there are any quizzes for this course at all
+        const allQuizzes = await Quiz.find({ course: courseId });
+        console.log(`Total quizzes for course (unfiltered): ${allQuizzes.length}`);
+        if (allQuizzes.length > 0) {
+            console.log(`Published status of quizzes:`, allQuizzes.map(q => ({ id: q._id, title: q.title, isPublished: q.isPublished })));
+        }
+
         const quizzes = await Quiz.find(filter)
             .select("-questions.options.isCorrect -questions.correctAnswer")
             .sort({ createdAt: 1 });
-            
+
+        console.log(`Quizzes found: ${quizzes.length}`);
+
         return res.status(200).json(
             new ApiResponse(200, quizzes, "Course quizzes fetched successfully")
         );
     } catch (error) {
+        console.error("Error in getCourseQuizzes:", error);
         throw new ApiError(error.statusCode || 500, error.message || "Failed to fetch course quizzes");
     }
 });
