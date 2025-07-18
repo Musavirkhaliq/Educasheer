@@ -73,8 +73,10 @@ const Signup = () => {
       console.error("Google signup error:", error);
       setError("Google signup failed. Please try again.");
     },
-    // Use auth-code flow for better compatibility with recent Google OAuth changes
-    flow: 'auth-code'
+    // Use implicit flow with proper scopes
+    flow: 'implicit',
+    // Request the necessary scopes
+    scope: 'openid email profile'
   });
 
   const handleChange = (e) => {

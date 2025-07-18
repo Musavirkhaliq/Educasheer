@@ -29,15 +29,30 @@ const Login = () => {
         setLoading(true);
         setError("");
 
-        // Get user info from Google
+        console.log("Google OAuth token response:", tokenResponse);
+
+        // Get user info from Google using the access token
         const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
           headers: {
             Authorization: `Bearer ${tokenResponse.access_token}`,
           },
         });
 
+        console.log("Google userInfo response status:", userInfoResponse.status);
+
+        if (!userInfoResponse.ok) {
+          const errorText = await userInfoResponse.text();
+          console.error("Google userInfo error response:", errorText);
+          throw new Error(`Failed to fetch user info: ${userInfoResponse.status}`);
+        }
+
         const userInfo = await userInfoResponse.json();
         console.log("Google user info:", userInfo);
+
+        // Validate that we have the required data
+        if (!userInfo.sub || !userInfo.email) {
+          throw new Error("Missing required user information from Google");
+        }
 
         // Login with Google
         const user = await googleLogin(userInfo);
@@ -75,8 +90,10 @@ const Login = () => {
       console.error("Google login error:", error);
       setError("Google login failed. Please try again.");
     },
-    // Use auth-code flow for better compatibility with recent Google OAuth changes
-    flow: 'auth-code'
+    // Use implicit flow with proper scopes
+    flow: 'implicit',
+    // Request the necessary scopes
+    scope: 'openid email profile'
   });
 
   // If user is already authenticated, redirect to appropriate page

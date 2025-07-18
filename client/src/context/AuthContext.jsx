@@ -187,19 +187,23 @@ export const AuthProvider = ({ children }) => {
   const googleLogin = async (googleData) => {
     setLoading(true);
     setError(null);
-    console.log('AuthContext - Google login attempt');
+    console.log('AuthContext - Google login attempt with data:', googleData);
 
     try {
       // First, clear ALL existing auth data to prevent role conflicts
       clearAllAuthData();
       console.log('AuthContext - Cleared all previous auth data before Google login');
 
-      const response = await authAPI.googleLogin({
+      const requestData = {
         googleId: googleData.sub,
         email: googleData.email,
         fullName: googleData.name,
         avatar: googleData.picture
-      });
+      };
+
+      console.log('AuthContext - Sending request data to backend:', requestData);
+
+      const response = await authAPI.googleLogin(requestData);
 
       console.log('AuthContext - Google login response:', response.data);
 
