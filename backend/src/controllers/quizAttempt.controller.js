@@ -63,8 +63,28 @@ const startQuizAttempt = asyncHandler(async (req, res) => {
         });
         
         // Return the quiz with questions but without correct answers
-        const quizWithoutAnswers = await Quiz.findById(quizId)
-            .select("-questions.options.isCorrect -questions.correctAnswer");
+        const quizWithoutAnswers = await Quiz.findById(quizId).lean();
+
+        // Remove correct answers from the quiz data
+        if (quizWithoutAnswers && quizWithoutAnswers.questions) {
+            quizWithoutAnswers.questions = quizWithoutAnswers.questions.map(question => {
+                const questionCopy = { ...question };
+
+                // Remove correct answer field for short answer questions
+                delete questionCopy.correctAnswer;
+
+                // Remove isCorrect field from options
+                if (questionCopy.options) {
+                    questionCopy.options = questionCopy.options.map(option => {
+                        const optionCopy = { ...option };
+                        delete optionCopy.isCorrect;
+                        return optionCopy;
+                    });
+                }
+
+                return questionCopy;
+            });
+        }
             
         return res.status(201).json(
             new ApiResponse(201, {
@@ -87,7 +107,9 @@ const submitQuizAttempt = asyncHandler(async (req, res) => {
         const { attemptId } = req.params;
         const { answers } = req.body;
         const userId = req.user._id;
-        
+
+        console.log("Quiz submission started:", { attemptId, userId, answersCount: answers?.length });
+
         if (!answers || !Array.isArray(answers)) {
             throw new ApiError(400, "Answers are required");
         }
@@ -195,21 +217,38 @@ const submitQuizAttempt = asyncHandler(async (req, res) => {
         
         await attempt.save();
         
+        console.log("Quiz submission processed successfully:", {
+            earnedPoints,
+            totalPoints,
+            percentage,
+            isPassed
+        });
+
         // Update course progress
-        await updateCourseProgressForQuiz(userId, quiz.course, quiz._id, percentage);
-        
+        try {
+            await updateCourseProgressForQuiz(userId, quiz.course, quiz._id, percentage);
+        } catch (courseProgressError) {
+            console.error("Error updating course progress:", courseProgressError);
+            // Continue with quiz submission even if course progress fails
+        }
+
         // Award points based on performance
         if (isPassed) {
-            let pointsToAward = 50; // Base points for passing
-            
-            // Bonus points for high scores
-            if (percentage >= 90) {
-                pointsToAward += 50; // Bonus for excellent score
-            } else if (percentage >= 75) {
-                pointsToAward += 25; // Bonus for good score
+            try {
+                let pointsToAward = 50; // Base points for passing
+
+                // Bonus points for high scores
+                if (percentage >= 90) {
+                    pointsToAward += 50; // Bonus for excellent score
+                } else if (percentage >= 75) {
+                    pointsToAward += 25; // Bonus for good score
+                }
+
+                await awardPoints(userId, pointsToAward, "quiz", `Completed ${quiz.title} with ${percentage.toFixed(1)}% score`);
+            } catch (gamificationError) {
+                console.error("Error awarding points:", gamificationError);
+                // Continue with quiz submission even if gamification fails
             }
-            
-            await awardPoints(userId, pointsToAward, "quiz", `Completed ${quiz.title} with ${percentage.toFixed(1)}% score`);
         }
         
         return res.status(200).json(
@@ -224,6 +263,7 @@ const submitQuizAttempt = asyncHandler(async (req, res) => {
             }, "Quiz attempt submitted successfully")
         );
     } catch (error) {
+        console.error("Error in submitQuizAttempt:", error);
         throw new ApiError(error.statusCode || 500, error.message || "Failed to submit quiz attempt");
     }
 });
@@ -240,19 +280,43 @@ const getQuizAttempt = asyncHandler(async (req, res) => {
         
         // Find the attempt
         const attempt = await QuizAttempt.findById(attemptId)
-            .populate("quiz", "title description timeLimit passingScore showCorrectAnswers");
-            
+            .populate("quiz");
+
         if (!attempt) {
             throw new ApiError(404, "Quiz attempt not found");
         }
-        
+
         // Check if this attempt belongs to the user or user is admin
         if (attempt.user.toString() !== userId.toString() && req.user.role !== "admin") {
             throw new ApiError(403, "You don't have permission to view this attempt");
         }
-        
+
+        // If quiz allows showing correct answers or user is admin, include full quiz data
+        // Otherwise, hide correct answers for security
+        let quizData = attempt.quiz;
+        if (!attempt.quiz.showCorrectAnswers && req.user.role !== "admin") {
+            // Remove correct answer information for security
+            quizData = {
+                ...attempt.quiz.toObject(),
+                questions: attempt.quiz.questions.map(q => ({
+                    ...q.toObject(),
+                    options: q.options.map(opt => ({
+                        _id: opt._id,
+                        text: opt.text
+                        // Remove isCorrect field
+                    })),
+                    correctAnswer: undefined // Remove correct answer for short answer questions
+                }))
+            };
+        }
+
+        const responseData = {
+            ...attempt.toObject(),
+            quiz: quizData
+        };
+
         return res.status(200).json(
-            new ApiResponse(200, attempt, "Quiz attempt fetched successfully")
+            new ApiResponse(200, responseData, "Quiz attempt fetched successfully")
         );
     } catch (error) {
         throw new ApiError(error.statusCode || 500, error.message || "Failed to fetch quiz attempt");

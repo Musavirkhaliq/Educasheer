@@ -12,6 +12,7 @@ import {
   updateUserAvatar,
   updateUserCoverImage,
   googleLogin,
+  googleAuthCode,
   verifyEmail,
   resendVerificationEmail,
   forgotPassword,
@@ -36,6 +37,7 @@ router.route("/register").post(
 );
 router.route("/login").post(loginUser);
 router.route("/google-login").post(googleLogin);
+router.route("/google-auth-code").post(googleAuthCode);
 router.route("/verify-email/:token").get(verifyEmail);
 router.route("/resend-verification").post(resendVerificationEmail);
 router.route("/forgot-password").post(forgotPassword);

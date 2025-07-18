@@ -22,10 +22,12 @@ const QuizTaker = () => {
   
   useEffect(() => {
     startQuiz();
-    
+
     return () => {
+      // Cleanup function to prevent memory leaks
       if (timerRef.current) {
         clearInterval(timerRef.current);
+        timerRef.current = null;
       }
     };
   }, [quizId]);
@@ -33,57 +35,171 @@ const QuizTaker = () => {
   const startQuiz = async () => {
     try {
       setLoading(true);
-      
+      setError(''); // Clear any previous errors
+
+      // Clear any existing timer
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+
+      // Reset state
+      setQuiz(null);
+      setAttempt(null);
+      setAnswers([]);
+      setCurrentQuestionIndex(0);
+      setTimeLeft(null);
+      setIsSubmitting(false);
+      setShowConfirmSubmit(false);
+
       // Start a new quiz attempt
       const response = await quizAPI.startQuizAttempt(quizId);
-      const { attempt: newAttempt, quiz: quizData } = response.data.data;
-      
+
+      // Validate response structure
+      if (!response || !response.data || !response.data.data) {
+        throw new Error('Invalid response structure from server');
+      }
+
+      let newAttempt, quizData;
+
+      // Handle two different response structures:
+      // 1. New attempt: { attempt: {...}, quiz: {...} }
+      // 2. Continuing attempt: just the attempt object directly
+      if (response.data.data.attempt && response.data.data.quiz) {
+        // New attempt case
+        newAttempt = response.data.data.attempt;
+        quizData = response.data.data.quiz;
+      } else if (response.data.data._id || response.data.data.id) {
+        // Continuing existing attempt case
+        newAttempt = response.data.data;
+        // We need to fetch the quiz data separately
+        const quizResponse = await quizAPI.getQuizById(newAttempt.quiz);
+        quizData = quizResponse.data.data;
+      } else {
+        throw new Error('Unexpected response structure from server');
+      }
+
+      // Validate attempt data - check for _id or id field
+      if (!newAttempt || (!newAttempt._id && !newAttempt.id)) {
+        throw new Error('Invalid attempt data received from server');
+      }
+
+      // Validate quiz data
+      if (!quizData) {
+        throw new Error('No quiz data received from server');
+      }
+
+      if (!quizData.questions || !Array.isArray(quizData.questions)) {
+        throw new Error('Invalid quiz questions data received from server');
+      }
+
+      if (quizData.questions.length === 0) {
+        throw new Error('This quiz has no questions');
+      }
+
+      // Validate that all questions have required properties
+      for (let i = 0; i < quizData.questions.length; i++) {
+        const question = quizData.questions[i];
+        if (!question._id) {
+          throw new Error(`Question ${i + 1} is missing required ID`);
+        }
+      }
+
       setQuiz(quizData);
       setAttempt(newAttempt);
-      
-      // Initialize answers array
-      const initialAnswers = quizData.questions.map(question => ({
-        questionId: question._id,
-        selectedOptions: [],
-        textAnswer: ''
-      }));
-      
-      setAnswers(initialAnswers);
-      
-      // Set up timer
-      const timeLimit = quizData.timeLimit * 60; // convert to seconds
-      setTimeLeft(timeLimit);
-      
-      timerRef.current = setInterval(() => {
-        setTimeLeft(prevTime => {
-          if (prevTime <= 1) {
-            clearInterval(timerRef.current);
-            submitQuiz();
-            return 0;
-          }
-          return prevTime - 1;
+
+      // Initialize answers array - check if we have existing answers from a previous attempt
+      let initialAnswers;
+      if (newAttempt.answers && newAttempt.answers.length > 0) {
+        // Restore previous answers for continuing attempt
+        initialAnswers = quizData.questions.map(question => {
+          const existingAnswer = newAttempt.answers.find(ans =>
+            ans.question?.toString() === question._id?.toString() ||
+            ans.questionId?.toString() === question._id?.toString()
+          );
+
+          return {
+            questionId: question._id,
+            selectedOptions: existingAnswer?.selectedOptions || [],
+            textAnswer: existingAnswer?.textAnswer || ''
+          };
         });
-      }, 1000);
-      
+      } else {
+        // Create fresh answers for new attempt
+        initialAnswers = quizData.questions.map(question => ({
+          questionId: question._id,
+          selectedOptions: [],
+          textAnswer: ''
+        }));
+      }
+
+      setAnswers(initialAnswers);
+
+      // Set up timer if quiz has time limit
+      if (quizData.timeLimit && quizData.timeLimit > 0) {
+        let timeLeft;
+
+        if (newAttempt.startTime) {
+          // Calculate remaining time for continuing attempt
+          const startTime = new Date(newAttempt.startTime);
+          const currentTime = new Date();
+          const elapsedSeconds = Math.floor((currentTime - startTime) / 1000);
+          const totalTimeLimit = quizData.timeLimit * 60; // convert to seconds
+          timeLeft = Math.max(0, totalTimeLimit - elapsedSeconds);
+        } else {
+          // New attempt
+          timeLeft = quizData.timeLimit * 60; // convert to seconds
+        }
+
+        setTimeLeft(timeLeft);
+
+        if (timeLeft > 0) {
+          timerRef.current = setInterval(() => {
+            setTimeLeft(prevTime => {
+              if (prevTime <= 1) {
+                clearInterval(timerRef.current);
+                submitQuiz();
+                return 0;
+              }
+              return prevTime - 1;
+            });
+          }, 1000);
+        } else {
+          // Time has already expired
+          setTimeout(() => submitQuiz(), 100);
+        }
+      }
+
     } catch (err) {
       console.error('Error starting quiz:', err);
-      setError('Failed to start quiz. Please try again.');
-      toast.error('Failed to start quiz');
+      const errorMessage = err.message || 'Failed to start quiz. Please try again.';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
   };
   
   const handleOptionSelect = (optionId) => {
+    if (!quiz || !quiz.questions || !answers || currentQuestionIndex >= quiz.questions.length) {
+      console.error('Invalid state for option selection');
+      return;
+    }
+
     const currentQuestion = quiz.questions[currentQuestionIndex];
     const currentAnswer = answers[currentQuestionIndex];
-    
+
+    if (!currentQuestion || !currentAnswer) {
+      console.error('Current question or answer is undefined');
+      return;
+    }
+
     if (currentQuestion.type === 'multiple_choice') {
       // For multiple choice, toggle the selection
       const newSelectedOptions = currentAnswer.selectedOptions.includes(optionId)
         ? currentAnswer.selectedOptions.filter(id => id !== optionId)
         : [...currentAnswer.selectedOptions, optionId];
-      
+
       updateAnswer(currentQuestionIndex, { selectedOptions: newSelectedOptions });
     } else if (currentQuestion.type === 'true_false') {
       // For true/false, select only one option
@@ -102,11 +218,15 @@ const QuizTaker = () => {
   };
   
   const goToNextQuestion = () => {
+    if (!quiz || !quiz.questions) {
+      console.error('Quiz data not available for navigation');
+      return;
+    }
     if (currentQuestionIndex < quiz.questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     }
   };
-  
+
   const goToPreviousQuestion = () => {
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(currentQuestionIndex - 1);
@@ -125,10 +245,11 @@ const QuizTaker = () => {
       }
       
       // Submit the quiz
-      const response = await quizAPI.submitQuizAttempt(attempt._id, { answers });
-      
+      const attemptId = attempt._id || attempt.id;
+      const response = await quizAPI.submitQuizAttempt(attemptId, { answers });
+
       // Navigate to results page
-      navigate(`/courses/${courseId}/quizzes/${quizId}/results/${attempt._id}`);
+      navigate(`/courses/${courseId}/quizzes/${quizId}/results/${attemptId}`);
       
       toast.success('Quiz submitted successfully!');
     } catch (err) {
@@ -140,6 +261,9 @@ const QuizTaker = () => {
   };
   
   const formatTime = (seconds) => {
+    if (seconds === null || seconds === undefined || isNaN(seconds)) {
+      return '0:00';
+    }
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
@@ -167,7 +291,7 @@ const QuizTaker = () => {
     );
   }
   
-  if (!quiz || !attempt) {
+  if (!quiz || !attempt || !quiz.questions || !Array.isArray(quiz.questions) || quiz.questions.length === 0) {
     return (
       <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-6 py-4 rounded-lg">
         <p className="font-medium">Quiz data could not be loaded.</p>
@@ -180,11 +304,40 @@ const QuizTaker = () => {
       </div>
     );
   }
-  
+
+  if (!answers || answers.length === 0 || currentQuestionIndex >= quiz.questions.length) {
+    return (
+      <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-6 py-4 rounded-lg">
+        <p className="font-medium">Quiz answers not properly initialized.</p>
+        <button
+          onClick={() => startQuiz()}
+          className="mt-4 bg-yellow-100 text-yellow-700 px-4 py-2 rounded-lg hover:bg-yellow-200 transition-colors"
+        >
+          Restart Quiz
+        </button>
+      </div>
+    );
+  }
+
   const currentQuestion = quiz.questions[currentQuestionIndex];
   const currentAnswer = answers[currentQuestionIndex];
   const isLastQuestion = currentQuestionIndex === quiz.questions.length - 1;
-  
+
+  // Additional safety check for current question and answer
+  if (!currentQuestion || !currentAnswer) {
+    return (
+      <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg">
+        <p className="font-medium">Error: Current question or answer data is missing.</p>
+        <button
+          onClick={() => startQuiz()}
+          className="mt-4 bg-red-100 text-red-700 px-4 py-2 rounded-lg hover:bg-red-200 transition-colors"
+        >
+          Restart Quiz
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
       {/* Quiz Header */}
@@ -195,12 +348,14 @@ const QuizTaker = () => {
         </div>
         
         <div className="flex items-center gap-3">
-          <div className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
-            timeLeft < 60 ? 'bg-red-100 text-red-700 animate-pulse' : 'bg-blue-50 text-blue-700'
-          }`}>
-            <FaClock />
-            <span className="font-medium">{formatTime(timeLeft)}</span>
-          </div>
+          {timeLeft !== null && (
+            <div className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
+              timeLeft < 60 ? 'bg-red-100 text-red-700 animate-pulse' : 'bg-blue-50 text-blue-700'
+            }`}>
+              <FaClock />
+              <span className="font-medium">{formatTime(timeLeft)}</span>
+            </div>
+          )}
           
           <button
             onClick={() => setShowConfirmSubmit(true)}

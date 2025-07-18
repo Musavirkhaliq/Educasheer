@@ -1,5 +1,6 @@
 import { Course } from "../models/course.model.js";
 import { User } from "../models/user.model.js";
+import { Quiz } from "../models/quiz.model.js";
 import { awardPoints, awardBadge, updateChallengeProgress } from "./gamification.service.js";
 import mongoose from "mongoose";
 
@@ -96,7 +97,9 @@ export const updateCourseProgressForVideo = async (userId, courseId, videoId) =>
       courseProgress.lastActivity = new Date();
       
       // Calculate new progress percentage
-      const totalItems = course.videos.length + (course.quizzes ? course.quizzes.length : 0);
+      // Get total quizzes for this course
+      const totalQuizzes = await Quiz.countDocuments({ course: courseId });
+      const totalItems = course.videos.length + totalQuizzes;
       const completedItems = courseProgress.completedVideos.length + courseProgress.completedQuizzes.length;
       courseProgress.progress = Math.round((completedItems / totalItems) * 100);
       
@@ -198,9 +201,9 @@ export const updateCourseProgressForQuiz = async (userId, courseId, quizId, scor
       throw new Error(`Course with ID ${courseId} not found`);
     }
 
-    // Check if quiz belongs to this course
-    const quizInCourse = course.quizzes && course.quizzes.some(quiz => quiz.toString() === quizId);
-    if (!quizInCourse) {
+    // Check if quiz belongs to this course by finding the quiz and verifying its course field
+    const quiz = await Quiz.findById(quizId);
+    if (!quiz || quiz.course.toString() !== courseId) {
       throw new Error(`Quiz with ID ${quizId} does not belong to course with ID ${courseId}`);
     }
 
@@ -229,7 +232,9 @@ export const updateCourseProgressForQuiz = async (userId, courseId, quizId, scor
       courseProgress.lastActivity = new Date();
       
       // Calculate new progress percentage
-      const totalItems = course.videos.length + (course.quizzes ? course.quizzes.length : 0);
+      // Get total quizzes for this course
+      const totalQuizzes = await Quiz.countDocuments({ course: courseId });
+      const totalItems = course.videos.length + totalQuizzes;
       const completedItems = courseProgress.completedVideos.length + courseProgress.completedQuizzes.length;
       courseProgress.progress = Math.round((completedItems / totalItems) * 100);
       

@@ -705,9 +705,251 @@ const getWatchHistory = asyncHandler(async (req, res) => {
       )
     );
 });
+// Google OAuth auth-code handler
+const googleAuthCode = asyncHandler(async (req, res) => {
+  try {
+    const { code } = req.body;
+
+    console.log("Google auth code received:", code ? "present" : "missing");
+
+    if (!code) {
+      throw new ApiError(400, "Authorization code is required");
+    }
+
+    // Exchange authorization code for access token
+    const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        client_id: process.env.GOOGLE_CLIENT_ID || '258701645513-dicfbobfqmqbh1of6bcgfvb8cv3clcq2.apps.googleusercontent.com',
+        client_secret: process.env.GOOGLE_CLIENT_SECRET || '', // You'll need to add this
+        code: code,
+        grant_type: 'authorization_code',
+        redirect_uri: process.env.CLIENT_URL || 'https://educasheer.in',
+      }),
+    });
+
+    if (!tokenResponse.ok) {
+      console.error("Token exchange failed:", tokenResponse.status);
+      throw new ApiError(400, "Failed to exchange authorization code");
+    }
+
+    const tokenData = await tokenResponse.json();
+    console.log("Token exchange successful");
+
+    // Get user info using the access token
+    const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: {
+        Authorization: `Bearer ${tokenData.access_token}`,
+      },
+    });
+
+    if (!userInfoResponse.ok) {
+      console.error("User info fetch failed:", userInfoResponse.status);
+      throw new ApiError(400, "Failed to fetch user information");
+    }
+
+    const userInfo = await userInfoResponse.json();
+    console.log("User info fetched successfully");
+
+    // Process the login using the existing googleLogin logic
+    const { sub: googleId, email, name: fullName, picture: avatar } = userInfo;
+
+    if (!googleId || !email) {
+      throw new ApiError(400, "Google ID and email are required");
+    }
+
+    // Continue with the existing Google login logic...
+    // (This will be the same as the existing googleLogin function)
+
+    // Check if user already exists with this Google ID
+    let user = await User.findOne({ googleId });
+
+    // If user doesn't exist with Google ID, check if email exists
+    if (!user) {
+      user = await User.findOne({ email: email.toLowerCase() });
+
+      // If user exists with email but no Google ID, update the user with Google info
+      if (user) {
+        console.log("Existing user found with email, updating with Google ID");
+        user.googleId = googleId;
+        user.authProvider = "google";
+
+        // Update avatar if not already set
+        if (!user.avatar || user.avatar.includes("ui-avatars.com")) {
+          user.avatar = avatar;
+        }
+
+        await user.save({ validateBeforeSave: false });
+      } else {
+        // Create new user with Google info
+        console.log("Creating new user with Google account");
+
+        // Generate a unique username based on email
+        const baseUsername = email.split('@')[0].toLowerCase();
+        let username = baseUsername;
+        let counter = 1;
+
+        // Check if username exists and generate a unique one
+        while (await User.findOne({ username })) {
+          username = `${baseUsername}${counter}`;
+          counter++;
+        }
+
+        user = await User.create({
+          fullName,
+          username,
+          email: email.toLowerCase(),
+          googleId,
+          authProvider: "google",
+          avatar: avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=random`,
+          isEmailVerified: true, // Google emails are pre-verified
+        });
+
+        // Initialize gamification for new user
+        try {
+          await initializeUserGamification(user._id);
+          console.log("Gamification initialized for Google user:", user._id);
+        } catch (gamificationError) {
+          console.error("Error initializing gamification for Google user:", gamificationError);
+          // Continue with login even if gamification initialization fails
+        }
+      }
+    }
+
+    // Update user streak for login activity
+    try {
+      // First try the regular update function
+      await updateUserStreak(user._id, ["login"]);
+      console.log("User streak updated for Google login activity via function");
+
+      // Then also do a direct database update to ensure it works
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      let streak = await UserStreak.findOne({ userId: user._id });
+      if (!streak) {
+        // Create new streak
+        streak = await UserStreak.create({
+          userId: user._id,
+          currentStreak: 1,
+          longestStreak: 1,
+          lastActivityDate: new Date(),
+          streakHistory: [{
+            date: today,
+            activities: ["login"]
+          }]
+        });
+        console.log("Created new streak for Google user:", user._id);
+      } else {
+        // Update existing streak
+        const lastActivityDate = new Date(streak.lastActivityDate);
+        lastActivityDate.setHours(0, 0, 0, 0);
+
+        if (lastActivityDate.getTime() === today.getTime()) {
+          // Same day, just add activity if not already present
+          const todayEntry = streak.streakHistory.find(entry => {
+            const entryDate = new Date(entry.date);
+            entryDate.setHours(0, 0, 0, 0);
+            return entryDate.getTime() === today.getTime();
+          });
+
+          if (todayEntry && !todayEntry.activities.includes("login")) {
+            todayEntry.activities.push("login");
+            await streak.save();
+          }
+          console.log("Updated today's streak activities for Google user:", user._id);
+        } else {
+          // Check if this is consecutive day
+          const yesterday = new Date(today);
+          yesterday.setDate(yesterday.getDate() - 1);
+          yesterday.setHours(0, 0, 0, 0);
+
+          if (lastActivityDate.getTime() === yesterday.getTime()) {
+            // Consecutive day, increment streak
+            streak.currentStreak += 1;
+            if (streak.currentStreak > streak.longestStreak) {
+              streak.longestStreak = streak.currentStreak;
+            }
+            console.log("Incremented streak to", streak.currentStreak, "for Google user:", user._id);
+          } else {
+            // Streak broken, reset to 1
+            streak.currentStreak = 1;
+            console.log("Reset streak to 1 for Google user:", user._id);
+          }
+
+          // Add today to history
+          streak.streakHistory.push({
+            date: today,
+            activities: ["login"]
+          });
+
+          // Keep only last 365 days
+          if (streak.streakHistory.length > 365) {
+            streak.streakHistory = streak.streakHistory.slice(-365);
+          }
+        }
+
+        streak.lastActivityDate = new Date();
+        await streak.save();
+        console.log("Saved streak update for Google user:", user._id, "Current streak:", streak.currentStreak);
+      }
+    } catch (streakError) {
+      console.error("Error updating streak for Google login:", streakError);
+      // Continue with login even if streak update fails
+    }
+
+    // Generate tokens
+    const accessToken = user.generateAccessToken();
+    const refreshToken = user.generateRefreshToken();
+
+    // Get user without password
+    const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
+
+    // Set cookies and send response
+    const options = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+    };
+
+    return res
+      .status(200)
+      .cookie("accessToken", accessToken, options)
+      .cookie("refreshToken", refreshToken, options)
+      .json(
+        new ApiResponse(200, {
+          user: loggedInUser,
+          accessToken,
+          refreshToken,
+        }, "Google login successful")
+      );
+  } catch (error) {
+    console.error("Google auth code error:", error);
+
+    if (error instanceof ApiError) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+        errors: error.errors
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Something went wrong during Google authentication"
+    });
+  }
+});
+
 // Google OAuth login handler
 const googleLogin = asyncHandler(async (req, res) => {
   try {
+    console.log("Google login request body:", req.body);
+    console.log("Google login request headers:", req.headers);
+
     const { googleId, email, fullName, avatar, picture, name, sub } = req.body;
 
     // Support both formats: googleId or sub (from Google's JWT)
@@ -715,7 +957,16 @@ const googleLogin = asyncHandler(async (req, res) => {
     const userName = fullName || name;
     const userAvatar = avatar || picture;
 
+    console.log("Extracted Google login data:", {
+      userGoogleId,
+      email,
+      userName,
+      userAvatar,
+      originalBody: req.body
+    });
+
     if (!userGoogleId || !email) {
+      console.log("Missing required fields:", { userGoogleId, email });
       throw new ApiError(400, "Google ID and email are required");
     }
 
@@ -1118,6 +1369,7 @@ export {
   getUserChannelProfile,
   getWatchHistory,
   googleLogin,
+  googleAuthCode,
   verifyEmail,
   resendVerificationEmail,
   forgotPassword,
