@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { FaPlus, FaTrash, FaCalendarAlt, FaMapMarkerAlt, FaClock } from 'react-icons/fa';
+import api from '../services/api';
 
 const CourseForm = ({ courseId }) => {
   const { currentUser } = useAuth();
@@ -55,11 +55,7 @@ const CourseForm = ({ courseId }) => {
   useEffect(() => {
     const fetchUserVideos = async () => {
       try {
-        const response = await axios.get('/api/v1/videos/my/videos', {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('accessToken')}`
-          }
-        });
+        const response = await api.get('/videos/my/videos');
         // Handle both response formats (array or object with videos property)
         const videosData = response.data.data.videos || response.data.data;
         console.log('Fetched videos:', videosData); // Debug log
@@ -73,13 +69,16 @@ const CourseForm = ({ courseId }) => {
     // If editing an existing course, fetch course details
     const fetchCourseDetails = async () => {
       try {
-        const response = await axios.get(`/api/v1/courses/${courseId}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('accessToken')}`
-          }
-        });
+        // For editing, fetch from user's courses to avoid 403 errors on unpublished courses
+        const response = await api.get('/courses/my/courses');
+        const userCourses = response.data.data;
 
-        const course = response.data.data;
+        // Find the specific course by ID
+        const course = userCourses.find(c => c._id === courseId);
+
+        if (!course) {
+          throw new Error('Course not found or you do not have permission to edit it');
+        }
 
         // Set course type
         setCourseType(course.courseType || 'online');
@@ -303,28 +302,18 @@ const CourseForm = ({ courseId }) => {
       if (courseId) {
         // Update existing course
         console.log('Updating existing course:', courseId);
-        response = await axios.patch(
-          `/api/v1/courses/${courseId}`,
-          courseData,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('accessToken')}`
-            }
-          }
+        response = await api.patch(
+          `/courses/${courseId}`,
+          courseData
         );
         console.log('Course update response:', response.data);
         setSuccess('Course updated successfully!');
       } else {
         // Create new course
         console.log('Creating new course');
-        response = await axios.post(
-          '/api/v1/courses',
-          courseData,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('accessToken')}`
-            }
-          }
+        response = await api.post(
+          '/courses',
+          courseData
         );
         console.log('Course creation response:', response.data);
         setSuccess('Course created successfully!');
@@ -752,13 +741,8 @@ const CourseForm = ({ courseId }) => {
                   type="button"
                   onClick={async () => {
                     try {
-                      const response = await axios.post('/api/v1/debug/validate-video-ids',
-                        { videoIds: selectedVideos },
-                        {
-                          headers: {
-                            Authorization: `Bearer ${localStorage.getItem('accessToken')}`
-                          }
-                        }
+                      const response = await api.post('/debug/validate-video-ids',
+                        { videoIds: selectedVideos }
                       );
                       console.log('Video ID validation result:', response.data);
                       alert(`Validation result: ${JSON.stringify(response.data.data, null, 2)}`);
@@ -809,11 +793,7 @@ const CourseForm = ({ courseId }) => {
                   onClick={() => {
                     const fetchVideos = async () => {
                       try {
-                        const response = await axios.get('/api/v1/videos/my/videos', {
-                          headers: {
-                            Authorization: `Bearer ${localStorage.getItem('accessToken')}`
-                          }
-                        });
+                        const response = await api.get('/videos/my/videos');
                         console.log('Debug - API Response:', response.data);
                         alert('Check console for video data');
                       } catch (error) {

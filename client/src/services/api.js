@@ -214,8 +214,10 @@ export const gamificationAPI = {
   getUserBadges: () => api.get('/gamification/badges'),
   getUserPointsHistory: (params) => api.get('/gamification/points-history', { params }),
   getUserStreak: () => api.get('/gamification/streak'),
+  forceUpdateStreak: () => api.post('/gamification/force-update-streak'),
   getUserChallenges: (params) => api.get('/gamification/challenges', { params }),
   getLeaderboard: (params) => api.get('/gamification/leaderboard', { params }),
+  getLeaderboardStreaks: (userIds) => api.post('/gamification/leaderboard-streaks', { userIds }),
   updateDisplayedBadges: (data) => api.patch('/gamification/displayed-badges', data),
 
   // Admin functions - Badges

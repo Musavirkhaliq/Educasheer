@@ -22,7 +22,7 @@ const getRankBadgeColor = (rank) => {
 // LeaderboardCard component for individual user display
 const LeaderboardCard = ({ entry, rank, isCurrentUser, streakData }) => {
   // Get streak data for this user if available
-  const streakInfo = streakData?.find(s => s.userId === entry.user._id);
+  const streakInfo = streakData?.find(s => s.userId === entry.user?._id);
   const userStreak = streakInfo?.streak || 0;
   const isRealStreak = streakInfo?.isReal || false;
 
@@ -54,8 +54,8 @@ const LeaderboardCard = ({ entry, rank, isCurrentUser, streakData }) => {
           <div className="relative mb-3">
             <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-white shadow-lg">
               <img
-                src={entry.user.avatar || 'https://ui-avatars.com/api/?name=' + entry.user.username}
-                alt={entry.user.username}
+                src={entry.user?.avatar || 'https://ui-avatars.com/api/?name=' + (entry.user?.username || 'User')}
+                alt={entry.user?.username || 'User'}
                 className="w-full h-full object-cover"
               />
             </div>
@@ -68,7 +68,7 @@ const LeaderboardCard = ({ entry, rank, isCurrentUser, streakData }) => {
 
           {/* User Info */}
           <h3 className="font-semibold text-gray-800 text-center line-clamp-1 text-base">
-            {entry.user.fullName || entry.user.username}
+            {entry.user?.fullName || entry.user?.username || 'Unknown User'}
             {isCurrentUser && <span className="ml-1 text-xs text-blue-600">(You)</span>}
           </h3>
 
@@ -145,8 +145,10 @@ const HomeLeaderboard = () => {
         const leaderboardData = leaderboardResponse.data.data.leaderboard || [];
         setLeaderboard(leaderboardData);
 
-        // Extract user IDs from leaderboard data
-        const userIds = leaderboardData.map(entry => entry.user._id);
+        // Extract user IDs from leaderboard data (filter out entries with null users)
+        const userIds = leaderboardData
+          .filter(entry => entry.user && entry.user._id)
+          .map(entry => entry.user._id);
 
         try {
           // Try to fetch real streak data for all users in the leaderboard
@@ -169,11 +171,13 @@ const HomeLeaderboard = () => {
           console.error('Error fetching leaderboard streaks:', streakError);
 
           // Fallback to fetching only the current user's streak if available
-          let streaksData = leaderboardData.map(entry => ({
-            userId: entry.user._id,
-            streak: Math.floor(Math.random() * 5) + 3, // Streak between 3-7 days
-            isReal: false // Flag to indicate this is not real data
-          }));
+          let streaksData = leaderboardData
+            .filter(entry => entry.user && entry.user._id) // Filter out entries with null users
+            .map(entry => ({
+              userId: entry.user._id,
+              streak: Math.floor(Math.random() * 5) + 3, // Streak between 3-7 days
+              isReal: false // Flag to indicate this is not real data
+            }));
 
           // If user is authenticated, fetch their actual streak
           if (currentUser) {
@@ -288,7 +292,9 @@ const HomeLeaderboard = () => {
                 </div>
               ) : (
                 <>
-                  {leaderboard.map((entry, index) => (
+                  {leaderboard
+                    .filter(entry => entry.user && entry.user._id) // Filter out entries with null users
+                    .map((entry, index) => (
                     <div
                       key={entry._id}
                       className="flex-shrink-0 w-[45%] sm:w-[35%] md:w-[25%] lg:w-[20%] snap-start px-2 first:pl-4 last:pr-4"
@@ -296,7 +302,7 @@ const HomeLeaderboard = () => {
                       <LeaderboardCard
                         entry={entry}
                         rank={index + 1}
-                        isCurrentUser={currentUser && entry.user._id === currentUser._id}
+                        isCurrentUser={currentUser && entry.user?._id === currentUser._id}
                         streakData={streakData}
                       />
                     </div>
