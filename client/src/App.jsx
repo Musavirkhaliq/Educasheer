@@ -4,6 +4,7 @@ import React, { useMemo } from "react";
 import { AuthProvider } from "./context/AuthContext";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { Toaster } from "react-hot-toast";
+import QuizzesExamsPage from './pages/QuizzesExamsPage';
 
 const App = () => {
   const router = useMemo(() => createBrowserRouter(routes), []);

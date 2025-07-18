@@ -1,0 +1,95 @@
+[
+  {
+    "text": "Which of the following are web development technologies?",
+    "type": "multiple_choice",
+    "options": [
+      {"text": "HTML", "isCorrect": true},
+      {"text": "CSS", "isCorrect": true},
+      {"text": "JavaScript", "isCorrect": true},
+      {"text": "Microsoft Word", "isCorrect": false}
+    ],
+    "points": 3,
+    "explanation": "HTML, CSS, and JavaScript are fundamental web development technologies. Microsoft Word is a document processing application."
+  },
+  {
+    "text": "React is a JavaScript library for building user interfaces.",
+    "type": "true_false",
+    "options": [
+      {"text": "True", "isCorrect": true},
+      {"text": "False", "isCorrect": false}
+    ],
+    "points": 1,
+    "explanation": "React is indeed a JavaScript library developed by Facebook for building user interfaces, particularly for web applications."
+  },
+  {
+    "text": "What does JSON stand for?",
+    "type": "short_answer",
+    "correctAnswer": "JavaScript Object Notation",
+    "points": 2,
+    "explanation": "JSON stands for JavaScript Object Notation, a lightweight data interchange format that's easy for humans to read and write."
+  },
+  {
+    "text": "Explain the difference between frontend and backend development.",
+    "type": "essay",
+    "points": 5,
+    "explanation": "Frontend development focuses on the user interface and user experience (what users see and interact with), while backend development handles server-side logic, databases, and application functionality that users don't directly see."
+  },
+  {
+    "text": "Which database type is MongoDB?",
+    "type": "multiple_choice",
+    "options": [
+      {"text": "Relational Database", "isCorrect": false},
+      {"text": "NoSQL Database", "isCorrect": true},
+      {"text": "Graph Database", "isCorrect": false},
+      {"text": "Time Series Database", "isCorrect": false}
+    ],
+    "points": 2,
+    "explanation": "MongoDB is a NoSQL database that stores data in flexible, JSON-like documents rather than traditional table-based relational structure."
+  },
+  {
+    "text": "Git is a version control system.",
+    "type": "true_false",
+    "options": [
+      {"text": "True", "isCorrect": true},
+      {"text": "False", "isCorrect": false}
+    ],
+    "points": 1,
+    "explanation": "Git is indeed a distributed version control system used to track changes in source code during software development."
+  },
+  {
+    "text": "What is the default port number for HTTP?",
+    "type": "short_answer",
+    "correctAnswer": "80",
+    "points": 2,
+    "explanation": "The default port number for HTTP (HyperText Transfer Protocol) is 80, while HTTPS uses port 443."
+  },
+  {
+    "text": "Describe the purpose of a REST API and give an example of how it might be used.",
+    "type": "essay",
+    "points": 8,
+    "explanation": "A REST API (Representational State Transfer) provides a standardized way for applications to communicate over HTTP. It uses standard HTTP methods (GET, POST, PUT, DELETE) to perform operations on resources. Example: A social media app might use GET /api/posts to retrieve posts, POST /api/posts to create a new post."
+  },
+  {
+    "text": "Which of these are JavaScript frameworks or libraries?",
+    "type": "multiple_choice",
+    "options": [
+      {"text": "Angular", "isCorrect": true},
+      {"text": "Vue.js", "isCorrect": true},
+      {"text": "Django", "isCorrect": false},
+      {"text": "Express.js", "isCorrect": true},
+      {"text": "Laravel", "isCorrect": false}
+    ],
+    "points": 3,
+    "explanation": "Angular, Vue.js, and Express.js are JavaScript frameworks/libraries. Django is a Python framework, and Laravel is a PHP framework."
+  },
+  {
+    "text": "Node.js allows JavaScript to run on the server side.",
+    "type": "true_false",
+    "options": [
+      {"text": "True", "isCorrect": true},
+      {"text": "False", "isCorrect": false}
+    ],
+    "points": 1,
+    "explanation": "Node.js is a JavaScript runtime built on Chrome's V8 JavaScript engine that allows JavaScript to be executed on the server side, outside of a web browser."
+  }
+]

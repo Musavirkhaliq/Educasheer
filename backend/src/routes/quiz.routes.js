@@ -2,11 +2,14 @@ import { Router } from "express";
 import {
     createQuiz,
     getAllQuizzes,
+    getPublishedQuizzes,
+    getQuizCategories,
     getQuizById,
     updateQuiz,
     deleteQuiz,
     toggleQuizPublishStatus,
-    getCourseQuizzes
+    getCourseQuizzes,
+    uploadQuestionsFromJSON
 } from "../controllers/quiz.controller.js";
 import {
     startQuizAttempt,
@@ -17,16 +20,28 @@ import {
 } from "../controllers/quizAttempt.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { isAdmin } from "../middlewares/role.middleware.js";
+import { upload } from "../middlewares/multer.middleware.js";
 
 const router = Router();
 
-// Apply authentication middleware to all routes
+// Public routes (no authentication required) - must be defined before any middleware
+router.get("/test", (req, res) => {
+    res.json({ success: true, message: "Test endpoint working", data: [] });
+});
+router.get("/public", getPublishedQuizzes);
+router.get("/categories", getQuizCategories);
+
+// Apply authentication middleware to all other routes
 router.use(verifyJWT);
 
 // Quiz management routes (admin only)
 router.route("/")
     .post(isAdmin, createQuiz)
     .get(isAdmin, getAllQuizzes);
+
+// JSON upload route for bulk question import (admin only)
+router.route("/upload-questions")
+    .post(isAdmin, upload.single("jsonFile"), uploadQuestionsFromJSON);
 
 router.route("/:quizId")
     .get(getQuizById)

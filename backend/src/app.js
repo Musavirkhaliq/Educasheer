@@ -101,6 +101,8 @@ import videoProgressRouter from "./routes/videoProgress.routes.js";
 import courseProgressRouter from "./routes/courseProgress.routes.js";
 import rewardRouter from "./routes/reward.routes.js";
 import quizRouter from "./routes/quiz.routes.js";
+import seatRouter from "./routes/seat.routes.js";
+import categoryRouter from "./routes/category.routes.js";
 
 // Routes declaration
 app.use("/api/v1/users", userRouter);
@@ -125,6 +127,8 @@ app.use("/api/v1/video-progress", videoProgressRouter);
 app.use("/api/v1/course-progress", courseProgressRouter);
 app.use("/api/v1/rewards", rewardRouter);
 app.use("/api/v1/quizzes", quizRouter);
+app.use("/api/v1/seats", seatRouter);
+app.use("/api/v1/categories", categoryRouter);
 
 // Serve frontend for all non-API routes
 app.get("*", (req, res, next) => {

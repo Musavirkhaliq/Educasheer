@@ -1,0 +1,63 @@
+[
+  {
+    "text": "What is the capital of France?",
+    "type": "multiple_choice",
+    "options": [
+      {"text": "London", "isCorrect": false},
+      {"text": "Paris", "isCorrect": true},
+      {"text": "Berlin", "isCorrect": false},
+      {"text": "Madrid", "isCorrect": false}
+    ],
+    "points": 1,
+    "explanation": "Paris is the capital and largest city of France, located in the north-central part of the country."
+  },
+  {
+    "text": "Which of the following are programming languages? (Select all that apply)",
+    "type": "multiple_choice",
+    "options": [
+      {"text": "JavaScript", "isCorrect": true},
+      {"text": "HTML", "isCorrect": false},
+      {"text": "Python", "isCorrect": true},
+      {"text": "CSS", "isCorrect": false},
+      {"text": "Java", "isCorrect": true}
+    ],
+    "points": 3,
+    "explanation": "JavaScript, Python, and Java are programming languages. HTML is a markup language and CSS is a styling language."
+  },
+  {
+    "text": "What is the largest planet in our solar system?",
+    "type": "multiple_choice",
+    "options": [
+      {"text": "Earth", "isCorrect": false},
+      {"text": "Jupiter", "isCorrect": true},
+      {"text": "Saturn", "isCorrect": false},
+      {"text": "Neptune", "isCorrect": false}
+    ],
+    "points": 1,
+    "explanation": "Jupiter is the largest planet in our solar system, with a mass greater than all other planets combined."
+  },
+  {
+    "text": "Which HTTP status code indicates a successful request?",
+    "type": "multiple_choice",
+    "options": [
+      {"text": "404", "isCorrect": false},
+      {"text": "500", "isCorrect": false},
+      {"text": "200", "isCorrect": true},
+      {"text": "301", "isCorrect": false}
+    ],
+    "points": 2,
+    "explanation": "HTTP status code 200 means 'OK' and indicates that the request was successful."
+  },
+  {
+    "text": "What does SQL stand for?",
+    "type": "multiple_choice",
+    "options": [
+      {"text": "Structured Query Language", "isCorrect": true},
+      {"text": "Simple Query Language", "isCorrect": false},
+      {"text": "Standard Query Language", "isCorrect": false},
+      {"text": "System Query Language", "isCorrect": false}
+    ],
+    "points": 1,
+    "explanation": "SQL stands for Structured Query Language, used for managing and manipulating relational databases."
+  }
+]

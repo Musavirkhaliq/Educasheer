@@ -52,13 +52,13 @@ const getAllCenters = asyncHandler(async (req, res) => {
         const pageNum = parseInt(page, 10);
         const limitNum = parseInt(limit, 10);
 
-        const centers = await Center.find()
+        const centers = await Center.find({ isActive: true })
             .skip((pageNum - 1) * limitNum)
             .limit(limitNum)
             .sort({ createdAt: -1 })
             .populate("creator", "fullName username avatar");
 
-        const totalCenters = await Center.countDocuments();
+        const totalCenters = await Center.countDocuments({ isActive: true });
 
         return res.status(200).json(
             new ApiResponse(200, {

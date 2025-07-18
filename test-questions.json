@@ -1,0 +1,30 @@
+[
+  {
+    "text": "What is the capital of France?",
+    "type": "multiple_choice",
+    "options": [
+      {"text": "London", "isCorrect": false},
+      {"text": "Paris", "isCorrect": true},
+      {"text": "Berlin", "isCorrect": false}
+    ],
+    "points": 1,
+    "explanation": "Paris is the capital and largest city of France."
+  },
+  {
+    "text": "JavaScript is a programming language.",
+    "type": "true_false",
+    "options": [
+      {"text": "True", "isCorrect": true},
+      {"text": "False", "isCorrect": false}
+    ],
+    "points": 1,
+    "explanation": "JavaScript is indeed a programming language used for web development."
+  },
+  {
+    "text": "What does HTML stand for?",
+    "type": "short_answer",
+    "correctAnswer": "HyperText Markup Language",
+    "points": 2,
+    "explanation": "HTML stands for HyperText Markup Language, used to create web pages."
+  }
+]

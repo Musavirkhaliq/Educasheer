@@ -39,6 +39,9 @@ import GamificationPage from "../pages/GamificationPage";
 import SeatBookingPage from "../pages/SeatBookingPage";
 import MyBookingsPage from "../pages/MyBookingsPage";
 import QRBookingPage from "../pages/QRBookingPage";
+import QuizzesExamsPage from '../pages/QuizzesExamsPage';
+import ExamsPage from '../pages/ExamsPage';
+import CategoryManagementPage from '../pages/CategoryManagementPage';
 
 export const homeRoutes = [
   {
@@ -343,6 +346,15 @@ export const homeRoutes = [
       </Suspense>
     ),
   },
+  // Category management routes (admin)
+  {
+    path: "admin/categories",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <CategoryManagementPage />
+      </Suspense>
+    ),
+  },
   // Quiz routes (student)
   {
     path: "courses/:courseId/quizzes/:quizId",
@@ -399,6 +411,22 @@ export const homeRoutes = [
     element: (
       <Suspense fallback={<h1>Loading</h1>}>
         <QRBookingPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: "quizzes-exams",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <QuizzesExamsPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: "exams",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <ExamsPage />
       </Suspense>
     ),
   },

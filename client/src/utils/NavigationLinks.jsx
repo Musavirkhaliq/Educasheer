@@ -39,6 +39,11 @@ const navLinks = [
     icon: <FaLayerGroup />,
   },
   {
+    name: "Exams",
+    address: "/exams",
+    icon: <FaGraduationCap />,
+  },
+  {
     name: "Centers",
     address: "/centers",
     icon: <FaMapMarkerAlt />,
@@ -128,6 +133,16 @@ const adminLinks = [
     name: "Manage Centers",
     address: "centers",
     icon: <FaMapMarkerAlt />,
+  },
+  {
+    name: "Manage Quizzes",
+    address: "quizzes",
+    icon: <FaGraduationCap />,
+  },
+  {
+    name: "Manage Categories",
+    address: "categories",
+    icon: <BookOpen />,
   },
   {
     name: "Seat Bookings",

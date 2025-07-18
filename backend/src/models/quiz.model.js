@@ -98,6 +98,12 @@ const quizSchema = new Schema({
         enum: ["quiz", "exam"],
         default: "quiz"
     },
+    category: {
+        type: String,
+        required: false,
+        trim: true,
+        default: ''
+    },
     maxAttempts: {
         type: Number,
         default: 0 // 0 means unlimited attempts

@@ -1,0 +1,72 @@
+[
+  {
+    "text": "What does HTML stand for?",
+    "type": "short_answer",
+    "correctAnswer": "HyperText Markup Language",
+    "points": 1,
+    "explanation": "HTML stands for HyperText Markup Language, which is used to create and structure web pages."
+  },
+  {
+    "text": "What is 15 + 27?",
+    "type": "short_answer",
+    "correctAnswer": "42",
+    "points": 1,
+    "explanation": "15 + 27 = 42. This is basic arithmetic addition."
+  },
+  {
+    "text": "What does CSS stand for?",
+    "type": "short_answer",
+    "correctAnswer": "Cascading Style Sheets",
+    "points": 1,
+    "explanation": "CSS stands for Cascading Style Sheets, used for styling and formatting web pages."
+  },
+  {
+    "text": "What is the chemical symbol for gold?",
+    "type": "short_answer",
+    "correctAnswer": "Au",
+    "points": 1,
+    "explanation": "The chemical symbol for gold is Au, derived from the Latin word 'aurum' meaning gold."
+  },
+  {
+    "text": "What is the square root of 64?",
+    "type": "short_answer",
+    "correctAnswer": "8",
+    "points": 1,
+    "explanation": "The square root of 64 is 8, because 8 × 8 = 64."
+  },
+  {
+    "text": "What does API stand for in programming?",
+    "type": "short_answer",
+    "correctAnswer": "Application Programming Interface",
+    "points": 2,
+    "explanation": "API stands for Application Programming Interface, which defines how different software components should interact."
+  },
+  {
+    "text": "What is the capital of Japan?",
+    "type": "short_answer",
+    "correctAnswer": "Tokyo",
+    "points": 1,
+    "explanation": "Tokyo is the capital city of Japan and one of the most populous metropolitan areas in the world."
+  },
+  {
+    "text": "What does HTTP stand for?",
+    "type": "short_answer",
+    "correctAnswer": "HyperText Transfer Protocol",
+    "points": 2,
+    "explanation": "HTTP stands for HyperText Transfer Protocol, which is the foundation of data communication on the World Wide Web."
+  },
+  {
+    "text": "What is the result of 5 × 9?",
+    "type": "short_answer",
+    "correctAnswer": "45",
+    "points": 1,
+    "explanation": "5 × 9 = 45. This is basic multiplication."
+  },
+  {
+    "text": "What does URL stand for?",
+    "type": "short_answer",
+    "correctAnswer": "Uniform Resource Locator",
+    "points": 2,
+    "explanation": "URL stands for Uniform Resource Locator, which is the address used to access resources on the internet."
+  }
+]

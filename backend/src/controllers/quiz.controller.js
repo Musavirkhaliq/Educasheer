@@ -3,8 +3,11 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { Quiz, QuizAttempt } from "../models/quiz.model.js";
 import { Course } from "../models/course.model.js";
+import { Category } from "../models/category.model.js";
 import { updateCourseProgressForQuiz } from "../services/courseCompletion.service.js";
 import mongoose from "mongoose";
+import fs from "fs";
+import path from "path";
 
 /**
  * Create a new quiz
@@ -58,7 +61,7 @@ const createQuiz = asyncHandler(async (req, res) => {
  */
 const getAllQuizzes = asyncHandler(async (req, res) => {
     try {
-        const { course, published, type } = req.query;
+        const { course, published, type, category, search } = req.query;
 
         const filter = {};
 
@@ -66,6 +69,13 @@ const getAllQuizzes = asyncHandler(async (req, res) => {
         if (course) filter.course = course;
         if (published !== undefined) filter.isPublished = published === 'true';
         if (type) filter.quizType = type;
+        if (category) filter.category = category;
+        if (search) {
+            filter.$or = [
+                { title: { $regex: search, $options: 'i' } },
+                { description: { $regex: search, $options: 'i' } }
+            ];
+        }
 
         const quizzes = await Quiz.find(filter)
             .populate("course", "title slug")
@@ -290,12 +300,284 @@ const getCourseQuizzes = asyncHandler(async (req, res) => {
     }
 });
 
+/**
+ * Upload questions from JSON file
+ * @route POST /api/v1/quizzes/upload-questions
+ * @access Admin only
+ */
+const uploadQuestionsFromJSON = asyncHandler(async (req, res) => {
+    console.log("=== Upload endpoint hit ===");
+    console.log("Request file:", req.file);
+    console.log("Request user:", req.user?.role);
+    console.log("Request body:", req.body);
+
+    try {
+        if (!req.file) {
+            console.log("No file in request");
+            throw new ApiError(400, "JSON file is required");
+        }
+
+        // Check if file is JSON
+        const fileExtension = path.extname(req.file.originalname).toLowerCase();
+        if (fileExtension !== '.json') {
+            // Clean up uploaded file
+            fs.unlinkSync(req.file.path);
+            throw new ApiError(400, "Only JSON files are allowed");
+        }
+
+        // Read and parse JSON file
+        let questionsData;
+        try {
+            const fileContent = fs.readFileSync(req.file.path, 'utf8');
+            questionsData = JSON.parse(fileContent);
+        } catch (parseError) {
+            // Clean up uploaded file
+            fs.unlinkSync(req.file.path);
+            throw new ApiError(400, "Invalid JSON format");
+        }
+
+        // Clean up uploaded file after reading
+        fs.unlinkSync(req.file.path);
+
+        // Validate JSON structure
+        if (!Array.isArray(questionsData)) {
+            throw new ApiError(400, "JSON must contain an array of questions");
+        }
+
+        if (questionsData.length === 0) {
+            throw new ApiError(400, "JSON file must contain at least one question");
+        }
+
+        // Validate each question
+        const validatedQuestions = [];
+        for (let i = 0; i < questionsData.length; i++) {
+            const question = questionsData[i];
+
+            // Required fields validation
+            if (!question.text || typeof question.text !== 'string') {
+                throw new ApiError(400, `Question ${i + 1}: 'text' field is required and must be a string`);
+            }
+
+            if (!question.type) {
+                question.type = 'multiple_choice'; // Default type
+            }
+
+            if (!['multiple_choice', 'true_false', 'short_answer', 'essay'].includes(question.type)) {
+                throw new ApiError(400, `Question ${i + 1}: Invalid question type. Must be one of: multiple_choice, true_false, short_answer, essay`);
+            }
+
+            // Validate options for multiple choice questions
+            if (question.type === 'multiple_choice') {
+                if (!Array.isArray(question.options) || question.options.length < 2) {
+                    throw new ApiError(400, `Question ${i + 1}: Multiple choice questions must have at least 2 options`);
+                }
+
+                let hasCorrectAnswer = false;
+                for (let j = 0; j < question.options.length; j++) {
+                    const option = question.options[j];
+                    if (!option.text || typeof option.text !== 'string') {
+                        throw new ApiError(400, `Question ${i + 1}, Option ${j + 1}: 'text' field is required and must be a string`);
+                    }
+                    if (typeof option.isCorrect !== 'boolean') {
+                        throw new ApiError(400, `Question ${i + 1}, Option ${j + 1}: 'isCorrect' field is required and must be a boolean`);
+                    }
+                    if (option.isCorrect) {
+                        hasCorrectAnswer = true;
+                    }
+                }
+
+                if (!hasCorrectAnswer) {
+                    throw new ApiError(400, `Question ${i + 1}: At least one option must be marked as correct`);
+                }
+            }
+
+            // Validate true/false questions
+            if (question.type === 'true_false') {
+                if (!Array.isArray(question.options) || question.options.length !== 2) {
+                    // Auto-generate true/false options if not provided
+                    question.options = [
+                        { text: 'True', isCorrect: false },
+                        { text: 'False', isCorrect: false }
+                    ];
+                }
+
+                let hasCorrectAnswer = false;
+                for (const option of question.options) {
+                    if (option.isCorrect) {
+                        hasCorrectAnswer = true;
+                        break;
+                    }
+                }
+
+                if (!hasCorrectAnswer) {
+                    throw new ApiError(400, `Question ${i + 1}: True/False question must have one correct answer`);
+                }
+            }
+
+            // Validate short answer questions
+            if (question.type === 'short_answer') {
+                if (!question.correctAnswer || typeof question.correctAnswer !== 'string') {
+                    throw new ApiError(400, `Question ${i + 1}: Short answer questions must have a 'correctAnswer' field`);
+                }
+            }
+
+            // Set default points if not provided
+            if (typeof question.points !== 'number' || question.points < 0) {
+                question.points = 1;
+            }
+
+            // Explanation is optional but should be a string if provided
+            if (question.explanation && typeof question.explanation !== 'string') {
+                throw new ApiError(400, `Question ${i + 1}: 'explanation' field must be a string if provided`);
+            }
+
+            validatedQuestions.push({
+                text: question.text.trim(),
+                type: question.type,
+                options: question.options || [],
+                correctAnswer: question.correctAnswer || '',
+                points: question.points,
+                explanation: question.explanation ? question.explanation.trim() : ''
+            });
+        }
+
+        return res.status(200).json(
+            new ApiResponse(200, {
+                questions: validatedQuestions,
+                count: validatedQuestions.length
+            }, "Questions validated successfully")
+        );
+
+    } catch (error) {
+        // Clean up uploaded file if it exists
+        if (req.file && fs.existsSync(req.file.path)) {
+            fs.unlinkSync(req.file.path);
+        }
+        throw new ApiError(error.statusCode || 500, error.message || "Failed to process JSON file");
+    }
+});
+
+/**
+ * Get published quizzes for students (public access)
+ * @route GET /api/v1/quizzes/public
+ * @access Public
+ */
+const getPublishedQuizzes = asyncHandler(async (req, res) => {
+    try {
+        const { category, type, search, page = 1, limit = 12 } = req.query;
+
+        const filter = { isPublished: true };
+
+        // Apply filters if provided
+        if (category && category !== '') filter.category = category;
+        if (type && type !== '') filter.quizType = type;
+        if (search) {
+            filter.$or = [
+                { title: { $regex: search, $options: 'i' } },
+                { description: { $regex: search, $options: 'i' } },
+                { category: { $regex: search, $options: 'i' } }
+            ];
+        }
+
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+
+        const [quizzes, total] = await Promise.all([
+            Quiz.find(filter)
+                .populate("course", "title slug")
+                .populate("creator", "username fullName")
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(parseInt(limit)),
+            Quiz.countDocuments(filter)
+        ]);
+
+        const pagination = {
+            page: parseInt(page),
+            limit: parseInt(limit),
+            total,
+            pages: Math.ceil(total / parseInt(limit))
+        };
+
+        return res.status(200).json(
+            new ApiResponse(200, { quizzes, pagination }, "Published quizzes fetched successfully")
+        );
+    } catch (error) {
+        throw new ApiError(500, "Failed to fetch published quizzes");
+    }
+});
+
+/**
+ * Get quiz categories with counts
+ * @route GET /api/v1/quizzes/categories
+ * @access Public
+ */
+const getQuizCategories = asyncHandler(async (req, res) => {
+    try {
+        const { includeEmpty = false } = req.query;
+
+        // Get categories from Category model
+        const categories = await Category.find({ isActive: true })
+            .sort({ order: 1, name: 1 });
+
+        // Get quiz counts for each category
+        const categoryStats = await Quiz.aggregate([
+            { $match: { isPublished: true } },
+            { $group: { _id: "$category", count: { $sum: 1 } } }
+        ]);
+
+        // Create a map for quick lookup
+        const statsMap = categoryStats.reduce((acc, stat) => {
+            acc[stat._id || ''] = stat.count;
+            return acc;
+        }, {});
+
+        // Combine category data with counts
+        let result = categories.map(category => ({
+            _id: category._id,
+            name: category.name,
+            slug: category.slug,
+            description: category.description,
+            color: category.color,
+            icon: category.icon,
+            count: statsMap[category.name] || 0
+        }));
+
+        // Add uncategorized if there are quizzes without category
+        const uncategorizedCount = statsMap[''] || 0;
+        if (uncategorizedCount > 0 || includeEmpty === 'true') {
+            result.unshift({
+                _id: null,
+                name: 'Uncategorized',
+                slug: 'uncategorized',
+                description: 'Quizzes without a specific category',
+                color: '#6b7280',
+                icon: 'FaQuestion',
+                count: uncategorizedCount
+            });
+        }
+
+        // Filter out categories with no quizzes if includeEmpty is false
+        if (includeEmpty !== 'true') {
+            result = result.filter(category => category.count > 0);
+        }
+
+        return res.status(200).json(
+            new ApiResponse(200, result, "Quiz categories fetched successfully")
+        );
+    } catch (error) {
+        throw new ApiError(500, "Failed to fetch quiz categories");
+    }
+});
+
 export {
     createQuiz,
     getAllQuizzes,
+    getPublishedQuizzes,
+    getQuizCategories,
     getQuizById,
     updateQuiz,
     deleteQuiz,
     toggleQuizPublishStatus,
-    getCourseQuizzes
+    getCourseQuizzes,
+    uploadQuestionsFromJSON
 };

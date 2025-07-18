@@ -1,0 +1,82 @@
+[
+  {
+    "text": "The Earth is flat.",
+    "type": "true_false",
+    "options": [
+      {"text": "True", "isCorrect": false},
+      {"text": "False", "isCorrect": true}
+    ],
+    "points": 1,
+    "explanation": "The Earth is a sphere (oblate spheroid), not flat. This has been scientifically proven through various methods including satellite imagery and physics."
+  },
+  {
+    "text": "JavaScript and Java are the same programming language.",
+    "type": "true_false",
+    "options": [
+      {"text": "True", "isCorrect": false},
+      {"text": "False", "isCorrect": true}
+    ],
+    "points": 1,
+    "explanation": "JavaScript and Java are completely different programming languages with different syntax, use cases, and runtime environments."
+  },
+  {
+    "text": "HTML is a programming language.",
+    "type": "true_false",
+    "options": [
+      {"text": "True", "isCorrect": false},
+      {"text": "False", "isCorrect": true}
+    ],
+    "points": 1,
+    "explanation": "HTML (HyperText Markup Language) is a markup language used to structure web content, not a programming language."
+  },
+  {
+    "text": "The speed of light in a vacuum is approximately 300,000 kilometers per second.",
+    "type": "true_false",
+    "options": [
+      {"text": "True", "isCorrect": true},
+      {"text": "False", "isCorrect": false}
+    ],
+    "points": 1,
+    "explanation": "The speed of light in a vacuum is approximately 299,792,458 meters per second, which is about 300,000 kilometers per second."
+  },
+  {
+    "text": "Python is an interpreted programming language.",
+    "type": "true_false",
+    "options": [
+      {"text": "True", "isCorrect": true},
+      {"text": "False", "isCorrect": false}
+    ],
+    "points": 1,
+    "explanation": "Python is indeed an interpreted language, meaning code is executed line by line by the Python interpreter rather than being compiled to machine code first."
+  },
+  {
+    "text": "A database can only store text data.",
+    "type": "true_false",
+    "options": [
+      {"text": "True", "isCorrect": false},
+      {"text": "False", "isCorrect": true}
+    ],
+    "points": 1,
+    "explanation": "Databases can store various types of data including text, numbers, dates, images, binary data, and more."
+  },
+  {
+    "text": "CSS stands for Computer Style Sheets.",
+    "type": "true_false",
+    "options": [
+      {"text": "True", "isCorrect": false},
+      {"text": "False", "isCorrect": true}
+    ],
+    "points": 1,
+    "explanation": "CSS stands for Cascading Style Sheets, not Computer Style Sheets. It's used for styling web pages."
+  },
+  {
+    "text": "The Internet and the World Wide Web are the same thing.",
+    "type": "true_false",
+    "options": [
+      {"text": "True", "isCorrect": false},
+      {"text": "False", "isCorrect": true}
+    ],
+    "points": 2,
+    "explanation": "The Internet is the underlying network infrastructure, while the World Wide Web (WWW) is a service that runs on top of the Internet using HTTP protocol."
+  }
+]

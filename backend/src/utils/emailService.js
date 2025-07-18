@@ -59,7 +59,8 @@ const getClientUrl = () => {
   if (!clientUrl) {
     // Default URLs based on NODE_ENV
     if (process.env.NODE_ENV === 'production') {
-      clientUrl = 'https://learn.sukoonsphere.org';
+      // clientUrl = 'https://learn.sukoonsphere.org';
+      clientUrl = 'https://www.educasheer.in';
     } else {
       clientUrl = 'http://localhost:5173';
     }

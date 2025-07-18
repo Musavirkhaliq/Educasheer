@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { publicApi } from './api';
 
 // Create axios instance with base URL
 const api = axios.create({
@@ -20,6 +21,34 @@ api.interceptors.request.use(
 
 // Quiz API functions
 export const quizAPI = {
+  // Public: Get published quizzes for students
+  getPublishedQuizzes: async (params) => {
+    try {
+      const response = await publicApi.get('/quizzes/public', { params });
+      return response;
+    } catch (error) {
+      console.error('Error fetching published quizzes:', error);
+      if (error.response && error.response.status === 404) {
+        return { data: { data: { quizzes: [], pagination: { page: 1, limit: 12, total: 0, pages: 0 } } } };
+      }
+      throw error;
+    }
+  },
+
+  // Public: Get quiz categories with counts
+  getQuizCategories: async (params) => {
+    try {
+      const response = await publicApi.get('/quizzes/categories', { params });
+      return response;
+    } catch (error) {
+      console.error('Error fetching quiz categories:', error);
+      if (error.response && error.response.status === 404) {
+        return { data: { data: [] } };
+      }
+      throw error;
+    }
+  },
+
   // Admin: Create a quiz
   createQuiz: (data) => api.post('/quizzes', data),
 
