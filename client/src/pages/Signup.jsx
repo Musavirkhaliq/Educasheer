@@ -73,8 +73,8 @@ const Signup = () => {
       console.error("Google signup error:", error);
       setError("Google signup failed. Please try again.");
     },
-    // Only flow will be 'implicit' by default
-    flow: 'implicit'
+    // Use auth-code flow for better compatibility with recent Google OAuth changes
+    flow: 'auth-code'
   });
 
   const handleChange = (e) => {

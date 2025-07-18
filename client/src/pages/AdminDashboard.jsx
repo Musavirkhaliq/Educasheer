@@ -7,6 +7,7 @@ import TestimonialManagement from "../components/admin/TestimonialManagement";
 import CenterManagement from "../components/admin/CenterManagement";
 import GamificationAdmin from "../components/admin/gamification/GamificationAdmin";
 import QuizManagement from "../components/admin/QuizManagement";
+import SeatManagement from "../components/admin/SeatManagement";
 
 const AdminDashboard = () => {
   const { currentUser, isAuthenticated, logout } = useAuth();
@@ -276,6 +277,16 @@ const AdminDashboard = () => {
         >
           Gamification
         </button>
+        <button
+          className={`py-2 px-4 font-medium ${
+            activeTab === "seat-bookings"
+              ? "text-[#00bcd4] border-b-2 border-[#00bcd4]"
+              : "text-gray-500 hover:text-gray-700"
+          }`}
+          onClick={() => setActiveTab("seat-bookings")}
+        >
+          Seat Bookings
+        </button>
       </div>
 
       {/* Content */}
@@ -514,6 +525,11 @@ const AdminDashboard = () => {
           {/* Gamification Management Tab */}
           {activeTab === "gamification" && (
             <GamificationAdmin />
+          )}
+
+          {/* Seat Management Tab */}
+          {activeTab === "seat-bookings" && (
+            <SeatManagement />
           )}
         </>
       )}

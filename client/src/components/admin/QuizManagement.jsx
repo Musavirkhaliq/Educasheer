@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FaPlus, FaEdit, FaTrash, FaEye, FaCheck, FaTimes } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaEye, FaCheck, FaTimes, FaFileImport } from 'react-icons/fa';
 import { quizAPI } from '../../services/quizAPI';
 import { courseAPI } from '../../services/courseAPI';
 import { toast } from 'react-hot-toast';
+import BulkQuizImport from './BulkQuizImport';
 
 const QuizManagement = () => {
   const [quizzes, setQuizzes] = useState([]);
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showBulkImport, setShowBulkImport] = useState(false);
   const [filters, setFilters] = useState({
     course: '',
     published: '',
@@ -103,18 +105,41 @@ const QuizManagement = () => {
     }
   };
 
+  // Handle closing bulk import modal
+  const handleCloseBulkImport = () => {
+    setShowBulkImport(false);
+    // Refresh quizzes list after potential new quiz creation
+    const fetchQuizzes = async () => {
+      try {
+        const response = await quizAPI.getAllQuizzes(filters);
+        setQuizzes(response.data.data);
+      } catch (err) {
+        console.error('Error refreshing quizzes:', err);
+      }
+    };
+    fetchQuizzes();
+  };
+
   // Render loading state
   if (loading && quizzes.length === 0) {
     return (
       <div className="p-4">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold">Quiz Management</h2>
-          <Link
-            to="/admin/quizzes/create"
-            className="bg-[#00bcd4] text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-[#0097a7] transition-colors"
-          >
-            <FaPlus /> Create Quiz
-          </Link>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setShowBulkImport(!showBulkImport)}
+              className="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-600 transition-colors"
+            >
+              <FaFileImport /> Import Questions
+            </button>
+            <Link
+              to="/admin/quizzes/create"
+              className="bg-[#00bcd4] text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-[#0097a7] transition-colors"
+            >
+              <FaPlus /> Create Quiz
+            </Link>
+          </div>
         </div>
         <div className="text-center py-10">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#00bcd4]"></div>
@@ -128,13 +153,26 @@ const QuizManagement = () => {
     <div className="p-4">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Quiz Management</h2>
-        <Link
-          to="/admin/quizzes/create"
-          className="bg-[#00bcd4] text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-[#0097a7] transition-colors"
-        >
-          <FaPlus /> Create Quiz
-        </Link>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setShowBulkImport(!showBulkImport)}
+            className="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-600 transition-colors"
+          >
+            <FaFileImport /> Import Questions
+          </button>
+          <Link
+            to="/admin/quizzes/create"
+            className="bg-[#00bcd4] text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-[#0097a7] transition-colors"
+          >
+            <FaPlus /> Create Quiz
+          </Link>
+        </div>
       </div>
+
+      {/* Bulk Import Modal */}
+      {showBulkImport && (
+        <BulkQuizImport onClose={handleCloseBulkImport} />
+      )}
 
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">

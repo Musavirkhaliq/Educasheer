@@ -16,12 +16,12 @@ const CenterManagement = () => {
   const fetchCenters = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('/api/v1/centers', {
+      const response = await axios.get('/api/v1/centers?limit=100', {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`
         }
       });
-      
+
       setCenters(response.data.data.centers);
     } catch (err) {
       console.error('Error fetching centers:', err);

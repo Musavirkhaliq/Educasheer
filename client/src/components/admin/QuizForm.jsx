@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { FaPlus, FaTrash, FaSave, FaArrowLeft } from 'react-icons/fa';
+import { FaPlus, FaTrash, FaSave, FaArrowLeft, FaFileImport } from 'react-icons/fa';
 import { quizAPI } from '../../services/quizAPI';
 import { courseAPI } from '../../services/courseAPI';
 import { toast } from 'react-hot-toast';
+import QuizJSONUpload from './QuizJSONUpload';
+
+// Removed the following imports as they are Node.js modules and cannot be used in the browser.
+// import path from 'path';
+// import multer from 'multer';
 
 const QuizForm = ({ isEditing = false }) => {
   const navigate = useNavigate();
@@ -12,6 +17,7 @@ const QuizForm = ({ isEditing = false }) => {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [courses, setCourses] = useState([]);
+  const [showJSONUpload, setShowJSONUpload] = useState(false);
   
   const [formData, setFormData] = useState({
     title: '',
@@ -159,7 +165,16 @@ const QuizForm = ({ isEditing = false }) => {
       questions: updatedQuestions
     }));
   };
-  
+
+  // Handle imported questions from JSON
+  const handleQuestionsImported = (importedQuestions) => {
+    setFormData(prev => ({
+      ...prev,
+      questions: [...prev.questions, ...importedQuestions]
+    }));
+    setShowJSONUpload(false);
+  };
+
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -421,15 +436,31 @@ const QuizForm = ({ isEditing = false }) => {
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold">Questions</h3>
-            <button
-              type="button"
-              onClick={addQuestion}
-              className="bg-[#00bcd4] text-white px-3 py-1 rounded-lg flex items-center gap-1 hover:bg-[#0097a7] transition-colors"
-            >
-              <FaPlus size={14} /> Add Question
-            </button>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setShowJSONUpload(!showJSONUpload)}
+                className="bg-blue-500 text-white px-3 py-1 rounded-lg flex items-center gap-1 hover:bg-blue-600 transition-colors"
+              >
+                <FaFileImport size={14} /> Import JSON
+              </button>
+              <button
+                type="button"
+                onClick={addQuestion}
+                className="bg-[#00bcd4] text-white px-3 py-1 rounded-lg flex items-center gap-1 hover:bg-[#0097a7] transition-colors"
+              >
+                <FaPlus size={14} /> Add Question
+              </button>
+            </div>
           </div>
-          
+
+          {/* JSON Upload Component */}
+          {showJSONUpload && (
+            <div className="mb-6">
+              <QuizJSONUpload onQuestionsImported={handleQuestionsImported} />
+            </div>
+          )}
+
           {formData.questions.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               No questions added yet. Click "Add Question" to get started.

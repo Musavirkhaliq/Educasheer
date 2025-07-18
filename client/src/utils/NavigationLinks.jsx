@@ -10,6 +10,9 @@ import {
   ShoppingBag,
   BookOpen,
   Receipt,
+  Calendar,
+  Armchair,
+  QrCode,
 } from "lucide-react";
 import { FaHome, FaLayerGroup, FaMapMarkerAlt } from "react-icons/fa";
 import { MdNotifications } from "react-icons/md";
@@ -39,6 +42,21 @@ const navLinks = [
     name: "Centers",
     address: "/centers",
     icon: <FaMapMarkerAlt />,
+  },
+  {
+    name: "Book Seat",
+    address: "/seat-booking",
+    icon: <Armchair />,
+  },
+  {
+    name: "QR Booking",
+    address: "/qr-booking",
+    icon: <QrCode />,
+  },
+  {
+    name: "My Bookings",
+    address: "/my-bookings",
+    icon: <Calendar />,
   },
   {
     name: "Categories",
@@ -110,6 +128,11 @@ const adminLinks = [
     name: "Manage Centers",
     address: "centers",
     icon: <FaMapMarkerAlt />,
+  },
+  {
+    name: "Seat Bookings",
+    address: "seat-bookings",
+    icon: <Armchair />,
   },
   {
     name: "Tutor Applications",

@@ -21,7 +21,9 @@ This guide will help you set up Google OAuth for the Educasheer application.
 4. **Add Authorized JavaScript Origins**
    - Add the following JavaScript origins:
      - `http://localhost:5174` (for local development)
-     - `https://learn.sukoonsphere.org` (for production)
+     - `https://learn.sukoonsphere.org` (for production - legacy)
+     - `https://educasheer.in` (for production - primary domain)
+     - `https://www.educasheer.in` (for production - www subdomain)
    - You don't need to add redirect URIs as we're using the implicit flow
 
 5. **Create the Client ID**
@@ -51,6 +53,11 @@ If you encounter issues with Google OAuth:
 
 1. **Check JavaScript Origins**
    - Make sure the JavaScript origins in your Google Cloud Console match exactly with the URLs you're using to access your application.
+   - For the current setup, ensure these origins are configured:
+     - `http://localhost:5174` (development)
+     - `https://learn.sukoonsphere.org` (legacy production)
+     - `https://educasheer.in` (primary production domain)
+     - `https://www.educasheer.in` (www subdomain)
 
 2. **Check for Typos**
    - Ensure there are no typos in your Client ID.
@@ -72,3 +79,20 @@ If you encounter issues with Google OAuth:
 
 8. **Check OAuth Consent Screen**
    - Make sure you've configured the OAuth consent screen properly.
+
+## Common Error: redirect_uri_mismatch
+
+If you see the error "Error 400: redirect_uri_mismatch", this means your Google OAuth client is not configured to accept requests from your current domain.
+
+**To fix this error:**
+
+1. **Go to Google Cloud Console** → APIs & Services → Credentials
+2. **Click on your OAuth Client ID** to edit it
+3. **In the "Authorized JavaScript origins" section**, make sure you have added:
+   - `https://educasheer.in` (if accessing from educasheer.in)
+   - `https://www.educasheer.in` (if accessing from www.educasheer.in)
+   - `http://localhost:5174` (for local development)
+4. **Save the changes** and wait a few minutes for them to propagate
+5. **Clear your browser cache** and try again
+
+**Note**: The error occurs because Google OAuth validates that the request is coming from an authorized domain. If your domain is not in the authorized JavaScript origins list, Google will reject the authentication request.

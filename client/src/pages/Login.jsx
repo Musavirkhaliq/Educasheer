@@ -75,8 +75,8 @@ const Login = () => {
       console.error("Google login error:", error);
       setError("Google login failed. Please try again.");
     },
-    // Only flow will be 'implicit' by default
-    flow: 'implicit'
+    // Use auth-code flow for better compatibility with recent Google OAuth changes
+    flow: 'auth-code'
   });
 
   // If user is already authenticated, redirect to appropriate page

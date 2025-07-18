@@ -36,6 +36,9 @@ import CenterCreatePage from "../pages/CenterCreatePage";
 import CenterEditPage from "../pages/CenterEditPage";
 import ContactPage from "../pages/ContactPage";
 import GamificationPage from "../pages/GamificationPage";
+import SeatBookingPage from "../pages/SeatBookingPage";
+import MyBookingsPage from "../pages/MyBookingsPage";
+import QRBookingPage from "../pages/QRBookingPage";
 
 export const homeRoutes = [
   {
@@ -362,6 +365,40 @@ export const homeRoutes = [
     element: (
       <Suspense fallback={<h1>Loading</h1>}>
         <QuizAttemptsPage />
+      </Suspense>
+    ),
+  },
+  // Seat booking routes
+  {
+    path: "seat-booking",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <SeatBookingPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: "seat-booking/:centerId",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <SeatBookingPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: "my-bookings",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <MyBookingsPage />
+      </Suspense>
+    ),
+  },
+  // QR booking route
+  {
+    path: "qr-booking",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <QRBookingPage />
       </Suspense>
     ),
   },
