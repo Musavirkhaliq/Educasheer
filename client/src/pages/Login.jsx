@@ -70,11 +70,11 @@ const Login = () => {
           console.log("Redirecting to admin dashboard (Google login)");
           setTimeout(() => navigate("/admin"), 500);
         } else if (user.role === "tutor") {
-          console.log("Redirecting to profile (tutor) (Google login)");
-          setTimeout(() => navigate("/profile"), 500);
+          console.log("Redirecting to home page (tutor) (Google login)");
+          setTimeout(() => navigate("/"), 500);
         } else {
-          console.log("Redirecting to profile (learner) (Google login)");
-          setTimeout(() => navigate("/profile"), 500);
+          console.log("Redirecting to home page (learner) (Google login)");
+          setTimeout(() => navigate("/"), 500);
         }
 
         // Alert the user about their role
@@ -105,8 +105,8 @@ const Login = () => {
         console.log("Redirecting admin to admin dashboard");
         navigate("/admin");
       } else {
-        console.log("Redirecting non-admin to profile page");
-        navigate("/profile");
+        console.log("Redirecting non-admin to home page");
+        navigate("/");
       }
     }
   }, [isAuthenticated, currentUser, navigate]);
@@ -164,13 +164,13 @@ const Login = () => {
         console.log("Redirecting to admin dashboard");
         setTimeout(() => navigate("/admin"), 500);
       } else if (user.role === "tutor") {
-        // Tutor dashboard
-        console.log("Redirecting to profile (tutor)");
-        setTimeout(() => navigate("/profile"), 500);
+        // Tutor home page
+        console.log("Redirecting to home page (tutor)");
+        setTimeout(() => navigate("/"), 500);
       } else {
-        // Learner profile page
-        console.log("Redirecting to profile (learner)");
-        setTimeout(() => navigate("/profile"), 500);
+        // Learner home page
+        console.log("Redirecting to home page (learner)");
+        setTimeout(() => navigate("/"), 500);
       }
 
       // Alert the user about their role
