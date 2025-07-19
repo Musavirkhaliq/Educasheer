@@ -386,10 +386,241 @@ const getUserQuizAttempts = asyncHandler(async (req, res) => {
     }
 });
 
+/**
+ * Get quiz leaderboard - top 10 performers
+ * @route GET /api/v1/quizzes/:quizId/leaderboard
+ * @access Public (for enrolled students) / Admin
+ */
+const getQuizLeaderboard = asyncHandler(async (req, res) => {
+    try {
+        const { quizId } = req.params;
+
+        // Find the quiz
+        const quiz = await Quiz.findById(quizId);
+        if (!quiz) {
+            throw new ApiError(404, "Quiz not found");
+        }
+
+        // Check if quiz is published (unless user is admin)
+        if (!quiz.isPublished && req.user.role !== "admin") {
+            throw new ApiError(403, "This quiz is not available");
+        }
+
+        // Get top 10 performers for this quiz
+        const leaderboard = await QuizAttempt.aggregate([
+            {
+                $match: {
+                    quiz: new mongoose.Types.ObjectId(quizId),
+                    isCompleted: true
+                }
+            },
+            {
+                $group: {
+                    _id: "$user",
+                    bestScore: { $max: "$score" },
+                    bestPercentage: { $max: "$percentage" },
+                    bestAttempt: { $first: "$$ROOT" },
+                    totalAttempts: { $sum: 1 }
+                }
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "_id",
+                    foreignField: "_id",
+                    as: "user",
+                    pipeline: [
+                        { $project: { username: 1, fullName: 1, email: 1 } }
+                    ]
+                }
+            },
+            { $unwind: "$user" },
+            {
+                $project: {
+                    user: 1,
+                    bestScore: 1,
+                    bestPercentage: 1,
+                    totalAttempts: 1,
+                    completedAt: "$bestAttempt.endTime"
+                }
+            },
+            { $sort: { bestPercentage: -1, bestScore: -1, completedAt: 1 } },
+            { $limit: 10 }
+        ]);
+
+        // Add ranking
+        const rankedLeaderboard = leaderboard.map((entry, index) => ({
+            ...entry,
+            rank: index + 1
+        }));
+
+        return res.status(200).json(
+            new ApiResponse(200, rankedLeaderboard, "Quiz leaderboard fetched successfully")
+        );
+    } catch (error) {
+        throw new ApiError(error.statusCode || 500, error.message || "Failed to fetch quiz leaderboard");
+    }
+});
+
+/**
+ * Get all quiz attempts across all quizzes (admin only)
+ * @route GET /api/v1/quizzes/attempts/all
+ * @access Admin only
+ */
+const getAllQuizAttempts = asyncHandler(async (req, res) => {
+    try {
+        // Check if user is admin
+        if (req.user.role !== "admin") {
+            throw new ApiError(403, "You don't have permission to view all quiz attempts");
+        }
+
+        const { page = 1, limit = 20, quiz, user, course, status } = req.query;
+
+        // Build filter object
+        const filter = {};
+
+        if (quiz) {
+            filter.quiz = quiz;
+        }
+
+        if (user) {
+            filter.user = user;
+        }
+
+        if (status) {
+            if (status === 'completed') {
+                filter.isCompleted = true;
+            } else if (status === 'in-progress') {
+                filter.isCompleted = false;
+            }
+        }
+
+        // Calculate pagination
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+
+        // Build aggregation pipeline
+        const pipeline = [
+            { $match: filter },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "user",
+                    foreignField: "_id",
+                    as: "user",
+                    pipeline: [
+                        { $project: { username: 1, fullName: 1, email: 1 } }
+                    ]
+                }
+            },
+            { $unwind: "$user" },
+            {
+                $lookup: {
+                    from: "quizzes",
+                    localField: "quiz",
+                    foreignField: "_id",
+                    as: "quiz",
+                    pipeline: [
+                        { $project: { title: 1, quizType: 1, course: 1 } }
+                    ]
+                }
+            },
+            { $unwind: "$quiz" },
+            {
+                $lookup: {
+                    from: "courses",
+                    localField: "quiz.course",
+                    foreignField: "_id",
+                    as: "course",
+                    pipeline: [
+                        { $project: { title: 1 } }
+                    ]
+                }
+            },
+            { $unwind: "$course" },
+            {
+                $addFields: {
+                    "quiz.course": "$course"
+                }
+            },
+            { $project: { course: 0 } },
+            { $sort: { createdAt: -1 } },
+            { $skip: skip },
+            { $limit: parseInt(limit) }
+        ];
+
+        // Add course filter if specified
+        if (course) {
+            pipeline.unshift({
+                $lookup: {
+                    from: "quizzes",
+                    localField: "quiz",
+                    foreignField: "_id",
+                    as: "quizInfo"
+                }
+            });
+            pipeline.unshift({ $unwind: "$quizInfo" });
+            pipeline.unshift({
+                $match: {
+                    "quizInfo.course": new mongoose.Types.ObjectId(course)
+                }
+            });
+        }
+
+        // Get attempts with populated data
+        const attempts = await QuizAttempt.aggregate(pipeline);
+
+        // Get total count for pagination
+        const totalCountPipeline = [
+            { $match: filter }
+        ];
+
+        if (course) {
+            totalCountPipeline.unshift({
+                $lookup: {
+                    from: "quizzes",
+                    localField: "quiz",
+                    foreignField: "_id",
+                    as: "quizInfo"
+                }
+            });
+            totalCountPipeline.unshift({ $unwind: "$quizInfo" });
+            totalCountPipeline.unshift({
+                $match: {
+                    "quizInfo.course": new mongoose.Types.ObjectId(course)
+                }
+            });
+        }
+
+        totalCountPipeline.push({ $count: "total" });
+        const totalResult = await QuizAttempt.aggregate(totalCountPipeline);
+        const total = totalResult.length > 0 ? totalResult[0].total : 0;
+
+        const totalPages = Math.ceil(total / parseInt(limit));
+
+        return res.status(200).json(
+            new ApiResponse(200, {
+                attempts,
+                pagination: {
+                    currentPage: parseInt(page),
+                    totalPages,
+                    totalItems: total,
+                    itemsPerPage: parseInt(limit),
+                    hasNextPage: parseInt(page) < totalPages,
+                    hasPrevPage: parseInt(page) > 1
+                }
+            }, "All quiz attempts fetched successfully")
+        );
+    } catch (error) {
+        throw new ApiError(error.statusCode || 500, error.message || "Failed to fetch all quiz attempts");
+    }
+});
+
 export {
     startQuizAttempt,
     submitQuizAttempt,
     getQuizAttempt,
     getQuizAttempts,
-    getUserQuizAttempts
+    getUserQuizAttempts,
+    getQuizLeaderboard,
+    getAllQuizAttempts
 };

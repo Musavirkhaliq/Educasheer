@@ -29,6 +29,7 @@ import QuizManagementPage from "../pages/QuizManagementPage";
 import QuizCreatePage from "../pages/QuizCreatePage";
 import QuizEditPage from "../pages/QuizEditPage";
 import QuizTakerPage from "../pages/QuizTakerPage";
+import QuizDetailsPage from "../pages/QuizDetailsPage";
 import QuizResultsPage from "../pages/QuizResultsPage";
 import QuizAttemptsPage from "../pages/QuizAttemptsPage";
 import CenterDetailPage from "../pages/CenterDetailPage";
@@ -358,6 +359,14 @@ export const homeRoutes = [
   // Quiz routes (student)
   {
     path: "courses/:courseId/quizzes/:quizId",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <QuizDetailsPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: "courses/:courseId/quizzes/:quizId/take",
     element: (
       <Suspense fallback={<h1>Loading</h1>}>
         <QuizTakerPage />

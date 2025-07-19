@@ -129,6 +129,15 @@ export const quizAPI = {
 
   // Get user's attempts for a quiz
   getUserQuizAttempts: (quizId) => api.get(`/quizzes/${quizId}/my-attempts`),
+
+  // Get quiz leaderboard (top 10 performers)
+  getQuizLeaderboard: (quizId) => api.get(`/quizzes/${quizId}/leaderboard`),
+
+  // Admin: Get all quiz attempts across all quizzes
+  getAllQuizAttempts: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return api.get(`/quizzes/attempts/all${queryString ? `?${queryString}` : ''}`);
+  },
 };
 
 export default quizAPI;

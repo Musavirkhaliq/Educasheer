@@ -7,6 +7,7 @@ import TestimonialManagement from "../components/admin/TestimonialManagement";
 import CenterManagement from "../components/admin/CenterManagement";
 import GamificationAdmin from "../components/admin/gamification/GamificationAdmin";
 import QuizManagement from "../components/admin/QuizManagement";
+import QuizAttemptsOverview from "../components/admin/QuizAttemptsOverview";
 import SeatManagement from "../components/admin/SeatManagement";
 
 const AdminDashboard = () => {
@@ -269,6 +270,16 @@ const AdminDashboard = () => {
         </button>
         <button
           className={`py-2 px-4 font-medium ${
+            activeTab === "quiz-attempts"
+              ? "text-[#00bcd4] border-b-2 border-[#00bcd4]"
+              : "text-gray-500 hover:text-gray-700"
+          }`}
+          onClick={() => setActiveTab("quiz-attempts")}
+        >
+          Quiz Attempts
+        </button>
+        <button
+          className={`py-2 px-4 font-medium ${
             activeTab === "gamification"
               ? "text-[#00bcd4] border-b-2 border-[#00bcd4]"
               : "text-gray-500 hover:text-gray-700"
@@ -520,6 +531,11 @@ const AdminDashboard = () => {
           {/* Quiz Management Tab */}
           {activeTab === "quizzes" && (
             <QuizManagement />
+          )}
+
+          {/* Quiz Attempts Overview Tab */}
+          {activeTab === "quiz-attempts" && (
+            <QuizAttemptsOverview />
           )}
 
           {/* Gamification Management Tab */}

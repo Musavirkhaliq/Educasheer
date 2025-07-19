@@ -16,7 +16,9 @@ import {
     submitQuizAttempt,
     getQuizAttempt,
     getQuizAttempts,
-    getUserQuizAttempts
+    getUserQuizAttempts,
+    getQuizLeaderboard,
+    getAllQuizAttempts
 } from "../controllers/quizAttempt.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { isAdmin } from "../middlewares/role.middleware.js";
@@ -55,6 +57,10 @@ router.route("/:quizId/publish")
 router.route("/course/:courseId")
     .get(getCourseQuizzes);
 
+// Admin route to get all quiz attempts across all quizzes
+router.route("/attempts/all")
+    .get(isAdmin, getAllQuizAttempts);
+
 // Quiz attempt routes
 router.route("/:quizId/attempts")
     .post(startQuizAttempt)
@@ -62,6 +68,9 @@ router.route("/:quizId/attempts")
 
 router.route("/:quizId/my-attempts")
     .get(getUserQuizAttempts);
+
+router.route("/:quizId/leaderboard")
+    .get(getQuizLeaderboard);
 
 router.route("/attempts/:attemptId")
     .get(getQuizAttempt);
