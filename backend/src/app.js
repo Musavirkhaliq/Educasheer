@@ -78,6 +78,20 @@ app.get("/api/v1/health", (req, res) => {
     res.status(200).json(new ApiResponse(200, { status: "ok" }, "Server is running"));
 });
 
+// Simple test endpoint to debug routing issues
+app.get("/api/v1/test-public", (req, res) => {
+    res.status(200).json(new ApiResponse(200, { message: "Public endpoint working" }, "Success"));
+});
+
+// Try a different path to avoid whatever global middleware is affecting /api/v1/*
+app.get("/api/public/test", (req, res) => {
+    res.status(200).json(new ApiResponse(200, { message: "Public API test working" }, "Success"));
+});
+
+// Public quiz endpoints under /api/public/
+app.get("/api/public/quizzes", getPublishedQuizzes);
+app.get("/api/public/quiz-categories", getQuizCategories);
+
 
 import userRouter from "./routes/user.routes.js";
 import tutorApplicationRouter from "./routes/tutorApplication.routes.js";
@@ -104,6 +118,9 @@ import quizRouter from "./routes/quiz.routes.js";
 import seatRouter from "./routes/seat.routes.js";
 import categoryRouter from "./routes/category.routes.js";
 
+// Import public quiz routes
+import { getPublishedQuizzes, getQuizCategories } from "./controllers/quiz.controller.js";
+
 // Routes declaration
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/tutor-applications", tutorApplicationRouter);
@@ -126,6 +143,14 @@ app.use("/api/v1/gamification", gamificationRouter);
 app.use("/api/v1/video-progress", videoProgressRouter);
 app.use("/api/v1/course-progress", courseProgressRouter);
 app.use("/api/v1/rewards", rewardRouter);
+
+// Add public quiz routes under a different path to avoid conflicts
+app.get("/api/v1/public/quizzes", getPublishedQuizzes);
+app.get("/api/v1/public/quiz-categories", getQuizCategories);
+app.get("/api/v1/public/quiz-test", (req, res) => {
+    res.json({ success: true, message: "Public quiz test endpoint working", data: [] });
+});
+
 app.use("/api/v1/quizzes", quizRouter);
 app.use("/api/v1/seats", seatRouter);
 app.use("/api/v1/categories", categoryRouter);

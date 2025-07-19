@@ -26,14 +26,8 @@ import { upload } from "../middlewares/multer.middleware.js";
 
 const router = Router();
 
-// Public routes (no authentication required) - must be defined before any middleware
-router.get("/test", (req, res) => {
-    res.json({ success: true, message: "Test endpoint working", data: [] });
-});
-router.get("/public", getPublishedQuizzes);
-router.get("/categories", getQuizCategories);
-
-// Apply authentication middleware to all other routes
+// Apply authentication middleware to all routes in this router
+// (Public routes are handled directly in app.js)
 router.use(verifyJWT);
 
 // Quiz management routes (admin only)

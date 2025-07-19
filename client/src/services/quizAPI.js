@@ -24,7 +24,8 @@ export const quizAPI = {
   // Public: Get published quizzes for students
   getPublishedQuizzes: async (params) => {
     try {
-      const response = await publicApi.get('/quizzes/public', { params });
+      // Use a different base URL to avoid the /api/v1/* authentication issue
+      const response = await axios.get('/api/public/quizzes', { params });
       return response;
     } catch (error) {
       console.error('Error fetching published quizzes:', error);
@@ -38,7 +39,8 @@ export const quizAPI = {
   // Public: Get quiz categories with counts
   getQuizCategories: async (params) => {
     try {
-      const response = await publicApi.get('/quizzes/categories', { params });
+      // Use a different base URL to avoid the /api/v1/* authentication issue
+      const response = await axios.get('/api/public/quiz-categories', { params });
       return response;
     } catch (error) {
       console.error('Error fetching quiz categories:', error);

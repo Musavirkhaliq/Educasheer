@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { quizAPI } from '../services/quizAPI';
+import { useAuth } from '../context/AuthContext';
 import { FaSearch, FaFilter, FaClock, FaQuestionCircle, FaGraduationCap, FaBook, FaChevronRight, FaSpinner } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 
@@ -22,6 +23,7 @@ const ExamsPage = () => {
   const [showFilters, setShowFilters] = useState(false);
 
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     fetchCategories();
@@ -84,6 +86,13 @@ const ExamsPage = () => {
   };
 
   const handleQuizClick = (quiz) => {
+    // Check if user is authenticated before allowing quiz access
+    if (!isAuthenticated) {
+      // Redirect to login with return URL
+      navigate(`/login?redirect=/courses/${quiz.course._id}/quizzes/${quiz._id}`);
+      return;
+    }
+
     // Navigate to quiz taking page
     navigate(`/courses/${quiz.course._id}/quizzes/${quiz._id}`);
   };
@@ -331,7 +340,14 @@ const ExamsPage = () => {
                             <span className="text-sm text-gray-500">
                               by {quiz.creator?.fullName || quiz.creator?.username}
                             </span>
-                            <FaChevronRight className="text-[#00bcd4]" />
+                            <div className="flex items-center">
+                              {!isAuthenticated && (
+                                <span className="text-xs text-orange-600 mr-2 bg-orange-100 px-2 py-1 rounded">
+                                  Login required
+                                </span>
+                              )}
+                              <FaChevronRight className="text-[#00bcd4]" />
+                            </div>
                           </div>
                         </div>
                       </motion.div>
