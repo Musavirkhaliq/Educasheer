@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { FaHome, FaVideo, FaGraduationCap, FaLayerGroup, FaBook, FaBars, FaTimes, FaUserCircle, FaMapMarkerAlt } from "react-icons/fa";
+import { FaHome, FaVideo, FaGraduationCap, FaLayerGroup, FaBook, FaBars, FaTimes, FaUserCircle, FaMapMarkerAlt, FaTrophy } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { navLinks } from "../../utils/NavigationLinks";
@@ -49,7 +49,7 @@ const MobileNav = () => {
     { name: "Home", path: "/", icon: FaHome },
     { name: "Videos", path: "/videos", icon: FaVideo },
     { name: "Courses", path: "/courses", icon: FaGraduationCap },
-    { name: "Centers", path: "/centers", icon: FaMapMarkerAlt },
+    { name: "Exams", path: "/exams", icon: FaTrophy },
     { name: "Menu", path: "#", icon: FaBars, action: () => setIsDrawerOpen(true) },
   ];
 

@@ -176,6 +176,30 @@ const DesktopNav = () => {
               )}
             </Link>
 
+            <Link
+              to="/exams"
+              className={`relative flex items-center space-x-2 font-medium transition-all duration-300 py-1 ${
+                location.pathname.startsWith('/exams')
+                  ? 'neon-text'
+                  : 'text-gray-700 hover:text-primary'
+              }`}
+            >
+              <motion.div
+                whileHover={{ scale: 1.2, rotate: 5 }}
+                transition={{ type: "spring", stiffness: 400, damping: 10 }}
+              >
+                <FaTrophy className={`${location.pathname.startsWith('/exams') ? 'text-primary animate-pulse-slow' : 'text-primary'}`} />
+              </motion.div>
+              <span>Exams</span>
+              {location.pathname.startsWith('/exams') && (
+                <motion.div
+                  layoutId="navbar-indicator"
+                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-primary to-secondary rounded-full shadow-neon"
+                  transition={{ type: 'spring', duration: 0.5 }}
+                />
+              )}
+            </Link>
+
             {/* <Link
               to="/centers"
               className={`relative flex items-center space-x-2 font-medium transition-all duration-300 py-1 ${
