@@ -47,9 +47,9 @@ const MobileNav = () => {
   // Bottom navigation items
   const bottomNavItems = [
     { name: "Home", path: "/", icon: FaHome },
-    { name: "Videos", path: "/videos", icon: FaVideo },
     { name: "Courses", path: "/courses", icon: FaGraduationCap },
     { name: "Exams", path: "/exams", icon: FaTrophy },
+    { name: "Centers", path: "/centers", icon: FaMapMarkerAlt },
     { name: "Menu", path: "#", icon: FaBars, action: () => setIsDrawerOpen(true) },
   ];
 

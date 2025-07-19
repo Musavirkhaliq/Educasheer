@@ -200,7 +200,7 @@ const DesktopNav = () => {
               )}
             </Link>
 
-            {/* <Link
+            <Link
               to="/centers"
               className={`relative flex items-center space-x-2 font-medium transition-all duration-300 py-1 ${
                 location.pathname.startsWith('/centers')
@@ -222,7 +222,9 @@ const DesktopNav = () => {
                   transition={{ type: 'spring', duration: 0.5 }}
                 />
               )}
-            </Link> */}
+            </Link>
+
+
 
             {/* Resources Dropdown - Combined Study Materials and Categories */}
             <div className="relative group">

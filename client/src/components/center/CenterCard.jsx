@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FaMapMarkerAlt, FaUsers, FaEdit, FaTrash } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaUsers, FaEdit, FaTrash, FaChair } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 
 const CenterCard = ({ center, showControls = false, onDelete }) => {
@@ -49,25 +49,40 @@ const CenterCard = ({ center, showControls = false, onDelete }) => {
             <FaUsers className="mr-1 text-[#00bcd4]" />
             <span className="text-sm">{center.enrolledStudents?.length || 0} Students</span>
           </div>
-          
-          {showControls && currentUser?.role === 'admin' && (
-            <div className="flex space-x-2">
+
+          <div className="flex items-center space-x-2">
+            {/* Book Seat Button for Students */}
+            {currentUser?.role !== 'admin' && (
               <Link
-                to={`/centers/${center._id}/edit`}
-                className="p-2 text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
-                title="Edit Center"
+                to={`/centers/${center._id}?tab=booking`}
+                className="px-3 py-1.5 bg-[#00bcd4] text-white text-xs rounded-lg hover:bg-[#0097a7] transition-colors flex items-center gap-1"
+                title="Book a Seat"
               >
-                <FaEdit />
+                <FaChair size={12} />
+                Book Seat
               </Link>
-              <button
-                onClick={() => onDelete(center._id)}
-                className="p-2 text-red-600 hover:bg-red-50 rounded-full transition-colors"
-                title="Delete Center"
-              >
-                <FaTrash />
-              </button>
-            </div>
-          )}
+            )}
+
+            {/* Admin Controls */}
+            {showControls && currentUser?.role === 'admin' && (
+              <div className="flex space-x-2">
+                <Link
+                  to={`/centers/${center._id}/edit`}
+                  className="p-2 text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+                  title="Edit Center"
+                >
+                  <FaEdit />
+                </Link>
+                <button
+                  onClick={() => onDelete(center._id)}
+                  className="p-2 text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                  title="Delete Center"
+                >
+                  <FaTrash />
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
