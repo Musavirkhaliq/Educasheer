@@ -344,56 +344,58 @@ const QuizTaker = () => {
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
 
-      <div className="relative max-w-4xl mx-auto p-6">
+      <div className="relative max-w-4xl mx-auto p-4 sm:p-6">
         {/* Quiz Header Card */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-6 mb-6">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-                <FaQuestionCircle className="text-white text-xl" />
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-4 sm:p-6 mb-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                <FaQuestionCircle className="text-white text-lg sm:text-xl" />
               </div>
-              <div>
-                <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+              <div className="min-w-0 flex-1">
+                <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent truncate">
                   {quiz.title}
                 </h2>
-                <p className="text-gray-600 mt-1 flex items-center gap-2">
-                  <FaListAlt className="text-sm" />
-                  {quiz.questions.length} questions • {quiz.timeLimit} minutes
+                <p className="text-gray-600 mt-1 flex items-center gap-2 text-sm sm:text-base">
+                  <FaListAlt className="text-xs sm:text-sm flex-shrink-0" />
+                  <span className="truncate">{quiz.questions.length} questions • {quiz.timeLimit} minutes</span>
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto justify-between sm:justify-end">
               {timeLeft !== null && (
-                <div className={`flex items-center gap-3 px-6 py-3 rounded-xl shadow-lg ${
+                <div className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-6 py-2 sm:py-3 rounded-xl shadow-lg flex-shrink-0 ${
                   timeLeft < 60
                     ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white animate-pulse shadow-red-200'
                     : timeLeft < 300
                     ? 'bg-gradient-to-r from-orange-400 to-yellow-500 text-white shadow-orange-200'
                     : 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-blue-200'
                 }`}>
-                  <FaClock className="text-lg" />
+                  <FaClock className="text-sm sm:text-lg" />
                   <div className="text-center">
-                    <div className="font-bold text-lg">{formatTime(timeLeft)}</div>
-                    <div className="text-xs opacity-90">remaining</div>
+                    <div className="font-bold text-sm sm:text-lg">{formatTime(timeLeft)}</div>
+                    <div className="text-xs opacity-90 hidden sm:block">remaining</div>
                   </div>
                 </div>
               )}
 
               <button
                 onClick={() => setShowConfirmSubmit(true)}
-                className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-3 rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 font-medium flex items-center gap-2"
+                className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 font-medium flex items-center gap-2 text-sm sm:text-base"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
                   <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                    Submitting...
+                    <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-2 border-white border-t-transparent"></div>
+                    <span className="hidden sm:inline">Submitting...</span>
+                    <span className="sm:hidden">Submit</span>
                   </>
                 ) : (
                   <>
-                    <FaCheck />
-                    Submit Quiz
+                    <FaCheck className="text-xs sm:text-sm" />
+                    <span className="hidden sm:inline">Submit Quiz</span>
+                    <span className="sm:hidden">Submit</span>
                   </>
                 )}
               </button>
@@ -402,15 +404,15 @@ const QuizTaker = () => {
         </div>
 
       {/* Progress Bar */}
-      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6 mb-6">
+      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-4 sm:p-6 mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-gray-700">Progress</h3>
-          <span className="text-sm text-gray-600">
+          <h3 className="font-semibold text-gray-700 text-sm sm:text-base">Progress</h3>
+          <span className="text-xs sm:text-sm text-gray-600">
             {currentQuestionIndex + 1} of {quiz.questions.length}
           </span>
         </div>
 
-        <div className="w-full bg-gray-200 rounded-full h-3 mb-4 overflow-hidden">
+        <div className="w-full bg-gray-200 rounded-full h-2 sm:h-3 mb-4 overflow-hidden">
           <div
             className="h-full bg-gradient-to-r from-blue-500 to-purple-600 rounded-full transition-all duration-500 ease-out"
             style={{ width: `${((currentQuestionIndex + 1) / quiz.questions.length) * 100}%` }}
@@ -418,7 +420,7 @@ const QuizTaker = () => {
         </div>
 
         {/* Question Navigation Pills */}
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1 sm:gap-2 justify-center sm:justify-start">
           {quiz.questions.map((_, index) => {
             const isAnswered = answers[index].selectedOptions.length > 0 || answers[index].textAnswer;
             const isCurrent = index === currentQuestionIndex;
@@ -427,7 +429,7 @@ const QuizTaker = () => {
               <button
                 key={index}
                 onClick={() => setCurrentQuestionIndex(index)}
-                className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold transition-all duration-300 transform hover:scale-105 ${
+                className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center text-xs sm:text-sm font-bold transition-all duration-300 transform active:scale-95 sm:hover:scale-105 touch-manipulation ${
                   isCurrent
                     ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg'
                     : isAnswered
@@ -435,7 +437,7 @@ const QuizTaker = () => {
                       : 'bg-white text-gray-600 border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50'
                 }`}
               >
-                {isAnswered && !isCurrent ? <FaCheck size={12} /> : index + 1}
+                {isAnswered && !isCurrent ? <FaCheck size={10} className="sm:w-3 sm:h-3" /> : index + 1}
               </button>
             );
           })}
@@ -443,44 +445,44 @@ const QuizTaker = () => {
       </div>
 
       {/* Current Question Card */}
-      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8 mb-6">
-        <div className="flex justify-between items-start mb-6">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-lg">
+      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-4 sm:p-8 mb-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start gap-4 sm:gap-6 mb-6">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-base sm:text-lg flex-shrink-0">
               {currentQuestionIndex + 1}
             </div>
             <div>
-              <h3 className="text-xl font-bold text-gray-800">
+              <h3 className="text-lg sm:text-xl font-bold text-gray-800">
                 Question {currentQuestionIndex + 1}
               </h3>
-              <p className="text-gray-600">of {quiz.questions.length} questions</p>
+              <p className="text-gray-600 text-sm sm:text-base">of {quiz.questions.length} questions</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-4 py-2 rounded-xl shadow-lg">
-            <FaTrophy className="text-sm" />
-            <span className="font-bold">
+          <div className="flex items-center gap-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-3 sm:px-4 py-2 rounded-xl shadow-lg self-start">
+            <FaTrophy className="text-xs sm:text-sm" />
+            <span className="font-bold text-sm sm:text-base">
               {currentQuestion.points} {currentQuestion.points === 1 ? 'point' : 'points'}
             </span>
           </div>
         </div>
 
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-100 mb-6 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-200/30 to-purple-200/30 rounded-full -translate-y-16 translate-x-16"></div>
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 sm:p-6 rounded-xl border border-blue-100 mb-6 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-blue-200/30 to-purple-200/30 rounded-full -translate-y-12 translate-x-12 sm:-translate-y-16 sm:translate-x-16"></div>
           <div className="relative">
             <div className="flex items-start gap-3">
-              <FaQuestionCircle className="text-blue-500 mt-1 flex-shrink-0" />
-              <p className="text-gray-800 text-lg leading-relaxed">{currentQuestion.text}</p>
+              <FaQuestionCircle className="text-blue-500 mt-1 flex-shrink-0 text-sm sm:text-base" />
+              <p className="text-gray-800 text-base sm:text-lg leading-relaxed">{currentQuestion.text}</p>
             </div>
           </div>
         </div>
 
         {/* Answer Options */}
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {currentQuestion.type === 'multiple_choice' && (
             <>
               <div className="flex items-center gap-2 mb-4">
-                <FaListAlt className="text-blue-500" />
+                <FaListAlt className="text-blue-500 text-sm sm:text-base" />
                 <p className="text-sm font-medium text-gray-700">Select all that apply:</p>
               </div>
               {currentQuestion.options.map((option, optionIndex) => {
@@ -491,21 +493,21 @@ const QuizTaker = () => {
                   <div
                     key={option._id}
                     onClick={() => handleOptionSelect(option._id)}
-                    className={`group p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 transform hover:scale-[1.02] ${
+                    className={`group p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 transform active:scale-95 sm:hover:scale-[1.02] touch-manipulation ${
                       isSelected
                         ? 'border-blue-400 bg-gradient-to-r from-blue-50 to-indigo-50 shadow-lg shadow-blue-100'
                         : 'border-gray-200 hover:border-blue-300 hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 hover:shadow-md'
                     }`}
                   >
-                    <div className="flex items-center gap-4">
-                      <div className={`w-8 h-8 rounded-xl border-2 flex items-center justify-center font-bold transition-all duration-300 ${
+                    <div className="flex items-center gap-3 sm:gap-4">
+                      <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl border-2 flex items-center justify-center font-bold transition-all duration-300 flex-shrink-0 ${
                         isSelected
                           ? 'bg-gradient-to-r from-blue-500 to-indigo-600 border-blue-500 text-white shadow-lg'
                           : 'border-gray-300 text-gray-600 group-hover:border-blue-400 group-hover:text-blue-600'
                       }`}>
-                        {isSelected ? <FaCheck size={14} /> : optionLetter}
+                        {isSelected ? <FaCheck size={12} className="sm:w-3.5 sm:h-3.5" /> : optionLetter}
                       </div>
-                      <span className={`text-lg transition-colors duration-300 ${
+                      <span className={`text-base sm:text-lg transition-colors duration-300 leading-relaxed ${
                         isSelected ? 'text-gray-800 font-medium' : 'text-gray-700 group-hover:text-gray-800'
                       }`}>
                         {option.text}
@@ -520,10 +522,10 @@ const QuizTaker = () => {
           {currentQuestion.type === 'true_false' && (
             <>
               <div className="flex items-center gap-2 mb-4">
-                <FaCheck className="text-green-500" />
+                <FaCheck className="text-green-500 text-sm sm:text-base" />
                 <p className="text-sm font-medium text-gray-700">Select one:</p>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 {currentQuestion.options.map((option, optionIndex) => {
                   const isSelected = currentAnswer.selectedOptions.includes(option._id);
                   const isTrue = option.text.toLowerCase().includes('true');
@@ -532,7 +534,7 @@ const QuizTaker = () => {
                     <div
                       key={option._id}
                       onClick={() => handleOptionSelect(option._id)}
-                      className={`group p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 transform hover:scale-105 ${
+                      className={`group p-4 sm:p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 transform active:scale-95 sm:hover:scale-105 touch-manipulation ${
                         isSelected
                           ? isTrue
                             ? 'border-green-400 bg-gradient-to-r from-green-50 to-emerald-50 shadow-lg shadow-green-100'
@@ -540,17 +542,17 @@ const QuizTaker = () => {
                           : 'border-gray-200 hover:border-gray-300 hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 hover:shadow-md'
                       }`}
                     >
-                      <div className="flex items-center justify-center gap-4">
-                        <div className={`w-10 h-10 rounded-full border-2 flex items-center justify-center font-bold text-lg transition-all duration-300 ${
+                      <div className="flex items-center justify-center gap-3 sm:gap-4">
+                        <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 flex items-center justify-center font-bold text-base sm:text-lg transition-all duration-300 flex-shrink-0 ${
                           isSelected
                             ? isTrue
                               ? 'bg-gradient-to-r from-green-500 to-emerald-600 border-green-500 text-white shadow-lg'
                               : 'bg-gradient-to-r from-red-500 to-pink-600 border-red-500 text-white shadow-lg'
                             : 'border-gray-300 text-gray-600 group-hover:border-blue-400 group-hover:text-blue-600'
                         }`}>
-                          {isSelected ? <FaCheck size={16} /> : (isTrue ? 'T' : 'F')}
+                          {isSelected ? <FaCheck size={14} className="sm:w-4 sm:h-4" /> : (isTrue ? 'T' : 'F')}
                         </div>
-                        <span className={`text-xl font-medium transition-colors duration-300 ${
+                        <span className={`text-lg sm:text-xl font-medium transition-colors duration-300 text-center sm:text-left ${
                           isSelected ? 'text-gray-800' : 'text-gray-700 group-hover:text-gray-800'
                         }`}>
                           {option.text}
@@ -566,18 +568,18 @@ const QuizTaker = () => {
           {currentQuestion.type === 'short_answer' && (
             <>
               <div className="flex items-center gap-2 mb-4">
-                <FaEdit className="text-blue-500" />
+                <FaEdit className="text-blue-500 text-sm sm:text-base" />
                 <p className="text-sm font-medium text-gray-700">Enter your answer:</p>
               </div>
               <div className="relative">
                 <textarea
                   value={currentAnswer.textAnswer}
                   onChange={handleTextAnswerChange}
-                  className="w-full p-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400 transition-all duration-300 bg-white shadow-sm resize-none"
+                  className="w-full p-3 sm:p-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400 transition-all duration-300 bg-white shadow-sm resize-none text-base"
                   rows="4"
                   placeholder="Type your answer here..."
                 ></textarea>
-                <div className="absolute bottom-3 right-3 text-xs text-gray-400">
+                <div className="absolute bottom-2 sm:bottom-3 right-2 sm:right-3 text-xs text-gray-400">
                   {currentAnswer.textAnswer?.length || 0} characters
                 </div>
               </div>
@@ -587,18 +589,18 @@ const QuizTaker = () => {
           {currentQuestion.type === 'essay' && (
             <>
               <div className="flex items-center gap-2 mb-4">
-                <FaFileAlt className="text-purple-500" />
+                <FaFileAlt className="text-purple-500 text-sm sm:text-base" />
                 <p className="text-sm font-medium text-gray-700">Write your essay:</p>
               </div>
               <div className="relative">
                 <textarea
                   value={currentAnswer.textAnswer}
                   onChange={handleTextAnswerChange}
-                  className="w-full p-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-purple-100 focus:border-purple-400 transition-all duration-300 bg-white shadow-sm resize-none"
-                  rows="10"
+                  className="w-full p-3 sm:p-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-purple-100 focus:border-purple-400 transition-all duration-300 bg-white shadow-sm resize-none text-base"
+                  rows="8"
                   placeholder="Write your essay here... Be detailed and provide examples to support your points."
                 ></textarea>
-                <div className="absolute bottom-3 right-3 text-xs text-gray-400">
+                <div className="absolute bottom-2 sm:bottom-3 right-2 sm:right-3 text-xs text-gray-400">
                   {currentAnswer.textAnswer?.length || 0} characters
                 </div>
               </div>
@@ -608,28 +610,29 @@ const QuizTaker = () => {
       </div>
 
       {/* Navigation Buttons */}
-      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6">
-        <div className="flex justify-between items-center">
+      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-4 sm:p-6">
+        <div className="flex justify-between items-center gap-4">
           <button
             onClick={goToPreviousQuestion}
-            className={`flex items-center gap-3 px-6 py-3 rounded-xl font-medium transition-all duration-300 transform ${
+            className={`flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 sm:py-3 rounded-xl font-medium transition-all duration-300 transform touch-manipulation ${
               currentQuestionIndex > 0
-                ? 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 hover:from-gray-200 hover:to-gray-300 hover:scale-105 shadow-md'
+                ? 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 hover:from-gray-200 hover:to-gray-300 active:scale-95 sm:hover:scale-105 shadow-md'
                 : 'bg-gray-50 text-gray-400 cursor-not-allowed'
             }`}
             disabled={currentQuestionIndex === 0}
           >
-            <FaArrowLeft />
-            Previous
+            <FaArrowLeft className="text-sm sm:text-base" />
+            <span className="text-sm sm:text-base">Previous</span>
           </button>
 
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <span>Question {currentQuestionIndex + 1} of {quiz.questions.length}</span>
+          <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 text-center">
+            <span className="hidden sm:inline">Question {currentQuestionIndex + 1} of {quiz.questions.length}</span>
+            <span className="sm:hidden">{currentQuestionIndex + 1}/{quiz.questions.length}</span>
           </div>
 
           <button
             onClick={isLastQuestion ? () => setShowConfirmSubmit(true) : goToNextQuestion}
-            className={`flex items-center gap-3 px-6 py-3 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 shadow-lg ${
+            className={`flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 sm:py-3 rounded-xl font-medium transition-all duration-300 transform active:scale-95 sm:hover:scale-105 shadow-lg touch-manipulation ${
               isLastQuestion
                 ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 shadow-green-200'
                 : 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700 shadow-blue-200'
@@ -637,13 +640,13 @@ const QuizTaker = () => {
           >
             {isLastQuestion ? (
               <>
-                <FaCheck />
-                Finish Quiz
+                <FaCheck className="text-sm sm:text-base" />
+                <span className="text-sm sm:text-base">Finish Quiz</span>
               </>
             ) : (
               <>
-                Next
-                <FaArrowRight />
+                <span className="text-sm sm:text-base">Next</span>
+                <FaArrowRight className="text-sm sm:text-base" />
               </>
             )}
           </button>
@@ -654,46 +657,46 @@ const QuizTaker = () => {
       {showConfirmSubmit && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-4 transform transition-all duration-300 scale-100">
-            <div className="p-8">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="w-16 h-16 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
-                  <FaExclamationTriangle className="text-white text-2xl" />
+            <div className="p-4 sm:p-8">
+              <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
+                  <FaExclamationTriangle className="text-white text-lg sm:text-2xl" />
                 </div>
                 <div>
-                  <h3 className="text-2xl font-bold text-gray-800">Submit Quiz?</h3>
-                  <p className="text-gray-600">Final confirmation required</p>
+                  <h3 className="text-xl sm:text-2xl font-bold text-gray-800">Submit Quiz?</h3>
+                  <p className="text-gray-600 text-sm sm:text-base">Final confirmation required</p>
                 </div>
               </div>
 
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl mb-6 border border-blue-100">
-                <p className="text-gray-700 leading-relaxed">
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-3 sm:p-4 rounded-xl mb-4 sm:mb-6 border border-blue-100">
+                <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
                   Are you sure you want to submit your quiz? Once submitted, you won't be able to change your answers.
                   Please review your responses before proceeding.
                 </p>
               </div>
 
-              <div className="flex justify-end gap-4">
+              <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4">
                 <button
                   onClick={() => setShowConfirmSubmit(false)}
-                  className="px-6 py-3 border-2 border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all duration-300 font-medium"
+                  className="px-4 sm:px-6 py-2 sm:py-3 border-2 border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all duration-300 font-medium text-sm sm:text-base order-2 sm:order-1"
                 >
                   Cancel
                 </button>
 
                 <button
                   onClick={submitQuiz}
-                  className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-300 font-medium shadow-lg transform hover:scale-105 flex items-center gap-2"
+                  className="px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-300 font-medium shadow-lg transform active:scale-95 sm:hover:scale-105 flex items-center justify-center gap-2 text-sm sm:text-base order-1 sm:order-2 touch-manipulation"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
                     <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
-                      Submitting...
+                      <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-2 border-white border-t-transparent"></div>
+                      <span>Submitting...</span>
                     </>
                   ) : (
                     <>
-                      <FaCheck />
-                      Submit Quiz
+                      <FaCheck className="text-sm sm:text-base" />
+                      <span>Submit Quiz</span>
                     </>
                   )}
                 </button>

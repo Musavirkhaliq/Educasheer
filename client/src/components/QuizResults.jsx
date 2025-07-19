@@ -176,56 +176,56 @@ const QuizResults = () => {
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
 
-      <div className="relative max-w-6xl mx-auto p-6">
+      <div className="relative max-w-6xl mx-auto p-4 sm:p-6">
         {/* Results Header Card */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8 mb-8">
-          <div className="flex justify-between items-start">
-            <div className="flex items-start gap-6">
-              <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center">
-                <FaTrophy className="text-white text-2xl" />
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-4 sm:p-8 mb-6 sm:mb-8">
+          <div className="flex flex-col lg:flex-row justify-between items-start gap-4 lg:gap-6">
+            <div className="flex items-start gap-3 sm:gap-6 w-full lg:w-auto">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center flex-shrink-0">
+                <FaTrophy className="text-white text-lg sm:text-2xl" />
               </div>
-              <div>
+              <div className="min-w-0 flex-1">
                 <Link
                   to={`/courses/${courseId}`}
-                  className="inline-flex items-center gap-2 text-gray-600 hover:text-blue-600 mb-4 transition-colors duration-300 group"
+                  className="inline-flex items-center gap-2 text-gray-600 hover:text-blue-600 mb-3 sm:mb-4 transition-colors duration-300 group text-sm sm:text-base"
                 >
-                  <FaArrowLeft className="group-hover:-translate-x-1 transition-transform duration-300" />
+                  <FaArrowLeft className="group-hover:-translate-x-1 transition-transform duration-300 text-xs sm:text-sm" />
                   <span>Back to Course</span>
                 </Link>
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-2">
+                <h1 className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-2 leading-tight">
                   {quiz.title}
                 </h1>
-                <p className="text-gray-600 flex items-center gap-2">
-                  <FaClock className="text-sm" />
-                  Completed on {new Date(attempt.endTime).toLocaleString()}
+                <p className="text-gray-600 flex items-center gap-2 text-sm sm:text-base">
+                  <FaClock className="text-xs sm:text-sm flex-shrink-0" />
+                  <span className="truncate">Completed on {new Date(attempt.endTime).toLocaleString()}</span>
                 </p>
               </div>
             </div>
 
-            <div className="flex flex-col items-end gap-4">
-              <div className={`px-6 py-3 rounded-xl text-white font-bold text-lg shadow-lg transform transition-all duration-300 hover:scale-105 ${
+            <div className="flex flex-col sm:flex-row lg:flex-col items-start sm:items-center lg:items-end gap-3 sm:gap-4 w-full sm:w-auto lg:w-auto">
+              <div className={`px-4 sm:px-6 py-2 sm:py-3 rounded-xl text-white font-bold text-base sm:text-lg shadow-lg transform transition-all duration-300 hover:scale-105 ${
                 attempt.isPassed
                   ? 'bg-gradient-to-r from-green-500 to-emerald-600 shadow-green-200'
                   : 'bg-gradient-to-r from-red-500 to-pink-600 shadow-red-200'
               }`}>
                 {attempt.isPassed ? (
                   <span className="flex items-center gap-2">
-                    <FaCheck />
-                    Passed
+                    <FaCheck className="text-sm sm:text-base" />
+                    <span>Passed</span>
                   </span>
                 ) : (
                   <span className="flex items-center gap-2">
-                    <FaTimes />
-                    Failed
+                    <FaTimes className="text-sm sm:text-base" />
+                    <span>Failed</span>
                   </span>
                 )}
               </div>
 
               <Link
                 to={`/courses/${courseId}/quizzes/${quizId}/attempts`}
-                className="text-blue-600 hover:text-blue-800 flex items-center gap-2 transition-colors duration-300 group"
+                className="text-blue-600 hover:text-blue-800 flex items-center gap-2 transition-colors duration-300 group text-sm sm:text-base"
               >
-                <FaListAlt className="group-hover:scale-110 transition-transform duration-300" />
+                <FaListAlt className="group-hover:scale-110 transition-transform duration-300 text-sm sm:text-base" />
                 <span>View All Attempts</span>
               </Link>
             </div>
@@ -233,31 +233,31 @@ const QuizResults = () => {
         </div>
 
       {/* Score Summary */}
-      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8 mb-8">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-          <FaChartBar className="text-blue-500" />
-          Performance Overview
+      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-4 sm:p-8 mb-6 sm:mb-8">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3">
+          <FaChartBar className="text-blue-500 text-lg sm:text-xl" />
+          <span>Performance Overview</span>
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Score Card */}
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-xl p-6 border border-blue-200 transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-                <FaTrophy className="text-white text-2xl" />
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-xl p-4 sm:p-6 border border-blue-200 transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
+                <FaTrophy className="text-white text-lg sm:text-2xl" />
               </div>
-              <div>
-                <p className="text-blue-700 text-sm font-medium">Final Score</p>
-                <p className="font-bold text-3xl text-blue-800">{attempt.percentage.toFixed(1)}%</p>
-                <p className="text-blue-600 text-sm">
+              <div className="min-w-0 flex-1">
+                <p className="text-blue-700 text-xs sm:text-sm font-medium">Final Score</p>
+                <p className="font-bold text-2xl sm:text-3xl text-blue-800">{attempt.percentage.toFixed(1)}%</p>
+                <p className="text-blue-600 text-xs sm:text-sm">
                   {attempt.score} / {attempt.maxScore} points
                 </p>
               </div>
             </div>
 
             {/* Progress Bar */}
-            <div className="mt-4">
-              <div className="w-full bg-blue-200 rounded-full h-3 overflow-hidden">
+            <div className="mt-3 sm:mt-4">
+              <div className="w-full bg-blue-200 rounded-full h-2 sm:h-3 overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full transition-all duration-1000 ease-out"
                   style={{ width: `${attempt.percentage}%` }}
@@ -267,38 +267,38 @@ const QuizResults = () => {
           </div>
 
           {/* Passing Score Card */}
-          <div className={`rounded-xl p-6 border transform transition-all duration-300 hover:scale-105 hover:shadow-lg ${
+          <div className={`rounded-xl p-4 sm:p-6 border transform transition-all duration-300 hover:scale-105 hover:shadow-lg ${
             attempt.isPassed
               ? 'bg-gradient-to-br from-green-50 to-emerald-100 border-green-200'
               : 'bg-gradient-to-br from-red-50 to-pink-100 border-red-200'
           }`}>
-            <div className="flex items-center gap-4">
-              <div className={`w-16 h-16 rounded-xl flex items-center justify-center shadow-lg ${
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0 ${
                 attempt.isPassed
                   ? 'bg-gradient-to-r from-green-500 to-emerald-600'
                   : 'bg-gradient-to-r from-red-500 to-pink-600'
               }`}>
-                <FaMedal className="text-white text-2xl" />
+                <FaMedal className="text-white text-lg sm:text-2xl" />
               </div>
-              <div>
-                <p className={`text-sm font-medium ${
+              <div className="min-w-0 flex-1">
+                <p className={`text-xs sm:text-sm font-medium ${
                   attempt.isPassed ? 'text-green-700' : 'text-red-700'
                 }`}>
                   Passing Score
                 </p>
-                <p className={`font-bold text-3xl ${
+                <p className={`font-bold text-2xl sm:text-3xl ${
                   attempt.isPassed ? 'text-green-800' : 'text-red-800'
                 }`}>
                   {quiz.passingScore}%
                 </p>
-                <p className="text-sm flex items-center gap-1">
+                <p className="text-xs sm:text-sm flex items-center gap-1">
                   {attempt.isPassed ? (
                     <span className="text-green-600 flex items-center gap-1 font-medium">
-                      <FaCheck size={12} /> Passed
+                      <FaCheck size={10} className="sm:w-3 sm:h-3" /> Passed
                     </span>
                   ) : (
                     <span className="text-red-600 flex items-center gap-1 font-medium">
-                      <FaTimes size={12} /> Failed
+                      <FaTimes size={10} className="sm:w-3 sm:h-3" /> Failed
                     </span>
                   )}
                 </p>
@@ -307,23 +307,23 @@ const QuizResults = () => {
           </div>
 
           {/* Time Card */}
-          <div className="bg-gradient-to-br from-purple-50 to-indigo-100 rounded-xl p-6 border border-purple-200 transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-                <FaClock className="text-white text-2xl" />
+          <div className="bg-gradient-to-br from-purple-50 to-indigo-100 rounded-xl p-4 sm:p-6 border border-purple-200 transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
+                <FaClock className="text-white text-lg sm:text-2xl" />
               </div>
-              <div>
-                <p className="text-purple-700 text-sm font-medium">Time Spent</p>
-                <p className="font-bold text-3xl text-purple-800">{formatDuration(attempt.timeSpent)}</p>
-                <p className="text-purple-600 text-sm">
+              <div className="min-w-0 flex-1">
+                <p className="text-purple-700 text-xs sm:text-sm font-medium">Time Spent</p>
+                <p className="font-bold text-2xl sm:text-3xl text-purple-800">{formatDuration(attempt.timeSpent)}</p>
+                <p className="text-purple-600 text-xs sm:text-sm">
                   Limit: {quiz.timeLimit} minutes
                 </p>
               </div>
             </div>
 
             {/* Time Progress Bar */}
-            <div className="mt-4">
-              <div className="w-full bg-purple-200 rounded-full h-3 overflow-hidden">
+            <div className="mt-3 sm:mt-4">
+              <div className="w-full bg-purple-200 rounded-full h-2 sm:h-3 overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-purple-500 to-indigo-600 rounded-full transition-all duration-1000 ease-out"
                   style={{ width: `${Math.min((attempt.timeSpent / (quiz.timeLimit * 60)) * 100, 100)}%` }}
@@ -336,74 +336,75 @@ const QuizResults = () => {
 
       {/* Detailed Analysis */}
       {analysisData && (
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8 mb-8">
-          <div className="flex justify-between items-center mb-8">
-            <h3 className="text-2xl font-bold flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
-                <FaChartBar className="text-white" />
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-4 sm:p-8 mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-8 mb-6 sm:mb-8">
+            <h3 className="text-xl sm:text-2xl font-bold flex items-center gap-2 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
+                <FaChartBar className="text-white text-sm sm:text-base" />
               </div>
-              Detailed Analysis
+              <span>Detailed Analysis</span>
             </h3>
             <button
               onClick={() => setShowAnalysis(!showAnalysis)}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 transform active:scale-95 sm:hover:scale-105 shadow-lg text-sm sm:text-base touch-manipulation"
             >
-              {showAnalysis ? <FaEyeSlash /> : <FaEye />}
-              {showAnalysis ? 'Hide Analysis' : 'Show Analysis'}
+              {showAnalysis ? <FaEyeSlash className="text-sm sm:text-base" /> : <FaEye className="text-sm sm:text-base" />}
+              <span className="hidden sm:inline">{showAnalysis ? 'Hide Analysis' : 'Show Analysis'}</span>
+              <span className="sm:hidden">{showAnalysis ? 'Hide' : 'Show'}</span>
             </button>
           </div>
 
           {showAnalysis && (
-            <div className="space-y-8 fade-in">
+            <div className="space-y-6 sm:space-y-8 fade-in">
               {/* Quick Stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                <div className="bg-gradient-to-br from-green-50 to-emerald-100 p-6 rounded-xl border border-green-200 transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+                <div className="bg-gradient-to-br from-green-50 to-emerald-100 p-3 sm:p-6 rounded-xl border border-green-200 transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
                   <div className="text-center">
-                    <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <FaCheck className="text-white" />
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3">
+                      <FaCheck className="text-white text-sm sm:text-base" />
                     </div>
-                    <div className="text-3xl font-bold text-green-600 mb-1">{analysisData.correctAnswers}</div>
-                    <div className="text-sm font-medium text-green-700">Correct</div>
+                    <div className="text-2xl sm:text-3xl font-bold text-green-600 mb-1">{analysisData.correctAnswers}</div>
+                    <div className="text-xs sm:text-sm font-medium text-green-700">Correct</div>
                   </div>
                 </div>
-                <div className="bg-gradient-to-br from-red-50 to-pink-100 p-6 rounded-xl border border-red-200 transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                <div className="bg-gradient-to-br from-red-50 to-pink-100 p-3 sm:p-6 rounded-xl border border-red-200 transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
                   <div className="text-center">
-                    <div className="w-12 h-12 bg-gradient-to-r from-red-500 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <FaTimes className="text-white" />
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-red-500 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3">
+                      <FaTimes className="text-white text-sm sm:text-base" />
                     </div>
-                    <div className="text-3xl font-bold text-red-600 mb-1">{analysisData.incorrectAnswers}</div>
-                    <div className="text-sm font-medium text-red-700">Incorrect</div>
+                    <div className="text-2xl sm:text-3xl font-bold text-red-600 mb-1">{analysisData.incorrectAnswers}</div>
+                    <div className="text-xs sm:text-sm font-medium text-red-700">Incorrect</div>
                   </div>
                 </div>
-                <div className="bg-gradient-to-br from-gray-50 to-slate-100 p-6 rounded-xl border border-gray-200 transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                <div className="bg-gradient-to-br from-gray-50 to-slate-100 p-3 sm:p-6 rounded-xl border border-gray-200 transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
                   <div className="text-center">
-                    <div className="w-12 h-12 bg-gradient-to-r from-gray-500 to-slate-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <FaExclamationTriangle className="text-white" />
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-gray-500 to-slate-600 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3">
+                      <FaExclamationTriangle className="text-white text-sm sm:text-base" />
                     </div>
-                    <div className="text-3xl font-bold text-gray-600 mb-1">{analysisData.unanswered}</div>
-                    <div className="text-sm font-medium text-gray-700">Unanswered</div>
+                    <div className="text-2xl sm:text-3xl font-bold text-gray-600 mb-1">{analysisData.unanswered}</div>
+                    <div className="text-xs sm:text-sm font-medium text-gray-700">Unanswered</div>
                   </div>
                 </div>
-                <div className="bg-gradient-to-br from-blue-50 to-indigo-100 p-6 rounded-xl border border-blue-200 transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-100 p-3 sm:p-6 rounded-xl border border-blue-200 transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
                   <div className="text-center">
-                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <FaClock className="text-white" />
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3">
+                      <FaClock className="text-white text-sm sm:text-base" />
                     </div>
-                    <div className="text-3xl font-bold text-blue-600 mb-1">{Math.round(analysisData.avgTimePerQuestion)}s</div>
-                    <div className="text-sm font-medium text-blue-700">Avg/Question</div>
+                    <div className="text-2xl sm:text-3xl font-bold text-blue-600 mb-1">{Math.round(analysisData.avgTimePerQuestion)}s</div>
+                    <div className="text-xs sm:text-sm font-medium text-blue-700">Avg/Question</div>
                   </div>
                 </div>
               </div>
 
               {/* Performance by Difficulty */}
-              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 p-6 rounded-xl border border-yellow-200">
-                <h4 className="text-xl font-bold mb-6 flex items-center gap-3">
-                  <div className="w-8 h-8 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg flex items-center justify-center">
-                    <FaLightbulb className="text-white text-sm" />
+              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 p-4 sm:p-6 rounded-xl border border-yellow-200">
+                <h4 className="text-lg sm:text-xl font-bold mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3">
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg flex items-center justify-center">
+                    <FaLightbulb className="text-white text-xs sm:text-sm" />
                   </div>
-                  Performance by Difficulty
+                  <span>Performance by Difficulty</span>
                 </h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6">
                   {['easy', 'medium', 'hard'].map(level => {
                     const data = analysisData.difficulty[level];
                     const percentage = data.total > 0 ? (data.correct / data.total) * 100 : 0;
@@ -414,20 +415,20 @@ const QuizResults = () => {
                     };
 
                     return (
-                      <div key={level} className={`bg-gradient-to-br ${colors[level].bg} p-6 rounded-xl border ${colors[level].border} transform transition-all duration-300 hover:scale-105 hover:shadow-lg`}>
-                        <div className="flex justify-between items-center mb-4">
-                          <span className={`font-bold text-lg capitalize ${colors[level].text}`}>{level}</span>
-                          <span className={`text-sm font-medium ${colors[level].text} bg-white/50 px-2 py-1 rounded-lg`}>
+                      <div key={level} className={`bg-gradient-to-br ${colors[level].bg} p-4 sm:p-6 rounded-xl border ${colors[level].border} transform transition-all duration-300 hover:scale-105 hover:shadow-lg`}>
+                        <div className="flex justify-between items-center mb-3 sm:mb-4">
+                          <span className={`font-bold text-base sm:text-lg capitalize ${colors[level].text}`}>{level}</span>
+                          <span className={`text-xs sm:text-sm font-medium ${colors[level].text} bg-white/50 px-2 py-1 rounded-lg`}>
                             {data.correct}/{data.total}
                           </span>
                         </div>
-                        <div className="w-full bg-white/50 rounded-full h-4 mb-3 overflow-hidden">
+                        <div className="w-full bg-white/50 rounded-full h-3 sm:h-4 mb-2 sm:mb-3 overflow-hidden">
                           <div
-                            className={`h-4 bg-gradient-to-r ${colors[level].progress} rounded-full transition-all duration-1000 ease-out`}
+                            className={`h-3 sm:h-4 bg-gradient-to-r ${colors[level].progress} rounded-full transition-all duration-1000 ease-out`}
                             style={{ width: `${percentage}%` }}
                           ></div>
                         </div>
-                        <div className={`text-lg font-bold ${colors[level].text} text-center`}>
+                        <div className={`text-base sm:text-lg font-bold ${colors[level].text} text-center`}>
                           {percentage.toFixed(1)}%
                         </div>
                       </div>
@@ -468,52 +469,53 @@ const QuizResults = () => {
 
       {/* Questions and Answers */}
       <div>
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-xl font-semibold">Questions & Answers</h3>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-6 mb-4 sm:mb-6">
+          <h3 className="text-lg sm:text-xl font-semibold">Questions & Answers</h3>
           {quiz.showCorrectAnswers && (
             <button
               onClick={() => setShowCorrectAnswers(!showCorrectAnswers)}
-              className="flex items-center gap-2 text-[#00bcd4] hover:text-[#0097a7] transition-colors"
+              className="flex items-center gap-2 text-[#00bcd4] hover:text-[#0097a7] transition-colors text-sm sm:text-base"
             >
-              {showCorrectAnswers ? <FaEyeSlash /> : <FaEye />}
-              {showCorrectAnswers ? 'Hide Correct Answers' : 'Show Correct Answers'}
+              {showCorrectAnswers ? <FaEyeSlash className="text-sm sm:text-base" /> : <FaEye className="text-sm sm:text-base" />}
+              <span className="hidden sm:inline">{showCorrectAnswers ? 'Hide Correct Answers' : 'Show Correct Answers'}</span>
+              <span className="sm:hidden">{showCorrectAnswers ? 'Hide Answers' : 'Show Answers'}</span>
             </button>
           )}
         </div>
-        
-        <div className="space-y-8">
+
+        <div className="space-y-4 sm:space-y-8">
           {attempt.answers.map((answer, index) => {
             const question = findQuestionById(answer.question);
             if (!question) return null;
-            
+
             return (
-              <div key={answer.question} className="border border-gray-200 rounded-lg p-5">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h4 className="font-medium text-gray-800">Question {index + 1}</h4>
-                    <div className="flex items-center gap-4 mt-1 text-sm text-gray-500">
+              <div key={answer.question} className="border border-gray-200 rounded-lg p-3 sm:p-5">
+                <div className="flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-4 mb-4">
+                  <div className="flex-1">
+                    <h4 className="font-medium text-gray-800 text-sm sm:text-base">Question {index + 1}</h4>
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-1 text-xs sm:text-sm text-gray-500">
                       <span>Type: {question.type.replace('_', ' ')}</span>
                       <span>Points: {question.points}</span>
                       {question.type === 'multiple_choice' && (
-                        <span>Difficulty: {question.points === 1 ? 'Easy' : question.points === 2 ? 'Medium' : 'Hard'}</span>
+                        <span className="hidden sm:inline">Difficulty: {question.points === 1 ? 'Easy' : question.points === 2 ? 'Medium' : 'Hard'}</span>
                       )}
                     </div>
                   </div>
-                  <div className="flex flex-col items-end gap-2">
-                    <div className={`px-3 py-1 rounded-full text-sm font-medium ${
+                  <div className="flex flex-row sm:flex-col items-center sm:items-end gap-2 sm:gap-2">
+                    <div className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium ${
                       answer.isCorrect ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                     }`}>
                       {answer.isCorrect ? (
                         <span className="flex items-center gap-1">
-                          <FaCheck size={12} /> Correct
+                          <FaCheck size={10} className="sm:w-3 sm:h-3" /> Correct
                         </span>
                       ) : (
                         <span className="flex items-center gap-1">
-                          <FaTimes size={12} /> Incorrect
+                          <FaTimes size={10} className="sm:w-3 sm:h-3" /> Incorrect
                         </span>
                       )}
                     </div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-xs sm:text-sm text-gray-500">
                       {answer.pointsEarned} / {question.points} points
                     </div>
                   </div>
@@ -727,17 +729,17 @@ const QuizResults = () => {
       )}
 
       {/* Action Buttons */}
-      <div className="mt-8 flex justify-between">
+      <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row justify-between gap-3 sm:gap-4">
         <Link
           to={`/courses/${courseId}`}
-          className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+          className="px-4 py-2 sm:py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-center text-sm sm:text-base order-2 sm:order-1"
         >
           Return to Course
         </Link>
 
         <Link
           to={`/courses/${courseId}/quizzes/${quizId}`}
-          className="px-4 py-2 bg-[#00bcd4] text-white rounded-lg hover:bg-[#0097a7]"
+          className="px-4 py-2 sm:py-3 bg-[#00bcd4] text-white rounded-lg hover:bg-[#0097a7] transition-colors text-center text-sm sm:text-base order-1 sm:order-2"
         >
           Retake Quiz
         </Link>
