@@ -27,7 +27,7 @@ const CourseMaterialsList = ({ courseId }) => {
   const fetchMaterials = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`/api/v1/courses/${courseId}/materials`, {
+      const response = await axios.get(`/api/v1/course-materials/courses/${courseId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`
         }

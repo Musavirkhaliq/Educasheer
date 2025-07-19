@@ -3,7 +3,7 @@ import axios from 'axios';
 // Get all discussion messages for a course
 export const getDiscussionMessages = async (courseId) => {
   try {
-    const response = await axios.get(`/api/v1/courses/${courseId}/discussion`, {
+    const response = await axios.get(`/api/v1/discussions/courses/${courseId}`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('accessToken')}`
       }
@@ -19,7 +19,7 @@ export const getDiscussionMessages = async (courseId) => {
 export const createDiscussionMessage = async (courseId, message, parentId = null) => {
   try {
     const response = await axios.post(
-      `/api/v1/courses/${courseId}/discussion`,
+      `/api/v1/discussions/courses/${courseId}`,
       { message, parentId },
       {
         headers: {
@@ -38,7 +38,7 @@ export const createDiscussionMessage = async (courseId, message, parentId = null
 export const toggleLikeMessage = async (messageId) => {
   try {
     const response = await axios.patch(
-      `/api/v1/discussion/${messageId}/like`,
+      `/api/v1/discussions/${messageId}/like`,
       {},
       {
         headers: {
@@ -56,7 +56,7 @@ export const toggleLikeMessage = async (messageId) => {
 // Delete a discussion message
 export const deleteDiscussionMessage = async (messageId) => {
   try {
-    const response = await axios.delete(`/api/v1/discussion/${messageId}`, {
+    const response = await axios.delete(`/api/v1/discussions/${messageId}`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('accessToken')}`
       }

@@ -20,7 +20,7 @@ const OfflineCourseDiscussion = ({ courseId }) => {
   const fetchMessages = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`/api/v1/courses/${courseId}/discussion`, {
+      const response = await axios.get(`/api/v1/discussions/courses/${courseId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`
         }
@@ -40,7 +40,7 @@ const OfflineCourseDiscussion = ({ courseId }) => {
     if (!newMessage.trim()) return;
 
     try {
-      await axios.post(`/api/v1/courses/${courseId}/discussion`, 
+      await axios.post(`/api/v1/discussions/courses/${courseId}`,
         { message: newMessage },
         {
           headers: {

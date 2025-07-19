@@ -3,7 +3,7 @@ import axios from 'axios';
 // Get all materials for a course
 export const getCourseMaterials = async (courseId) => {
   try {
-    const response = await axios.get(`/api/v1/courses/${courseId}/materials`, {
+    const response = await axios.get(`/api/v1/course-materials/courses/${courseId}`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('accessToken')}`
       }
@@ -19,7 +19,7 @@ export const getCourseMaterials = async (courseId) => {
 export const uploadCourseMaterial = async (courseId, formData, onProgress) => {
   try {
     const response = await axios.post(
-      `/api/v1/courses/${courseId}/materials`,
+      `/api/v1/course-materials/courses/${courseId}`,
       formData,
       {
         headers: {
@@ -44,7 +44,7 @@ export const uploadCourseMaterial = async (courseId, formData, onProgress) => {
 // Delete a material
 export const deleteCourseMaterial = async (materialId) => {
   try {
-    const response = await axios.delete(`/api/v1/materials/${materialId}`, {
+    const response = await axios.delete(`/api/v1/course-materials/${materialId}`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('accessToken')}`
       }

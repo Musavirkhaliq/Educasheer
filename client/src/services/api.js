@@ -190,8 +190,8 @@ export const blogAPI = {
 
 // Testimonial API functions
 export const testimonialAPI = {
-  // Use publicApi for fetching approved testimonials (no auth required)
-  getApprovedTestimonials: (params) => publicApi.get('/testimonials', { params }),
+  // Use public endpoint to avoid /api/v1/* authentication issue
+  getApprovedTestimonials: (params) => axios.get('/api/public/testimonials', { params }),
   // These operations still require authentication
   submitTestimonial: (data) => api.post('/testimonials', data),
   getUserTestimonials: () => api.get('/testimonials/my-testimonials'),

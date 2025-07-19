@@ -68,10 +68,10 @@ export const courseAPI = {
   getEnrolledCourses: (params) => api.get('/courses/my/enrolled', { params }),
 
   // Course materials
-  getCourseMaterials: (courseId) => api.get(`/courses/${courseId}/materials`),
+  getCourseMaterials: (courseId) => api.get(`/course-materials/courses/${courseId}`),
 
   uploadCourseMaterial: (courseId, formData, onProgress) => api.post(
-    `/courses/${courseId}/materials`,
+    `/course-materials/courses/${courseId}`,
     formData,
     {
       headers: {
@@ -86,16 +86,16 @@ export const courseAPI = {
     }
   ),
 
-  deleteCourseMaterial: (materialId) => api.delete(`/materials/${materialId}`),
+  deleteCourseMaterial: (materialId) => api.delete(`/course-materials/${materialId}`),
 
   // Course discussions
-  getDiscussionMessages: (courseId) => api.get(`/courses/${courseId}/discussion`),
+  getDiscussionMessages: (courseId) => api.get(`/discussions/courses/${courseId}`),
 
-  createDiscussionMessage: (courseId, data) => api.post(`/courses/${courseId}/discussion`, data),
+  createDiscussionMessage: (courseId, data) => api.post(`/discussions/courses/${courseId}`, data),
 
-  toggleLikeMessage: (messageId) => api.patch(`/discussion/${messageId}/like`),
+  toggleLikeMessage: (messageId) => api.patch(`/discussions/${messageId}/like`),
 
-  deleteDiscussionMessage: (messageId) => api.delete(`/discussion/${messageId}`)
+  deleteDiscussionMessage: (messageId) => api.delete(`/discussions/${messageId}`)
 };
 
 export default courseAPI;
