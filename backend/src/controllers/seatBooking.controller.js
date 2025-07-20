@@ -373,6 +373,140 @@ const selfCheckIn = asyncHandler(async (req, res) => {
     }
 });
 
+// Admin delete booking (permanent deletion)
+const adminDeleteBooking = asyncHandler(async (req, res) => {
+    try {
+        const { bookingId } = req.params;
+        const { deleteReason } = req.body;
+
+        // Find the booking
+        const booking = await SeatBooking.findById(bookingId)
+            .populate('user', 'fullName email')
+            .populate('seat', 'seatNumber row center')
+            .populate({
+                path: 'seat',
+                populate: {
+                    path: 'center',
+                    select: 'name'
+                }
+            });
+
+        if (!booking) {
+            throw new ApiError(404, "Booking not found");
+        }
+
+        // Store booking details for response
+        const bookingDetails = {
+            _id: booking._id,
+            user: booking.user,
+            seat: booking.seat,
+            bookingDate: booking.bookingDate,
+            startTime: booking.startTime,
+            endTime: booking.endTime,
+            status: booking.status,
+            deleteReason: deleteReason || 'Deleted by admin'
+        };
+
+        // Permanently delete the booking
+        await SeatBooking.findByIdAndDelete(bookingId);
+
+        console.log(`Admin deleted booking ${bookingId} - User: ${booking.user.fullName}, Seat: ${booking.seat.seatNumber}, Reason: ${deleteReason || 'No reason provided'}`);
+
+        return res.status(200).json(
+            new ApiResponse(200, bookingDetails, "Booking deleted successfully by admin")
+        );
+    } catch (error) {
+        console.error('Admin delete booking error:', error);
+        throw new ApiError(error.statusCode || 500, error.message || "Failed to delete booking");
+    }
+});
+
+// Get all bookings for admin management
+const getAllBookingsForAdmin = asyncHandler(async (req, res) => {
+    try {
+        const {
+            page = 1,
+            limit = 20,
+            status,
+            centerId,
+            date,
+            search
+        } = req.query;
+
+        const skip = (page - 1) * limit;
+        const query = {};
+
+        // Filter by status
+        if (status && status !== 'all') {
+            query.status = status;
+        }
+
+        // Filter by center
+        if (centerId) {
+            // First get all seats for this center
+            const seats = await Seat.find({ center: centerId }).select('_id');
+            const seatIds = seats.map(seat => seat._id);
+            query.seat = { $in: seatIds };
+        }
+
+        // Filter by date
+        if (date) {
+            const startDate = new Date(date);
+            const endDate = new Date(date);
+            endDate.setDate(endDate.getDate() + 1);
+            query.bookingDate = {
+                $gte: startDate,
+                $lt: endDate
+            };
+        }
+
+        // Search by user name or email
+        if (search) {
+            const users = await User.find({
+                $or: [
+                    { fullName: { $regex: search, $options: 'i' } },
+                    { email: { $regex: search, $options: 'i' } }
+                ]
+            }).select('_id');
+            const userIds = users.map(user => user._id);
+            query.user = { $in: userIds };
+        }
+
+        const bookings = await SeatBooking.find(query)
+            .populate('user', 'fullName email username')
+            .populate({
+                path: 'seat',
+                select: 'seatNumber row column seatType center',
+                populate: {
+                    path: 'center',
+                    select: 'name location'
+                }
+            })
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(parseInt(limit));
+
+        const totalBookings = await SeatBooking.countDocuments(query);
+        const totalPages = Math.ceil(totalBookings / limit);
+
+        return res.status(200).json(
+            new ApiResponse(200, {
+                bookings,
+                pagination: {
+                    currentPage: parseInt(page),
+                    totalPages,
+                    totalBookings,
+                    hasNextPage: page < totalPages,
+                    hasPrevPage: page > 1
+                }
+            }, "Admin bookings retrieved successfully")
+        );
+    } catch (error) {
+        console.error('Get admin bookings error:', error);
+        throw new ApiError(error.statusCode || 500, error.message || "Failed to fetch bookings for admin");
+    }
+});
+
 export {
     createSeatBooking,
     getUserBookings,
@@ -381,5 +515,7 @@ export {
     getCenterBookings,
     checkInUser,
     checkOutUser,
-    selfCheckIn
+    selfCheckIn,
+    adminDeleteBooking,
+    getAllBookingsForAdmin
 };

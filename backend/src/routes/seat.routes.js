@@ -18,7 +18,9 @@ import {
     getCenterBookings,
     checkInUser,
     checkOutUser,
-    selfCheckIn
+    selfCheckIn,
+    adminDeleteBooking,
+    getAllBookingsForAdmin
 } from "../controllers/seatBooking.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { isAdmin } from "../middlewares/role.middleware.js";
@@ -71,6 +73,14 @@ router.route("/bookings/:bookingId")
 router.route("/centers/:centerId/bookings")
     .get(isAdmin, getCenterBookings);
 
+// Admin routes for booking management
+router.route("/admin/bookings")
+    .get(isAdmin, getAllBookingsForAdmin);
+
+router.route("/admin/bookings/:bookingId")
+    .delete(isAdmin, adminDeleteBooking);
+
+// Keep check-in/out routes for now (can be removed later if not needed)
 router.route("/bookings/:bookingId/check-in")
     .patch(isAdmin, checkInUser);
 

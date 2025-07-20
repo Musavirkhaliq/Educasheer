@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
+import { Link } from 'react-router-dom';
 import customFetch from '../../utils/customFetch';
 import { seatAPI } from '../../services/seatAPI';
 
@@ -224,7 +225,15 @@ const SeatManagement = () => {
     return (
         <div className="seat-management p-6">
             <div className="mb-6">
-                <h1 className="text-2xl font-bold text-gray-800 mb-4">Seat Management</h1>
+                <div className="flex justify-between items-center mb-4">
+                    <h1 className="text-2xl font-bold text-gray-800">Seat Management</h1>
+                    <Link
+                        to="/admin/bookings"
+                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                    >
+                        📋 Manage All Bookings
+                    </Link>
+                </div>
                 
                 {/* Center Selection */}
                 <div className="mb-4">

@@ -43,6 +43,7 @@ import QRBookingPage from "../pages/QRBookingPage";
 import QuizzesExamsPage from '../pages/QuizzesExamsPage';
 import ExamsPage from '../pages/ExamsPage';
 import CategoryManagementPage from '../pages/CategoryManagementPage';
+import AdminBookingManagementPage from '../pages/AdminBookingManagementPage';
 
 export const homeRoutes = [
   {
@@ -361,6 +362,15 @@ export const homeRoutes = [
     element: (
       <Suspense fallback={<h1>Loading</h1>}>
         <CategoryManagementPage />
+      </Suspense>
+    ),
+  },
+  // Admin booking management route
+  {
+    path: "admin/bookings",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <AdminBookingManagementPage />
       </Suspense>
     ),
   },

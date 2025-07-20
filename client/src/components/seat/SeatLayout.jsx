@@ -70,7 +70,7 @@ const SeatLayout = ({
     const [selectedSeatQR, setSelectedSeatQR] = useState(null);
     const [showBookingModal, setShowBookingModal] = useState(false);
     const [selectedBooking, setSelectedBooking] = useState(null);
-    const [checkingIn, setCheckingIn] = useState(false);
+    // Removed check-in functionality as per admin requirements
     const [comprehensiveBookingData, setComprehensiveBookingData] = useState(null);
     const [loadingComprehensiveData, setLoadingComprehensiveData] = useState(false);
 
@@ -165,30 +165,7 @@ const SeatLayout = ({
         setShowQRModal(true);
     };
 
-    const handleSelfCheckIn = async (bookingId) => {
-        setCheckingIn(true);
-        try {
-            await seatAPI.selfCheckIn(bookingId);
-            toast.success('Successfully checked in!');
-
-            // Update the booking in the modal
-            if (selectedBooking) {
-                setSelectedBooking({
-                    ...selectedBooking,
-                    booking: {
-                        ...selectedBooking.booking,
-                        checkedIn: true,
-                        checkedInAt: new Date().toISOString()
-                    }
-                });
-            }
-        } catch (error) {
-            console.error('Error checking in:', error);
-            toast.error(error.response?.data?.message || 'Failed to check in');
-        } finally {
-            setCheckingIn(false);
-        }
-    };
+    // Removed check-in functionality as per admin requirements
 
     // Fetch comprehensive booking data for a seat (similar to QR scan)
     const fetchComprehensiveBookingData = async (seat) => {
@@ -498,9 +475,7 @@ const SeatLayout = ({
                                         <p><strong>Date:</strong> {formatDate(selectedBooking.booking.bookingDate)}</p>
                                         <p><strong>Time (IST):</strong> {selectedBooking.booking.startTime} - {selectedBooking.booking.endTime}</p>
                                         <p><strong>Status:</strong> <span className="capitalize">{selectedBooking.booking.status}</span></p>
-                                        {selectedBooking.booking.checkedIn && (
-                                            <p className="text-green-600"><strong>✓ Checked In</strong></p>
-                                        )}
+                                        {/* Removed check-in status display */}
                                     </div>
                                 </div>
                             )}
@@ -565,16 +540,7 @@ const SeatLayout = ({
                                                                 </div>
                                                             )}
                                                         </div>
-                                                        {booking.checkedIn && (
-                                                            <div className="text-green-600 text-xs">
-                                                                ✓ Checked In at {new Date(booking.checkedInAt).toLocaleTimeString('en-IN', {
-                                                                    hour: 'numeric',
-                                                                    minute: '2-digit',
-                                                                    hour12: true,
-                                                                    timeZone: 'Asia/Kolkata'
-                                                                })}
-                                                            </div>
-                                                        )}
+                                                        {/* Removed check-in status display */}
                                                     </div>
                                                 </div>
                                             ))}
@@ -622,20 +588,7 @@ const SeatLayout = ({
 
                                 {/* Action Buttons */}
                                 <div className="flex flex-col gap-3">
-                                    {/* Check-in button for user's own booking */}
-                                    {currentUser &&
-                                     ((comprehensiveBookingData?.currentBooking && comprehensiveBookingData.currentBooking.user._id === currentUser._id) ||
-                                      (selectedBooking.booking.user._id === currentUser._id)) &&
-                                     !((comprehensiveBookingData?.currentBooking && comprehensiveBookingData.currentBooking.checkedIn) || selectedBooking.booking.checkedIn) &&
-                                     ((comprehensiveBookingData?.currentBooking && comprehensiveBookingData.currentBooking.status === 'confirmed') || selectedBooking.booking.status === 'confirmed') && (
-                                        <button
-                                            onClick={() => handleSelfCheckIn(comprehensiveBookingData?.currentBooking?._id || selectedBooking.booking._id)}
-                                            disabled={checkingIn}
-                                            className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
-                                        >
-                                            {checkingIn ? 'Checking In...' : '✓ Check In Now'}
-                                        </button>
-                                    )}
+                                    {/* Removed check-in functionality as per admin requirements */}
 
                                     {/* Refresh data button */}
                                     <button
