@@ -615,6 +615,178 @@ const getAllQuizAttempts = asyncHandler(async (req, res) => {
     }
 });
 
+/**
+ * Get all quiz attempts for the current user across all quizzes
+ * @route GET /api/v1/quizzes/my-attempts/all
+ * @access Authenticated
+ */
+const getUserAllQuizAttempts = asyncHandler(async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const { page = 1, limit = 20, status, quizType } = req.query;
+
+        // Build filter object
+        const filter = { user: userId };
+
+        if (status) {
+            if (status === 'completed') {
+                filter.isCompleted = true;
+            } else if (status === 'in-progress') {
+                filter.isCompleted = false;
+            }
+        }
+
+        // Calculate pagination
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+
+        // Build aggregation pipeline
+        const pipeline = [
+            { $match: filter },
+            {
+                $lookup: {
+                    from: "quizzes",
+                    localField: "quiz",
+                    foreignField: "_id",
+                    as: "quiz",
+                    pipeline: [
+                        { $project: { title: 1, quizType: 1, course: 1, passingScore: 1, timeLimit: 1 } }
+                    ]
+                }
+            },
+            { $unwind: "$quiz" },
+            {
+                $lookup: {
+                    from: "courses",
+                    localField: "quiz.course",
+                    foreignField: "_id",
+                    as: "course",
+                    pipeline: [
+                        { $project: { title: 1 } }
+                    ]
+                }
+            },
+            { $unwind: "$course" },
+            {
+                $addFields: {
+                    "quiz.course": "$course"
+                }
+            },
+            { $project: { course: 0 } }
+        ];
+
+        // Add quiz type filter if specified
+        if (quizType) {
+            pipeline.push({
+                $match: { "quiz.quizType": quizType }
+            });
+        }
+
+        // Add sorting and pagination
+        pipeline.push(
+            { $sort: { createdAt: -1 } },
+            { $skip: skip },
+            { $limit: parseInt(limit) }
+        );
+
+        const attempts = await QuizAttempt.aggregate(pipeline);
+
+        // Get total count for pagination
+        const totalCountPipeline = [
+            { $match: filter },
+            {
+                $lookup: {
+                    from: "quizzes",
+                    localField: "quiz",
+                    foreignField: "_id",
+                    as: "quiz"
+                }
+            },
+            { $unwind: "$quiz" }
+        ];
+
+        if (quizType) {
+            totalCountPipeline.push({
+                $match: { "quiz.quizType": quizType }
+            });
+        }
+
+        totalCountPipeline.push({ $count: "total" });
+        const totalResult = await QuizAttempt.aggregate(totalCountPipeline);
+        const total = totalResult.length > 0 ? totalResult[0].total : 0;
+
+        const totalPages = Math.ceil(total / parseInt(limit));
+
+        // Calculate user statistics
+        const statsResult = await QuizAttempt.aggregate([
+            { $match: { user: userId, isCompleted: true } },
+            {
+                $lookup: {
+                    from: "quizzes",
+                    localField: "quiz",
+                    foreignField: "_id",
+                    as: "quiz"
+                }
+            },
+            { $unwind: "$quiz" },
+            {
+                $group: {
+                    _id: null,
+                    totalAttempts: { $sum: 1 },
+                    totalPassed: { $sum: { $cond: ["$isPassed", 1, 0] } },
+                    averageScore: { $avg: "$percentage" },
+                    totalQuizzes: { $sum: { $cond: [{ $eq: ["$quiz.quizType", "quiz"] }, 1, 0] } },
+                    totalExams: { $sum: { $cond: [{ $eq: ["$quiz.quizType", "exam"] }, 1, 0] } },
+                    quizzesPassed: {
+                        $sum: {
+                            $cond: [
+                                { $and: [{ $eq: ["$quiz.quizType", "quiz"] }, "$isPassed"] },
+                                1,
+                                0
+                            ]
+                        }
+                    },
+                    examsPassed: {
+                        $sum: {
+                            $cond: [
+                                { $and: [{ $eq: ["$quiz.quizType", "exam"] }, "$isPassed"] },
+                                1,
+                                0
+                            ]
+                        }
+                    }
+                }
+            }
+        ]);
+
+        const stats = statsResult.length > 0 ? statsResult[0] : {
+            totalAttempts: 0,
+            totalPassed: 0,
+            averageScore: 0,
+            totalQuizzes: 0,
+            totalExams: 0,
+            quizzesPassed: 0,
+            examsPassed: 0
+        };
+
+        return res.status(200).json(
+            new ApiResponse(200, {
+                attempts,
+                stats,
+                pagination: {
+                    currentPage: parseInt(page),
+                    totalPages,
+                    totalItems: total,
+                    itemsPerPage: parseInt(limit),
+                    hasNextPage: parseInt(page) < totalPages,
+                    hasPrevPage: parseInt(page) > 1
+                }
+            }, "User quiz attempts fetched successfully")
+        );
+    } catch (error) {
+        throw new ApiError(error.statusCode || 500, error.message || "Failed to fetch user quiz attempts");
+    }
+});
+
 export {
     startQuizAttempt,
     submitQuizAttempt,
@@ -622,5 +794,6 @@ export {
     getQuizAttempts,
     getUserQuizAttempts,
     getQuizLeaderboard,
-    getAllQuizAttempts
+    getAllQuizAttempts,
+    getUserAllQuizAttempts
 };

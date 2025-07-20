@@ -7,10 +7,11 @@ import AccountSettings from '../components/profile/AccountSettings';
 import WatchHistory from '../components/profile/WatchHistory';
 import UserBlogs from '../components/profile/UserBlogs';
 import GamificationProfile from '../components/gamification/GamificationProfile';
+import ExamPerformance from '../components/profile/ExamPerformance';
 
 const ProfilePage = () => {
   const { currentUser, isAuthenticated, loading } = useAuth();
-  const [activeTab, setActiveTab] = useState('account');
+  const [activeTab, setActiveTab] = useState('exams');
 
   // Debug log to check user data
   useEffect(() => {
@@ -55,6 +56,7 @@ const ProfilePage = () => {
 
           <div className="p-6">
             {activeTab === 'account' && <AccountSettings user={currentUser} />}
+            {activeTab === 'exams' && <ExamPerformance />}
             {activeTab === 'history' && <WatchHistory />}
             {activeTab === 'blogs' && <UserBlogs />}
             {activeTab === 'gamification' && <GamificationProfile />}

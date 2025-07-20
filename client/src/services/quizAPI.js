@@ -154,6 +154,12 @@ export const quizAPI = {
     const queryString = new URLSearchParams(params).toString();
     return api.get(`/quizzes/attempts/all${queryString ? `?${queryString}` : ''}`);
   },
+
+  // Get current user's all quiz attempts across all quizzes
+  getUserAllQuizAttempts: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return api.get(`/quizzes/my-attempts/all${queryString ? `?${queryString}` : ''}`);
+  },
 };
 
 export default quizAPI;

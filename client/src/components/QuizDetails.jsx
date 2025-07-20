@@ -73,7 +73,12 @@ const QuizDetails = () => {
   };
 
   const handleStartQuiz = () => {
-    navigate(`/courses/${courseId}/quizzes/${quizId}/take`);
+    if (courseId) {
+      navigate(`/courses/${courseId}/quizzes/${quizId}/take`);
+    } else {
+      // For admin viewing, redirect to course page first
+      navigate(`/courses/${quiz.course._id}/quizzes/${quizId}/take`);
+    }
   };
 
   const getBestAttempt = () => {
@@ -131,11 +136,11 @@ const QuizDetails = () => {
               <h2 className="text-2xl font-bold text-gray-800 mb-2">Quiz Not Found</h2>
               <p className="text-gray-600 mb-6">{error || 'The quiz you are looking for does not exist.'}</p>
               <Link
-                to={`/courses/${courseId}`}
+                to={courseId ? `/courses/${courseId}` : '/admin/quizzes'}
                 className="bg-[#00bcd4] text-white px-6 py-3 rounded-lg hover:bg-[#0097a7] transition-colors inline-flex items-center gap-2"
               >
                 <FaArrowLeft />
-                Back to Course
+                {courseId ? 'Back to Course' : 'Back to Quiz Management'}
               </Link>
             </div>
           </div>
@@ -148,7 +153,7 @@ const QuizDetails = () => {
   const attemptCount = getAttemptCount();
   const hasAttempted = attemptCount > 0;
   const isPassed = bestAttempt && bestAttempt.isPassed;
-  const canRetake = !quiz.maxAttempts || attemptCount < quiz.maxAttempts;
+  const canRetake = (!quiz.maxAttempts || attemptCount < quiz.maxAttempts) && courseId; // Hide for admin viewing
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -157,11 +162,11 @@ const QuizDetails = () => {
           {/* Header */}
           <div className="mb-6">
             <Link
-              to={`/courses/${courseId}`}
+              to={courseId ? `/courses/${courseId}` : '/admin/quizzes'}
               className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-800 mb-4 transition-colors"
             >
               <FaArrowLeft />
-              <span>Back to Course</span>
+              <span>{courseId ? 'Back to Course' : 'Back to Quiz Management'}</span>
             </Link>
           </div>
 
@@ -443,15 +448,17 @@ const QuizDetails = () => {
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 {hasAttempted && (
                   <>
-                    <Link
-                      to={`/courses/${courseId}/quizzes/${quizId}/attempts`}
-                      className="bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition-colors inline-flex items-center justify-center gap-2"
-                    >
-                      <FaHistory />
-                      View All Attempts
-                    </Link>
+                    {courseId && (
+                      <Link
+                        to={`/courses/${courseId}/quizzes/${quizId}/attempts`}
+                        className="bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition-colors inline-flex items-center justify-center gap-2"
+                      >
+                        <FaHistory />
+                        View All Attempts
+                      </Link>
+                    )}
 
-                    {bestAttempt && (
+                    {bestAttempt && courseId && (
                       <Link
                         to={`/courses/${courseId}/quizzes/${quizId}/results/${bestAttempt._id}`}
                         className="bg-blue-100 text-blue-700 px-6 py-3 rounded-lg hover:bg-blue-200 transition-colors inline-flex items-center justify-center gap-2"
@@ -473,10 +480,17 @@ const QuizDetails = () => {
                   </button>
                 )}
 
-                {!canRetake && (
+                {!canRetake && courseId && (
                   <div className="bg-red-50 text-red-700 px-6 py-3 rounded-lg border border-red-200 text-center">
                     <FaTimesCircle className="inline mr-2" />
                     You have reached the maximum number of attempts ({quiz.maxAttempts})
+                  </div>
+                )}
+
+                {!courseId && (
+                  <div className="bg-blue-50 text-blue-700 px-6 py-3 rounded-lg border border-blue-200 text-center">
+                    <FaInfoCircle className="inline mr-2" />
+                    Admin View - Quiz details and statistics only
                   </div>
                 )}
               </div>

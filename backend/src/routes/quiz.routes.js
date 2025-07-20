@@ -18,7 +18,8 @@ import {
     getQuizAttempts,
     getUserQuizAttempts,
     getQuizLeaderboard,
-    getAllQuizAttempts
+    getAllQuizAttempts,
+    getUserAllQuizAttempts
 } from "../controllers/quizAttempt.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { isAdmin } from "../middlewares/role.middleware.js";
@@ -54,6 +55,10 @@ router.route("/course/:courseId")
 // Admin route to get all quiz attempts across all quizzes
 router.route("/attempts/all")
     .get(isAdmin, getAllQuizAttempts);
+
+// User route to get all their quiz attempts across all quizzes
+router.route("/my-attempts/all")
+    .get(getUserAllQuizAttempts);
 
 // Quiz attempt routes
 router.route("/:quizId/attempts")

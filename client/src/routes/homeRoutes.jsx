@@ -340,6 +340,14 @@ export const homeRoutes = [
     ),
   },
   {
+    path: "admin/quizzes/:quizId",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <QuizDetailsPage />
+      </Suspense>
+    ),
+  },
+  {
     path: "admin/quizzes/edit/:quizId",
     element: (
       <Suspense fallback={<h1>Loading</h1>}>
@@ -386,6 +394,15 @@ export const homeRoutes = [
     element: (
       <Suspense fallback={<h1>Loading</h1>}>
         <QuizAttemptsPage />
+      </Suspense>
+    ),
+  },
+  // Direct quiz attempt viewing (for profile page links)
+  {
+    path: "quiz-attempts/:attemptId",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <QuizResultsPage />
       </Suspense>
     ),
   },

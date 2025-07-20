@@ -148,10 +148,10 @@ const QuizResults = () => {
       <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg">
         <p className="font-medium">{error}</p>
         <button
-          onClick={() => navigate(`/courses/${courseId}`)}
+          onClick={() => navigate(courseId ? `/courses/${courseId}` : '/profile')}
           className="mt-4 bg-red-100 text-red-700 px-4 py-2 rounded-lg hover:bg-red-200 transition-colors"
         >
-          Return to Course
+          {courseId ? 'Return to Course' : 'Return to Profile'}
         </button>
       </div>
     );
@@ -162,10 +162,10 @@ const QuizResults = () => {
       <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-6 py-4 rounded-lg">
         <p className="font-medium">Quiz results could not be loaded.</p>
         <button
-          onClick={() => navigate(`/courses/${courseId}`)}
+          onClick={() => navigate(courseId ? `/courses/${courseId}` : '/profile')}
           className="mt-4 bg-yellow-100 text-yellow-700 px-4 py-2 rounded-lg hover:bg-yellow-200 transition-colors"
         >
-          Return to Course
+          {courseId ? 'Return to Course' : 'Return to Profile'}
         </button>
       </div>
     );
@@ -186,11 +186,11 @@ const QuizResults = () => {
               </div>
               <div className="min-w-0 flex-1">
                 <Link
-                  to={`/courses/${courseId}`}
+                  to={courseId ? `/courses/${courseId}` : '/profile'}
                   className="inline-flex items-center gap-2 text-gray-600 hover:text-blue-600 mb-3 sm:mb-4 transition-colors duration-300 group text-sm sm:text-base"
                 >
                   <FaArrowLeft className="group-hover:-translate-x-1 transition-transform duration-300 text-xs sm:text-sm" />
-                  <span>Back to Course</span>
+                  <span>{courseId ? 'Back to Course' : 'Back to Profile'}</span>
                 </Link>
                 <h1 className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-2 leading-tight">
                   {quiz.title}
@@ -221,13 +221,15 @@ const QuizResults = () => {
                 )}
               </div>
 
-              <Link
-                to={`/courses/${courseId}/quizzes/${quizId}/attempts`}
-                className="text-blue-600 hover:text-blue-800 flex items-center gap-2 transition-colors duration-300 group text-sm sm:text-base"
-              >
-                <FaListAlt className="group-hover:scale-110 transition-transform duration-300 text-sm sm:text-base" />
-                <span>View All Attempts</span>
-              </Link>
+              {courseId && quizId && (
+                <Link
+                  to={`/courses/${courseId}/quizzes/${quizId}/attempts`}
+                  className="text-blue-600 hover:text-blue-800 flex items-center gap-2 transition-colors duration-300 group text-sm sm:text-base"
+                >
+                  <FaListAlt className="group-hover:scale-110 transition-transform duration-300 text-sm sm:text-base" />
+                  <span>View All Attempts</span>
+                </Link>
+              )}
             </div>
           </div>
         </div>
@@ -731,18 +733,20 @@ const QuizResults = () => {
       {/* Action Buttons */}
       <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row justify-between gap-3 sm:gap-4">
         <Link
-          to={`/courses/${courseId}`}
+          to={courseId ? `/courses/${courseId}` : '/profile'}
           className="px-4 py-2 sm:py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-center text-sm sm:text-base order-2 sm:order-1"
         >
-          Return to Course
+          {courseId ? 'Return to Course' : 'Return to Profile'}
         </Link>
 
-        <Link
-          to={`/courses/${courseId}/quizzes/${quizId}`}
-          className="px-4 py-2 sm:py-3 bg-[#00bcd4] text-white rounded-lg hover:bg-[#0097a7] transition-colors text-center text-sm sm:text-base order-1 sm:order-2"
-        >
-          Retake Quiz
-        </Link>
+        {courseId && quizId && (
+          <Link
+            to={`/courses/${courseId}/quizzes/${quizId}`}
+            className="px-4 py-2 sm:py-3 bg-[#00bcd4] text-white rounded-lg hover:bg-[0097a7] transition-colors text-center text-sm sm:text-base order-1 sm:order-2"
+          >
+            Retake Quiz
+          </Link>
+        )}
       </div>
       </div>
     </div>
