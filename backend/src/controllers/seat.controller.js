@@ -6,6 +6,17 @@ import { Center } from "../models/center.model.js";
 import { User } from "../models/user.model.js";
 import mongoose from "mongoose";
 import QRCode from "qrcode";
+import {
+    getCurrentISTTime,
+    getCurrentISTTimeString,
+    getCurrentISTDate,
+    getTomorrowISTDate,
+    getBookingStatus,
+    timeToMinutes,
+    formatISTDate,
+    formatISTTime
+} from "../utils/timezone.js";
+import BookingStatusService from "../services/bookingStatusService.js";
 
 // Helper function to generate QR code for a seat
 const generateSeatQRCode = async (seatData) => {
@@ -365,20 +376,45 @@ const handleQRCodeScan = asyncHandler(async (req, res) => {
             throw new ApiError(400, "This seat is currently inactive");
         }
 
-        // Check current booking status for today
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
+        // Check booking status - get comprehensive booking information using IST timezone
+        // First update any expired bookings automatically
+        await BookingStatusService.updateExpiredBookings();
 
-        const currentBooking = await SeatBooking.findOne({
-            seat: seat._id,
-            bookingDate: {
-                $gte: today,
-                $lt: tomorrow
-            },
-            status: { $in: ['confirmed', 'completed'] }
-        }).populate('user', 'fullName email username');
+        const istNow = getCurrentISTTime();
+        const istToday = getCurrentISTDate();
+        const currentTime = getCurrentISTTimeString();
+
+        // Get seat availability status using the booking status service
+        const availabilityStatus = await BookingStatusService.getSeatAvailabilityStatus(seat._id, istToday);
+
+        // Add formatted times for display
+        const bookingsWithStatus = availabilityStatus.allBookings.map(booking => ({
+            ...booking,
+            formattedStartTime: formatISTTime(booking.startTime),
+            formattedEndTime: formatISTTime(booking.endTime),
+            formattedDate: formatISTDate(booking.bookingDate)
+        }));
+
+        // Find currently active booking
+        const currentBooking = availabilityStatus.activeBooking ? {
+            ...availabilityStatus.activeBooking,
+            formattedStartTime: formatISTTime(availabilityStatus.activeBooking.startTime),
+            formattedEndTime: formatISTTime(availabilityStatus.activeBooking.endTime),
+            formattedDate: formatISTDate(availabilityStatus.activeBooking.bookingDate)
+        } : null;
+
+        // Debug logging with IST information
+        console.log('QR Scan Debug - Seat ID:', seatId);
+        console.log('QR Scan Debug - Center ID:', centerId);
+        console.log('QR Scan Debug - Current IST Time:', currentTime);
+        console.log('QR Scan Debug - IST Date:', formatISTDate(istToday));
+        console.log('QR Scan Debug - Today\'s Bookings Count:', bookingsWithStatus.length);
+        console.log('QR Scan Debug - Available Slots:', availabilityStatus.availableSlots?.length || 0);
+        console.log('QR Scan Debug - Active Current Booking:', currentBooking ? 'Found' : 'None');
+        if (currentBooking) {
+            console.log('QR Scan Debug - Booking Time (IST):', `${currentBooking.formattedStartTime} - ${currentBooking.formattedEndTime}`);
+        }
+        console.log('QR Scan Debug - isBooked will be:', availabilityStatus.isCurrentlyBooked);
 
         const bookingUrl = `${process.env.FRONTEND_URL || 'https://educasheer.in'}/seat-booking/${centerId}?seatId=${seatId}`;
 
@@ -392,20 +428,59 @@ const handleQRCodeScan = asyncHandler(async (req, res) => {
                 facilities: seat.facilities,
                 center: seat.center
             },
-            isBooked: !!currentBooking,
+            isBooked: availabilityStatus.isCurrentlyBooked,
             currentBooking: currentBooking ? {
                 _id: currentBooking._id,
                 user: currentBooking.user,
                 bookingDate: currentBooking.bookingDate,
                 startTime: currentBooking.startTime,
                 endTime: currentBooking.endTime,
+                formattedStartTime: currentBooking.formattedStartTime,
+                formattedEndTime: currentBooking.formattedEndTime,
+                formattedDate: currentBooking.formattedDate,
                 status: currentBooking.status,
                 duration: currentBooking.duration,
                 checkedIn: currentBooking.checkedIn,
-                checkedOut: currentBooking.checkedOut
+                checkedOut: currentBooking.checkedOut,
+                bookingStatus: currentBooking.bookingStatus,
+                bookingNotes: currentBooking.bookingNotes
             } : null,
-            redirectUrl: bookingUrl
+            // Include all today's bookings with their status and formatted times
+            allTodaysBookings: bookingsWithStatus.map(booking => ({
+                _id: booking._id,
+                user: booking.user,
+                startTime: booking.startTime,
+                endTime: booking.endTime,
+                formattedStartTime: booking.formattedStartTime,
+                formattedEndTime: booking.formattedEndTime,
+                formattedDate: booking.formattedDate,
+                status: booking.status,
+                bookingStatus: booking.bookingStatus,
+                duration: booking.duration,
+                checkedIn: booking.checkedIn,
+                checkedOut: booking.checkedOut,
+                bookingNotes: booking.bookingNotes
+            })),
+            redirectUrl: bookingUrl,
+            currentTime: currentTime,
+            currentISTTime: formatISTTime(currentTime),
+            currentISTDate: formatISTDate(istToday),
+            timezone: 'IST (UTC+5:30)',
+            // Additional availability information
+            availableSlots: availabilityStatus.availableSlots || [],
+            totalBookingsToday: availabilityStatus.totalBookings,
+            seatAvailabilityStatus: {
+                isCurrentlyBooked: availabilityStatus.isCurrentlyBooked,
+                hasBookingsToday: availabilityStatus.totalBookings > 0,
+                availableSlotsCount: availabilityStatus.availableSlots?.length || 0
+            }
         };
+
+        console.log('QR Scan Debug - Final Response:', {
+            isBooked: response.isBooked,
+            hasCurrentBooking: !!response.currentBooking,
+            redirectUrl: response.redirectUrl
+        });
 
         return res.status(200).json(
             new ApiResponse(200, response, "QR code scanned successfully")

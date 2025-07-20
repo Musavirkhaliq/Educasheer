@@ -661,7 +661,7 @@ const getUserAllQuizAttempts = asyncHandler(async (req, res) => {
                     foreignField: "_id",
                     as: "course",
                     pipeline: [
-                        { $project: { title: 1 } }
+                        { $project: { title: 1, _id: 1 } }
                     ]
                 }
             },

@@ -21,6 +21,10 @@ const CenterDetailPage = () => {
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'overview');
   const [showSeatBooking, setShowSeatBooking] = useState(false);
 
+  // Handle QR code parameters
+  const seatId = searchParams.get('seatId');
+  const fromQR = searchParams.get('fromQR');
+
   useEffect(() => {
     const fetchCenterDetails = async () => {
       try {
@@ -36,6 +40,14 @@ const CenterDetailPage = () => {
 
     fetchCenterDetails();
   }, [centerId]);
+
+  // Handle QR code navigation - automatically switch to booking tab
+  useEffect(() => {
+    if (seatId && center) {
+      setActiveTab('booking');
+      toast.success(`QR Code scanned! Seat selection ready for ${center.name}`);
+    }
+  }, [seatId, center]);
 
   const fetchAvailableStudents = async () => {
     if (currentUser?.role !== 'admin') return;
@@ -378,7 +390,11 @@ const CenterDetailPage = () => {
                 <h2 className="text-xl font-semibold text-gray-800 mb-2">Book a Seat</h2>
                 <p className="text-gray-600">Reserve your seat at {center.name} for focused study sessions.</p>
               </div>
-              <SeatBookingForm center={center} onBookingSuccess={handleBookingSuccess} />
+              <SeatBookingForm
+                center={center}
+                onBookingSuccess={handleBookingSuccess}
+                preSelectedSeatId={seatId}
+              />
             </div>
           )}
         </div> {/* --- End of Main Center Card --- */}

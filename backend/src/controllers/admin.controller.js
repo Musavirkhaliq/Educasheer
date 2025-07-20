@@ -4,6 +4,9 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { User } from "../models/user.model.js";
 import { TutorApplication } from "../models/tutorApplication.model.js";
 import { Course } from "../models/course.model.js";
+import BookingStatusService from "../services/bookingStatusService.js";
+import scheduledTasksService from "../services/scheduledTasks.js";
+import { getCurrentISTTimeString, formatISTDate, getCurrentISTDate } from "../utils/timezone.js";
 
 // Get all users (admin only)
 const getAllUsers = asyncHandler(async (req, res) => {
@@ -168,9 +171,122 @@ const createAdminUser = asyncHandler(async (req, res) => {
     }
 });
 
+// Get system status including scheduled tasks
+const getSystemStatus = asyncHandler(async (req, res) => {
+    try {
+        const scheduledTasksStatus = scheduledTasksService.getStatus();
+
+        const systemStatus = {
+            currentTime: getCurrentISTTimeString(),
+            currentDate: formatISTDate(getCurrentISTDate()),
+            timezone: 'IST (UTC+5:30)',
+            scheduledTasks: scheduledTasksStatus,
+            server: {
+                uptime: process.uptime(),
+                nodeVersion: process.version,
+                platform: process.platform,
+                environment: process.env.NODE_ENV || 'development'
+            }
+        };
+
+        return res.status(200).json(
+            new ApiResponse(200, systemStatus, "System status retrieved successfully")
+        );
+    } catch (error) {
+        throw new ApiError(error.statusCode || 500, error.message || "Failed to get system status");
+    }
+});
+
+// Manually trigger booking status update
+const updateBookingStatus = asyncHandler(async (req, res) => {
+    try {
+        const updatedCount = await BookingStatusService.updateExpiredBookings();
+
+        const result = {
+            updatedBookings: updatedCount,
+            timestamp: getCurrentISTTimeString(),
+            message: updatedCount > 0
+                ? `Successfully updated ${updatedCount} expired bookings to completed status`
+                : 'No expired bookings found to update'
+        };
+
+        return res.status(200).json(
+            new ApiResponse(200, result, "Booking status update completed")
+        );
+    } catch (error) {
+        throw new ApiError(error.statusCode || 500, error.message || "Failed to update booking status");
+    }
+});
+
+// Control scheduled tasks
+const controlScheduledTasks = asyncHandler(async (req, res) => {
+    try {
+        const { action, taskName } = req.body;
+
+        if (!action) {
+            throw new ApiError(400, "Action is required (start, stop, trigger, status)");
+        }
+
+        let result = {};
+
+        switch (action) {
+            case 'start':
+                scheduledTasksService.start();
+                result = {
+                    action: 'start',
+                    message: 'Scheduled tasks started',
+                    status: scheduledTasksService.getStatus()
+                };
+                break;
+
+            case 'stop':
+                scheduledTasksService.stop();
+                result = {
+                    action: 'stop',
+                    message: 'Scheduled tasks stopped',
+                    status: scheduledTasksService.getStatus()
+                };
+                break;
+
+            case 'trigger':
+                if (!taskName) {
+                    throw new ApiError(400, "Task name is required for trigger action");
+                }
+                await scheduledTasksService.triggerTask(taskName);
+                result = {
+                    action: 'trigger',
+                    taskName,
+                    message: `Task ${taskName} triggered successfully`,
+                    timestamp: getCurrentISTTimeString()
+                };
+                break;
+
+            case 'status':
+                result = {
+                    action: 'status',
+                    status: scheduledTasksService.getStatus(),
+                    timestamp: getCurrentISTTimeString()
+                };
+                break;
+
+            default:
+                throw new ApiError(400, "Invalid action. Use: start, stop, trigger, or status");
+        }
+
+        return res.status(200).json(
+            new ApiResponse(200, result, `Scheduled tasks ${action} completed successfully`)
+        );
+    } catch (error) {
+        throw new ApiError(error.statusCode || 500, error.message || "Failed to control scheduled tasks");
+    }
+});
+
 export {
     getAllUsers,
     updateUserRole,
     enrollUserInCourse,
-    createAdminUser
+    createAdminUser,
+    getSystemStatus,
+    updateBookingStatus,
+    controlScheduledTasks
 };

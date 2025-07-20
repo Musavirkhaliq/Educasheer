@@ -67,14 +67,22 @@ const QRScanner = ({ onScanResult, onClose }) => {
             if (response.data.success) {
                 const data = response.data.data;
 
-                // If seat is booked, show booking details
-                if (data.isBooked && data.currentBooking) {
+                // Always show booking details first (whether booked or available)
+                // This allows users to see the full schedule before deciding
+                if (data.allTodaysBookings && data.allTodaysBookings.length > 0) {
+                    // Show booking details modal with full schedule
                     onScanResult(data);
-                    toast.success('Seat is currently booked - showing details');
+                    if (data.isBooked) {
+                        toast.error(`Seat is currently booked until ${data.currentBooking?.formattedEndTime || data.currentBooking?.endTime} IST - view schedule for other available times`);
+                    } else {
+                        toast.success('Seat schedule loaded - check available time slots and book accordingly');
+                    }
                 } else {
-                    // If seat is available, redirect to booking page
-                    toast.success('Redirecting to booking page...');
-                    window.location.href = data.redirectUrl;
+                    // No bookings today, redirect directly to booking page
+                    toast.success(`Seat available all day! Current time: ${data.currentISTTime || 'Loading...'} IST`);
+                    setTimeout(() => {
+                        window.location.href = data.redirectUrl;
+                    }, 1500); // Give user time to read the message
                 }
             } else {
                 toast.error('Failed to process QR code');
@@ -82,7 +90,18 @@ const QRScanner = ({ onScanResult, onClose }) => {
             }
         } catch (error) {
             console.error('Error processing QR code:', error);
-            toast.error(error.response?.data?.message || 'Failed to process QR code');
+
+            // More specific error messages
+            if (error.response?.status === 401) {
+                toast.error('Please log in to scan QR codes');
+            } else if (error.response?.status === 404) {
+                toast.error('Seat not found. This QR code may be invalid.');
+            } else if (error.response?.status === 400) {
+                toast.error('Invalid QR code format. Please try scanning again.');
+            } else {
+                toast.error(error.response?.data?.message || 'Failed to process QR code. Please try again.');
+            }
+
             setIsScanning(true); // Resume scanning
         }
     };
@@ -156,7 +175,7 @@ const QRScanner = ({ onScanResult, onClose }) => {
                         <li>• Make sure the QR code is clearly visible</li>
                         <li>• Hold steady until the code is scanned</li>
                         <li>• If seat is available, you can proceed to book</li>
-                        <li>• If seat is booked, you'll see booking details</li>
+                        <li>• If seat is already booked, find another seat and scan its QR code</li>
                     </ul>
                 </div>
             </div>

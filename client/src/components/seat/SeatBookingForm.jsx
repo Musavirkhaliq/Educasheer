@@ -35,28 +35,25 @@ const SeatBookingForm = ({ center, onBookingSuccess, preSelectedSeatId }) => {
             const preSelectedSeat = seats.find(seat => seat._id === preSelectedSeatId);
             if (preSelectedSeat) {
                 setSelectedSeat(preSelectedSeat);
-                toast.success(`Seat ${preSelectedSeat.seatNumber} pre-selected from QR code!`);
+                toast.success(`Seat ${preSelectedSeat.seatNumber} selected from QR code! Choose your preferred date and time to see availability.`);
 
-                // Set default date and time for QR code bookings
+                // Only set default date, let user choose their preferred time
                 if (!bookingDate) {
                     setBookingDate(getTodayDate());
                 }
-                if (!startTime) {
-                    setStartTime('09:00');
-                }
-                if (!endTime) {
-                    setEndTime('17:00');
-                }
+                // Don't pre-fill time - let user choose their preferred time slots
+                // This allows them to see comprehensive booking information for different times
             }
         }
     }, [preSelectedSeatId, seats]);
 
-    // Auto-fetch availability when QR code pre-selects seat and default times are set
+    // Auto-fetch availability when user selects date and time (including QR code scenarios)
+    // This will show comprehensive booking information when user chooses their preferred time
     useEffect(() => {
-        if (preSelectedSeatId && bookingDate && startTime && endTime && center) {
+        if (bookingDate && startTime && endTime && center) {
             fetchAvailableSeats();
         }
-    }, [preSelectedSeatId, bookingDate, startTime, endTime, center]);
+    }, [bookingDate, startTime, endTime, center]);
 
 
 
@@ -112,9 +109,23 @@ const SeatBookingForm = ({ center, onBookingSuccess, preSelectedSeatId }) => {
             }
 
             // Reset selected seat if it's no longer available
+            // Only show warning if the seat was previously available but now isn't
             if (selectedSeat && !availabilityResponse.data.data.availableSeats.some(seat => seat._id === selectedSeat._id)) {
+                // Check if this seat was previously available (to avoid warning for intentionally selected booked seats)
+                const wasPreviouslyAvailable = availableSeats.some(seat => seat._id === selectedSeat._id);
+
                 setSelectedSeat(null);
-                toast.warning('Selected seat is no longer available for the chosen time');
+
+                // Only show warning if the seat was available before but isn't now (someone else booked it)
+                if (wasPreviouslyAvailable) {
+                    toast('Selected seat is no longer available for the chosen time', {
+                        icon: '⚠️',
+                        style: {
+                            background: '#FEF3C7',
+                            color: '#92400E',
+                        },
+                    });
+                }
             }
         } catch (error) {
             console.error('Error fetching seat availability:', error);
@@ -128,7 +139,23 @@ const SeatBookingForm = ({ center, onBookingSuccess, preSelectedSeatId }) => {
             } else if (error.response?.status === 400) {
                 toast.error('Invalid booking parameters. Please check your date and time.');
             } else {
-                toast.error('Unable to check seat availability. All seats are shown as available.');
+                // Check if this is from a QR scan redirect
+                const urlParams = new URLSearchParams(window.location.search);
+                const isFromQRScan = urlParams.has('seatId');
+
+                if (isFromQRScan) {
+                    // More helpful and less alarming message for QR scan scenarios
+                    toast('Could not verify current seat availability. You can still proceed with booking. Check the seat schedule in the QR scan details for more information.', {
+                        icon: '⚠️',
+                        style: {
+                            background: '#FEF3C7',
+                            color: '#92400E',
+                        },
+                        duration: 6000,
+                    });
+                } else {
+                    toast.error('Unable to check seat availability. All seats are shown as available.');
+                }
             }
         } finally {
             setLoadingAvailability(false);
@@ -242,7 +269,7 @@ const SeatBookingForm = ({ center, onBookingSuccess, preSelectedSeatId }) => {
         <div className="seat-booking-form">
             <div className="bg-white rounded-lg shadow-md p-6">
                 <h2 className="text-2xl font-bold text-gray-800 mb-6">
-                    {preSelectedSeatId ? 'Complete Your Booking' : 'Book a Seat'}
+                    {preSelectedSeatId ? '📱 QR Code Booking - Choose Your Time' : 'Book a Seat'}
                 </h2>
 
                 {/* QR Code Booking Notice */}
@@ -258,8 +285,9 @@ const SeatBookingForm = ({ center, onBookingSuccess, preSelectedSeatId }) => {
                                 <h3 className="text-sm font-medium text-green-800">
                                     Seat Selected via QR Code
                                 </h3>
-                                <div className="mt-1 text-sm text-green-700">
-                                    <p>Seat {selectedSeat.seatNumber} has been automatically selected. Fill in your booking details below.</p>
+                                <div className="mt-2 text-sm text-green-700">
+                                    <p>✅ Perfect! You've selected Seat {selectedSeat.seatNumber} via QR code.</p>
+                                    <p className="mt-1">📅 <strong>Next:</strong> Choose your date and time below to see comprehensive booking information and available slots.</p>
                                 </div>
                             </div>
                         </div>
@@ -394,12 +422,27 @@ const SeatBookingForm = ({ center, onBookingSuccess, preSelectedSeatId }) => {
                         </div>
                     )}
 
-                    {/* Seat Layout - Hidden when seat is pre-selected from QR code */}
-                    {bookingDate && startTime && endTime && !preSelectedSeatId && (
+                    {/* Seat Layout - Always show, even when seat is pre-selected from QR code */}
+                    {bookingDate && startTime && endTime && (
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Select Seat *
                             </label>
+                            <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg mb-4">
+                                <p className="text-blue-800 text-sm">
+                                    {preSelectedSeatId ? (
+                                        <>
+                                            📱 <strong>QR Code Seat Selected:</strong> Your scanned seat is highlighted.
+                                            Click on any seat (including booked ones) to see comprehensive booking information and available time slots.
+                                        </>
+                                    ) : (
+                                        <>
+                                            💡 <strong>Tip:</strong> Green seats are available for your selected time.
+                                            Click on red (booked) seats to see their booking details and find alternative time slots.
+                                        </>
+                                    )}
+                                </p>
+                            </div>
                             {loadingAvailability ? (
                                 <div className="text-center py-8">
                                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
