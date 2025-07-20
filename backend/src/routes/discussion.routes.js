@@ -13,15 +13,15 @@ const router = Router();
 router.use(verifyJWT);
 
 // Get all messages for a course
-router.get("/courses/:courseId/discussion", getDiscussionMessages);
+router.get("/courses/:courseId", getDiscussionMessages);
 
 // Create a new message
-router.post("/courses/:courseId/discussion", createDiscussionMessage);
+router.post("/courses/:courseId", createDiscussionMessage);
 
 // Like/unlike a message
-router.patch("/discussion/:messageId/like", toggleLikeMessage);
+router.patch("/:messageId/like", toggleLikeMessage);
 
 // Delete a message
-router.delete("/discussion/:messageId", deleteDiscussionMessage);
+router.delete("/:messageId", deleteDiscussionMessage);
 
 export default router;

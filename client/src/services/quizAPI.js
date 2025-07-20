@@ -51,6 +51,20 @@ export const quizAPI = {
     }
   },
 
+  // Public: Get quiz tags with counts
+  getQuizTags: async (params) => {
+    try {
+      const response = await axios.get('/api/public/quiz-tags', { params });
+      return response;
+    } catch (error) {
+      console.error('Error fetching quiz tags:', error);
+      if (error.response && error.response.status === 404) {
+        return { data: { data: [] } };
+      }
+      throw error;
+    }
+  },
+
   // Admin: Create a quiz
   createQuiz: (data) => api.post('/quizzes', data),
 

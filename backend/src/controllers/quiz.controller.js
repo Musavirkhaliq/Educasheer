@@ -464,18 +464,29 @@ const uploadQuestionsFromJSON = asyncHandler(async (req, res) => {
  */
 const getPublishedQuizzes = asyncHandler(async (req, res) => {
     try {
-        const { category, type, search, page = 1, limit = 12 } = req.query;
+        const { category, type, search, tags, difficulty, page = 1, limit = 12 } = req.query;
 
         const filter = { isPublished: true };
 
         // Apply filters if provided
         if (category && category !== '') filter.category = category;
         if (type && type !== '') filter.quizType = type;
+        if (difficulty && difficulty !== '') filter.difficulty = difficulty;
+
+        // Handle tags filter (can be comma-separated string or array)
+        if (tags && tags !== '') {
+            const tagArray = Array.isArray(tags) ? tags : tags.split(',').map(tag => tag.trim().toLowerCase());
+            if (tagArray.length > 0) {
+                filter.tags = { $in: tagArray };
+            }
+        }
+
         if (search) {
             filter.$or = [
                 { title: { $regex: search, $options: 'i' } },
                 { description: { $regex: search, $options: 'i' } },
-                { category: { $regex: search, $options: 'i' } }
+                { category: { $regex: search, $options: 'i' } },
+                { tags: { $in: [new RegExp(search, 'i')] } }
             ];
         }
 
@@ -569,11 +580,57 @@ const getQuizCategories = asyncHandler(async (req, res) => {
     }
 });
 
+// Get all quiz tags with counts
+const getQuizTags = asyncHandler(async (req, res) => {
+    try {
+        const { includeEmpty = 'false' } = req.query;
+
+        // Get all published quizzes and extract tags
+        const quizzes = await Quiz.find({ isPublished: true }).select('tags');
+
+        // Count tag occurrences
+        const tagCounts = {};
+        quizzes.forEach(quiz => {
+            if (quiz.tags && quiz.tags.length > 0) {
+                quiz.tags.forEach(tag => {
+                    if (tag && tag.trim()) {
+                        const normalizedTag = tag.toLowerCase().trim();
+                        tagCounts[normalizedTag] = (tagCounts[normalizedTag] || 0) + 1;
+                    }
+                });
+            }
+        });
+
+        // Convert to array and sort by count (descending) then by name
+        let result = Object.entries(tagCounts).map(([tag, count]) => ({
+            name: tag,
+            count: count
+        })).sort((a, b) => {
+            if (b.count !== a.count) {
+                return b.count - a.count; // Sort by count descending
+            }
+            return a.name.localeCompare(b.name); // Then by name ascending
+        });
+
+        // Filter out tags with no quizzes if includeEmpty is false
+        if (includeEmpty !== 'true') {
+            result = result.filter(tag => tag.count > 0);
+        }
+
+        return res.status(200).json(
+            new ApiResponse(200, result, "Quiz tags fetched successfully")
+        );
+    } catch (error) {
+        throw new ApiError(500, "Failed to fetch quiz tags");
+    }
+});
+
 export {
     createQuiz,
     getAllQuizzes,
     getPublishedQuizzes,
     getQuizCategories,
+    getQuizTags,
     getQuizById,
     updateQuiz,
     deleteQuiz,

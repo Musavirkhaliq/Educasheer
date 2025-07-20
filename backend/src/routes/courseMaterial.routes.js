@@ -13,16 +13,16 @@ const router = Router();
 router.use(verifyJWT);
 
 // Get all materials for a course
-router.get("/courses/:courseId/materials", getCourseMaterials);
+router.get("/courses/:courseId", getCourseMaterials);
 
 // Upload a new material
 router.post(
-    "/courses/:courseId/materials", 
+    "/courses/:courseId",
     upload.single("file"),
     uploadCourseMaterial
 );
 
 // Delete a material
-router.delete("/materials/:materialId", deleteCourseMaterial);
+router.delete("/:materialId", deleteCourseMaterial);
 
 export default router;

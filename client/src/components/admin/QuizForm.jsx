@@ -23,6 +23,9 @@ const QuizForm = ({ isEditing = false }) => {
     title: '',
     description: '',
     course: '',
+    category: '',
+    tags: [],
+    difficulty: 'medium',
     timeLimit: 30,
     passingScore: 70,
     quizType: 'quiz',
@@ -32,6 +35,8 @@ const QuizForm = ({ isEditing = false }) => {
     randomizeQuestions: false,
     questions: []
   });
+
+  const [tagInput, setTagInput] = useState('');
   
   // Fetch courses and quiz data if editing
   useEffect(() => {
@@ -173,6 +178,32 @@ const QuizForm = ({ isEditing = false }) => {
       questions: [...prev.questions, ...importedQuestions]
     }));
     setShowJSONUpload(false);
+  };
+
+  // Handle tag input
+  const handleTagInput = (e) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      addTag();
+    }
+  };
+
+  const addTag = () => {
+    const tag = tagInput.trim().toLowerCase();
+    if (tag && !formData.tags.includes(tag)) {
+      setFormData(prev => ({
+        ...prev,
+        tags: [...prev.tags, tag]
+      }));
+    }
+    setTagInput('');
+  };
+
+  const removeTag = (tagToRemove) => {
+    setFormData(prev => ({
+      ...prev,
+      tags: prev.tags.filter(tag => tag !== tagToRemove)
+    }));
   };
 
   // Handle form submission
@@ -324,7 +355,84 @@ const QuizForm = ({ isEditing = false }) => {
               required
             ></textarea>
           </div>
-          
+
+          {/* Category and Tags */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Category
+              </label>
+              <input
+                type="text"
+                name="category"
+                value={formData.category}
+                onChange={handleInputChange}
+                placeholder="e.g., Mathematics, Science, Programming"
+                className="w-full border border-gray-300 rounded-md px-3 py-2"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Difficulty
+              </label>
+              <select
+                name="difficulty"
+                value={formData.difficulty}
+                onChange={handleInputChange}
+                className="w-full border border-gray-300 rounded-md px-3 py-2"
+              >
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Tags */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Tags
+            </label>
+            <div className="flex flex-wrap gap-2 mb-2">
+              {formData.tags.map((tag, index) => (
+                <span
+                  key={index}
+                  className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800"
+                >
+                  {tag}
+                  <button
+                    type="button"
+                    onClick={() => removeTag(tag)}
+                    className="ml-2 text-blue-600 hover:text-blue-800"
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={handleTagInput}
+                placeholder="Add tags (press Enter or comma to add)"
+                className="flex-1 border border-gray-300 rounded-md px-3 py-2"
+              />
+              <button
+                type="button"
+                onClick={addTag}
+                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+              >
+                Add
+              </button>
+            </div>
+            <p className="text-sm text-gray-500 mt-1">
+              Tags help students find your quiz more easily. Use relevant keywords.
+            </p>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">

@@ -104,6 +104,16 @@ const quizSchema = new Schema({
         trim: true,
         default: ''
     },
+    tags: [{
+        type: String,
+        trim: true,
+        lowercase: true
+    }],
+    difficulty: {
+        type: String,
+        enum: ["easy", "medium", "hard"],
+        default: "medium"
+    },
     maxAttempts: {
         type: Number,
         default: 0 // 0 means unlimited attempts

@@ -91,6 +91,10 @@ app.get("/api/public/test", (req, res) => {
 // Public quiz endpoints under /api/public/
 app.get("/api/public/quizzes", getPublishedQuizzes);
 app.get("/api/public/quiz-categories", getQuizCategories);
+app.get("/api/public/quiz-tags", getQuizTags);
+
+// Public testimonial endpoints under /api/public/
+app.get("/api/public/testimonials", getApprovedTestimonials);
 
 
 import userRouter from "./routes/user.routes.js";
@@ -119,7 +123,9 @@ import seatRouter from "./routes/seat.routes.js";
 import categoryRouter from "./routes/category.routes.js";
 
 // Import public quiz routes
-import { getPublishedQuizzes, getQuizCategories } from "./controllers/quiz.controller.js";
+import { getPublishedQuizzes, getQuizCategories, getQuizTags } from "./controllers/quiz.controller.js";
+// Import public testimonial routes
+import { getApprovedTestimonials } from "./controllers/testimonial.controller.js";
 
 // Routes declaration
 app.use("/api/v1/users", userRouter);
@@ -133,8 +139,8 @@ app.use("/api/v1/comments", commentRouter);
 app.use("/api/v1/blogs", blogRouter);
 app.use("/api/v1/materials", materialRouter);
 app.use("/api/v1/debug", debugRouter);
-app.use("/api/v1", discussionRouter);
-app.use("/api/v1", courseMaterialRouter);
+app.use("/api/v1/discussions", discussionRouter);
+app.use("/api/v1/course-materials", courseMaterialRouter);
 app.use("/api/v1/attendance", attendanceRouter);
 app.use("/api/v1/fees", feeRouter);
 app.use("/api/v1/testimonials", testimonialRouter);
