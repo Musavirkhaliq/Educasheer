@@ -7,7 +7,7 @@ const TestimonialManagement = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [filter, setFilter] = useState('all'); // 'all', 'pending', 'approved'
+  const [filter, setFilter] = useState('pending'); // Start with pending to show admin what needs attention
 
   useEffect(() => {
     fetchTestimonials();
@@ -17,15 +17,17 @@ const TestimonialManagement = () => {
     try {
       setLoading(true);
       console.log('Fetching testimonials with filter:', filter);
-      const response = await testimonialAPI.getAllTestimonials({ status: filter !== 'all' ? filter : '' });
-      console.log('Admin testimonials response:', response);
 
-      // Handle both possible response formats
-      const fetchedTestimonials = Array.isArray(response.data)
-        ? response.data
-        : (response.data.testimonials || []);
+      // Prepare the correct status parameter for the API
+      const params = {};
+      if (filter !== 'all') {
+        params.status = filter;
+      }
 
-      console.log('Fetched testimonials:', fetchedTestimonials);
+      const response = await testimonialAPI.getAllTestimonials(params);
+
+      // Handle the response format - the data should be in response.data.data
+      const fetchedTestimonials = response.data?.data || response.data || [];
       setTestimonials(fetchedTestimonials);
 
       // Clear any previous errors
@@ -85,7 +87,16 @@ const TestimonialManagement = () => {
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-6">
-      <h2 className="text-2xl font-bold mb-6">Manage Testimonials</h2>
+      <h2 className="text-2xl font-bold mb-6">
+        Manage Testimonials
+        {testimonials.length > 0 && (
+          <span className="ml-2 text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+            {testimonials.length} {filter === 'pending' ? 'pending' : filter === 'approved' ? 'approved' : 'total'}
+          </span>
+        )}
+      </h2>
+
+
 
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">

@@ -15,14 +15,21 @@ const Testimonials = ({ limit = 6, showAddButton = true }) => {
     const fetchTestimonials = async () => {
       try {
         const response = await testimonialAPI.getApprovedTestimonials({ limit });
-        console.log("Approved testimonials response:", response);
 
-        // Handle both possible response formats
-        const fetchedTestimonials = Array.isArray(response.data)
-          ? response.data
-          : (response.data.testimonials || []);
+        // Handle the response format - check for ApiResponse format
+        let fetchedTestimonials = [];
 
-        console.log("Fetched approved testimonials:", fetchedTestimonials);
+        if (response.data?.data) {
+          // ApiResponse format: { success: true, data: [...], message: "..." }
+          fetchedTestimonials = Array.isArray(response.data.data) ? response.data.data : [];
+        } else if (Array.isArray(response.data)) {
+          // Direct array format
+          fetchedTestimonials = response.data;
+        } else if (response.data?.testimonials) {
+          // Nested testimonials format
+          fetchedTestimonials = response.data.testimonials;
+        }
+
         setTestimonials(fetchedTestimonials);
         setError(""); // Clear any previous errors
       } catch (error) {
@@ -92,6 +99,8 @@ const Testimonials = ({ limit = 6, showAddButton = true }) => {
           Hear from our community of learners about their experiences with EduCasheer
         </p>
       </div>
+
+
 
       <div className="relative max-w-6xl mx-auto px-4">
         {/* Navigation buttons */}
