@@ -592,9 +592,9 @@ const QuizTaker = () => {
                 const status = getQuestionStatus(index);
                 const statusColors = {
                   'current': 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg',
-                  'answered-marked': 'bg-gradient-to-r from-green-400 to-emerald-500 text-white shadow-md border-2 border-yellow-400',
-                  'answered': 'bg-gradient-to-r from-green-400 to-emerald-500 text-white shadow-md',
-                  'marked': 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-md',
+                  'answered-marked': 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md border-2 border-orange-400',
+                  'answered': 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md',
+                  'marked': 'bg-gradient-to-r from-orange-400 to-red-500 text-white shadow-md',
                   'not-visited': 'bg-white text-gray-600 border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50'
                 };
 
@@ -632,7 +632,7 @@ const QuizTaker = () => {
                   onClick={() => toggleMarkForReview()}
                   className={`flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-300 font-medium text-sm ${
                     markedForReview.has(currentQuestionIndex)
-                      ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg'
+                      ? 'bg-gradient-to-r from-orange-400 to-red-500 text-white shadow-lg'
                       : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
                   }`}
                 >
@@ -859,13 +859,13 @@ const QuizTaker = () => {
 
                 {/* Statistics */}
                 <div className="grid grid-cols-2 gap-3 mb-6">
-                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-3 rounded-lg border border-green-100">
-                    <div className="text-2xl font-bold text-green-600">{getAnsweredCount()}</div>
-                    <div className="text-xs text-green-700">Answered</div>
+                  <div className="bg-gradient-to-r from-emerald-50 to-teal-50 p-3 rounded-lg border border-emerald-100">
+                    <div className="text-2xl font-bold text-emerald-600">{getAnsweredCount()}</div>
+                    <div className="text-xs text-emerald-700">Answered</div>
                   </div>
-                  <div className="bg-gradient-to-r from-yellow-50 to-orange-50 p-3 rounded-lg border border-yellow-100">
-                    <div className="text-2xl font-bold text-yellow-600">{getMarkedCount()}</div>
-                    <div className="text-xs text-yellow-700">Marked</div>
+                  <div className="bg-gradient-to-r from-orange-50 to-red-50 p-3 rounded-lg border border-orange-100">
+                    <div className="text-2xl font-bold text-orange-600">{getMarkedCount()}</div>
+                    <div className="text-xs text-orange-700">Marked</div>
                   </div>
                   <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-3 rounded-lg border border-blue-100">
                     <div className="text-2xl font-bold text-blue-600">{quiz.questions.length - getAnsweredCount()}</div>
@@ -886,15 +886,15 @@ const QuizTaker = () => {
                       <span>Current Question</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 bg-gradient-to-r from-green-400 to-emerald-500 rounded"></div>
+                      <div className="w-4 h-4 bg-gradient-to-r from-emerald-500 to-teal-600 rounded"></div>
                       <span>Answered</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 bg-gradient-to-r from-yellow-400 to-orange-500 rounded"></div>
+                      <div className="w-4 h-4 bg-gradient-to-r from-orange-400 to-red-500 rounded"></div>
                       <span>Marked for Review</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 bg-gradient-to-r from-green-400 to-emerald-500 rounded border-2 border-yellow-400"></div>
+                      <div className="w-4 h-4 bg-gradient-to-r from-emerald-500 to-teal-600 rounded border-2 border-orange-400"></div>
                       <span>Answered & Marked</span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -911,9 +911,9 @@ const QuizTaker = () => {
                       const status = getQuestionStatus(index);
                       const statusColors = {
                         'current': 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg ring-2 ring-blue-300',
-                        'answered-marked': 'bg-gradient-to-r from-green-400 to-emerald-500 text-white shadow-md border-2 border-yellow-400',
-                        'answered': 'bg-gradient-to-r from-green-400 to-emerald-500 text-white shadow-md',
-                        'marked': 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-md',
+                        'answered-marked': 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md border-2 border-orange-400',
+                        'answered': 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md',
+                        'marked': 'bg-gradient-to-r from-orange-400 to-red-500 text-white shadow-md',
                         'not-visited': 'bg-white text-gray-600 border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50'
                       };
 
@@ -987,11 +987,11 @@ const QuizTaker = () => {
                 {/* Quiz Summary */}
                 <div className="grid grid-cols-3 gap-3 text-center">
                   <div className="bg-white/70 rounded-lg p-2">
-                    <div className="text-lg font-bold text-green-600">{getAnsweredCount()}</div>
+                    <div className="text-lg font-bold text-emerald-600">{getAnsweredCount()}</div>
                     <div className="text-xs text-gray-600">Answered</div>
                   </div>
                   <div className="bg-white/70 rounded-lg p-2">
-                    <div className="text-lg font-bold text-yellow-600">{getMarkedCount()}</div>
+                    <div className="text-lg font-bold text-orange-600">{getMarkedCount()}</div>
                     <div className="text-xs text-gray-600">Marked</div>
                   </div>
                   <div className="bg-white/70 rounded-lg p-2">

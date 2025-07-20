@@ -473,16 +473,14 @@ const QuizResults = () => {
       <div>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-6 mb-4 sm:mb-6">
           <h3 className="text-lg sm:text-xl font-semibold">Questions & Answers</h3>
-          {quiz.showCorrectAnswers && (
-            <button
-              onClick={() => setShowCorrectAnswers(!showCorrectAnswers)}
-              className="flex items-center gap-2 text-[#00bcd4] hover:text-[#0097a7] transition-colors text-sm sm:text-base"
-            >
-              {showCorrectAnswers ? <FaEyeSlash className="text-sm sm:text-base" /> : <FaEye className="text-sm sm:text-base" />}
-              <span className="hidden sm:inline">{showCorrectAnswers ? 'Hide Correct Answers' : 'Show Correct Answers'}</span>
-              <span className="sm:hidden">{showCorrectAnswers ? 'Hide Answers' : 'Show Answers'}</span>
-            </button>
-          )}
+          <button
+            onClick={() => setShowCorrectAnswers(!showCorrectAnswers)}
+            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 shadow-lg transform hover:scale-105 text-sm sm:text-base"
+          >
+            {showCorrectAnswers ? <FaEyeSlash className="text-sm sm:text-base" /> : <FaEye className="text-sm sm:text-base" />}
+            <span className="hidden sm:inline">{showCorrectAnswers ? 'Hide Correct Answers' : 'Reveal Correct Answers'}</span>
+            <span className="sm:hidden">{showCorrectAnswers ? 'Hide' : 'Reveal'}</span>
+          </button>
         </div>
 
         <div className="space-y-4 sm:space-y-8">
@@ -505,7 +503,7 @@ const QuizResults = () => {
                   </div>
                   <div className="flex flex-row sm:flex-col items-center sm:items-end gap-2 sm:gap-2">
                     <div className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium ${
-                      answer.isCorrect ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                      answer.isCorrect ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
                     }`}>
                       {answer.isCorrect ? (
                         <span className="flex items-center gap-1">
@@ -533,24 +531,24 @@ const QuizResults = () => {
                     {question.options.map(option => {
                       const isSelected = answer.selectedOptions.includes(option._id);
                       const isCorrect = option.isCorrect;
-                      const shouldShowCorrect = showCorrectAnswers && quiz.showCorrectAnswers;
+                      const shouldShowCorrect = showCorrectAnswers;
 
                       return (
                         <div
                           key={option._id}
                           className={`p-3 rounded-lg border ${
-                            isSelected && isCorrect ? 'border-green-300 bg-green-50' :
+                            isSelected && isCorrect ? 'border-emerald-300 bg-emerald-50' :
                             isSelected && !isCorrect ? 'border-red-300 bg-red-50' :
-                            shouldShowCorrect && !isSelected && isCorrect ? 'border-green-300 bg-green-50' :
+                            shouldShowCorrect && !isSelected && isCorrect ? 'border-emerald-300 bg-emerald-50' :
                             'border-gray-200'
                           }`}
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                               <div className={`w-5 h-5 rounded${question.type === 'true_false' ? '-full' : ''} border flex items-center justify-center ${
-                                isSelected && isCorrect ? 'bg-green-500 border-green-500 text-white' :
+                                isSelected && isCorrect ? 'bg-emerald-500 border-emerald-500 text-white' :
                                 isSelected && !isCorrect ? 'bg-red-500 border-red-500 text-white' :
-                                shouldShowCorrect && !isSelected && isCorrect ? 'bg-green-500 border-green-500 text-white' :
+                                shouldShowCorrect && !isSelected && isCorrect ? 'bg-emerald-500 border-emerald-500 text-white' :
                                 'border-gray-300'
                               }`}>
                                 {isSelected && (isCorrect ? <FaCheck size={12} /> : <FaTimes size={12} />)}
@@ -584,15 +582,15 @@ const QuizResults = () => {
                   <div className="mb-4">
                     <p className="text-sm text-gray-500 mb-2">Your Answer:</p>
                     <div className={`p-3 rounded-lg border ${
-                      answer.isCorrect ? 'border-green-300 bg-green-50' : 'border-red-300 bg-red-50'
+                      answer.isCorrect ? 'border-emerald-300 bg-emerald-50' : 'border-red-300 bg-red-50'
                     }`}>
                       {answer.textAnswer || <em className="text-gray-400">No answer provided</em>}
                     </div>
 
-                    {showCorrectAnswers && quiz.showCorrectAnswers && question.correctAnswer && (
+                    {showCorrectAnswers && question.correctAnswer && (
                       <div className="mt-3">
                         <p className="text-sm text-gray-500 mb-1">Correct Answer:</p>
-                        <div className="p-3 rounded-lg border border-green-300 bg-green-50">
+                        <div className="p-3 rounded-lg border border-emerald-300 bg-emerald-50">
                           {question.correctAnswer}
                         </div>
                       </div>
@@ -615,7 +613,7 @@ const QuizResults = () => {
                 )}
                 
                 {/* Explanation */}
-                {question.explanation && showCorrectAnswers && quiz.showCorrectAnswers && (
+                {question.explanation && showCorrectAnswers && (
                   <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                     <div className="flex items-start gap-2">
                       <FaLightbulb className="text-blue-500 mt-0.5" />
