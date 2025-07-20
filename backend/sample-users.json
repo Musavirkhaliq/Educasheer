@@ -1,0 +1,68 @@
+[
+  {
+    "username": "athar",
+    "email": "athar@educasheer.in",
+    "fullName": "Athar",
+    "password": "Educasheer@123",
+    "role": "learner",
+    "tutorStatus": "none",
+    "authProvider": "local",
+    "isEmailVerified": true,
+    "currentLevel": 1
+  },
+  {
+    "username": "gowhar",
+    "email": "gowhar@educasheer.in",
+    "fullName": "Gowhar",
+    "password": "Educasheer@123",
+    "role": "learner",
+    "tutorStatus": "none",
+    "authProvider": "local",
+    "isEmailVerified": true,
+    "currentLevel": 1
+  },
+  {
+    "username": "haroon",
+    "email": "haroon@educasheer.in",
+    "fullName": "Haroon",
+    "password": "Educasheer@123",
+    "role": "learner",
+    "tutorStatus": "none",
+    "authProvider": "local",
+    "isEmailVerified": true,
+    "currentLevel": 1
+  },
+  {
+    "username": "furkan",
+    "email": "furkan@educasheer.in",
+    "fullName": "Furkan",
+    "password": "Educasheer@123",
+    "role": "learner",
+    "tutorStatus": "none",
+    "authProvider": "local",
+    "isEmailVerified": true,
+    "currentLevel": 1
+  },
+  {
+    "username": "faizan",
+    "email": "faizan@educasheer.in",
+    "fullName": "Faizan",
+    "password": "Educasheer@123",
+    "role": "learner",
+    "tutorStatus": "none",
+    "authProvider": "local",
+    "isEmailVerified": true,
+    "currentLevel": 1
+  },
+  {
+    "username": "tezebh",
+    "email": "tezebh@educasheer.in",
+    "fullName": "Tezebh",
+    "password": "Educasheer@123",
+    "role": "learner",
+    "tutorStatus": "none",
+    "authProvider": "local",
+    "isEmailVerified": true,
+    "currentLevel": 1
+  }
+]
