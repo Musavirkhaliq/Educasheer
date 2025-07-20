@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { FaClock, FaExclamationTriangle, FaCheck, FaTimes, FaArrowLeft, FaArrowRight, FaQuestionCircle, FaListAlt, FaTrophy, FaEdit, FaFileAlt } from 'react-icons/fa';
+import { FaClock, FaExclamationTriangle, FaCheck, FaTimes, FaArrowLeft, FaArrowRight, FaQuestionCircle, FaListAlt, FaTrophy, FaEdit, FaFileAlt, FaBookmark, FaRegBookmark, FaEye, FaFlag, FaChevronLeft, FaChevronRight, FaHome, FaCalculator, FaPause, FaPlay } from 'react-icons/fa';
 import { quizAPI } from '../services/quizAPI';
 import { toast } from 'react-hot-toast';
 import '../styles/quiz-enhancements.css';
@@ -8,7 +8,7 @@ import '../styles/quiz-enhancements.css';
 const QuizTaker = () => {
   const { courseId, quizId } = useParams();
   const navigate = useNavigate();
-  
+
   const [quiz, setQuiz] = useState(null);
   const [attempt, setAttempt] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -17,10 +17,15 @@ const QuizTaker = () => {
   const [answers, setAnswers] = useState([]);
   const [timeLeft, setTimeLeft] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
   const [showConfirmSubmit, setShowConfirmSubmit] = useState(false);
-  
+  const [markedForReview, setMarkedForReview] = useState(new Set());
+  const [showQuestionPalette, setShowQuestionPalette] = useState(true);
+  const [isPaused, setIsPaused] = useState(false);
+  const [showInstructions, setShowInstructions] = useState(false);
+
   const timerRef = useRef(null);
-  
+
   useEffect(() => {
     startQuiz();
 
@@ -32,7 +37,33 @@ const QuizTaker = () => {
       }
     };
   }, [quizId]);
-  
+
+  // FIX: Created a dedicated function to start the timer
+  const startTimer = () => {
+    if (timerRef.current) {
+        clearInterval(timerRef.current);
+    }
+    timerRef.current = setInterval(() => {
+      setTimeLeft(prevTime => {
+        if (prevTime <= 1) {
+          clearInterval(timerRef.current);
+          // Only submit if we have a valid attempt and answers and haven't submitted yet
+          if (!isSubmitted && attempt && (attempt._id || attempt.id) && answers && answers.length > 0) {
+            submitQuiz();
+          } else if (isSubmitted) {
+            console.log('Timer expired but quiz already submitted');
+          } else {
+            console.error('Timer expired but no valid attempt or answers found');
+            setError('Quiz session expired. Please restart the quiz to continue.');
+            toast.error('Quiz session expired. Please restart the quiz.');
+          }
+          return 0;
+        }
+        return prevTime - 1;
+      });
+    }, 1000);
+  };
+
   const startQuiz = async () => {
     try {
       setLoading(true);
@@ -51,6 +82,7 @@ const QuizTaker = () => {
       setCurrentQuestionIndex(0);
       setTimeLeft(null);
       setIsSubmitting(false);
+      setIsSubmitted(false);
       setShowConfirmSubmit(false);
 
       // Start a new quiz attempt
@@ -138,7 +170,7 @@ const QuizTaker = () => {
 
       // Set up timer if quiz has time limit
       if (quizData.timeLimit && quizData.timeLimit > 0) {
-        let timeLeft;
+        let calculatedTimeLeft;
 
         if (newAttempt.startTime) {
           // Calculate remaining time for continuing attempt
@@ -146,28 +178,30 @@ const QuizTaker = () => {
           const currentTime = new Date();
           const elapsedSeconds = Math.floor((currentTime - startTime) / 1000);
           const totalTimeLimit = quizData.timeLimit * 60; // convert to seconds
-          timeLeft = Math.max(0, totalTimeLimit - elapsedSeconds);
+          calculatedTimeLeft = Math.max(0, totalTimeLimit - elapsedSeconds);
         } else {
           // New attempt
-          timeLeft = quizData.timeLimit * 60; // convert to seconds
+          calculatedTimeLeft = quizData.timeLimit * 60; // convert to seconds
         }
 
-        setTimeLeft(timeLeft);
+        setTimeLeft(calculatedTimeLeft);
 
-        if (timeLeft > 0) {
-          timerRef.current = setInterval(() => {
-            setTimeLeft(prevTime => {
-              if (prevTime <= 1) {
-                clearInterval(timerRef.current);
-                submitQuiz();
-                return 0;
-              }
-              return prevTime - 1;
-            });
-          }, 1000);
+        if (calculatedTimeLeft > 0) {
+          // FIX: Call the new startTimer function
+          startTimer();
         } else {
           // Time has already expired
-          setTimeout(() => submitQuiz(), 100);
+          setTimeout(() => {
+            if (!isSubmitted && attempt && (attempt._id || attempt.id) && answers && answers.length > 0) {
+              submitQuiz();
+            } else if (isSubmitted) {
+              console.log('Time already expired but quiz already submitted');
+            } else {
+              console.error('Time already expired and no valid attempt or answers found');
+              setError('Quiz session expired. Please restart the quiz to continue.');
+              toast.error('Quiz session expired. Please restart the quiz.');
+            }
+          }, 100);
         }
       }
 
@@ -180,7 +214,7 @@ const QuizTaker = () => {
       setLoading(false);
     }
   };
-  
+
   const handleOptionSelect = (optionId) => {
     if (!quiz || !quiz.questions || !answers || currentQuestionIndex >= quiz.questions.length) {
       console.error('Invalid state for option selection');
@@ -207,17 +241,17 @@ const QuizTaker = () => {
       updateAnswer(currentQuestionIndex, { selectedOptions: [optionId] });
     }
   };
-  
+
   const handleTextAnswerChange = (e) => {
     updateAnswer(currentQuestionIndex, { textAnswer: e.target.value });
   };
-  
+
   const updateAnswer = (index, newValues) => {
     const updatedAnswers = [...answers];
     updatedAnswers[index] = { ...updatedAnswers[index], ...newValues };
     setAnswers(updatedAnswers);
   };
-  
+
   const goToNextQuestion = () => {
     if (!quiz || !quiz.questions) {
       console.error('Quiz data not available for navigation');
@@ -233,34 +267,114 @@ const QuizTaker = () => {
       setCurrentQuestionIndex(currentQuestionIndex - 1);
     }
   };
-  
+
+  const toggleMarkForReview = (questionIndex = currentQuestionIndex) => {
+    setMarkedForReview(prevMarked => {
+      const newMarked = new Set(prevMarked);
+      if (newMarked.has(questionIndex)) {
+        newMarked.delete(questionIndex);
+      } else {
+        newMarked.add(questionIndex);
+      }
+      return newMarked;
+    });
+  };
+
+  const getQuestionStatus = (index) => {
+    const isAnswered = answers[index]?.selectedOptions?.length > 0 || answers[index]?.textAnswer;
+    const isMarked = markedForReview.has(index);
+    const isCurrent = index === currentQuestionIndex;
+
+    if (isCurrent) return 'current';
+    if (isAnswered && isMarked) return 'answered-marked';
+    if (isAnswered) return 'answered';
+    if (isMarked) return 'marked';
+    return 'not-visited';
+  };
+
+  const getAnsweredCount = () => {
+    return answers.filter(answer =>
+      answer.selectedOptions?.length > 0 || answer.textAnswer
+    ).length;
+  };
+
+  const getMarkedCount = () => {
+    return markedForReview.size;
+  };
+
+  const pauseTimer = () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    setIsPaused(true);
+  };
+
+  // FIX: Fixed the call to the now-defined startTimer function
+  const resumeTimer = () => {
+    setIsPaused(false);
+    if (timeLeft > 0) {
+      startTimer();
+    }
+  };
+
   const submitQuiz = async () => {
-    if (isSubmitting) return;
-    
+    if (isSubmitting || isSubmitted) return;
+
     try {
       setIsSubmitting(true);
-      
+
       // Clear timer
       if (timerRef.current) {
         clearInterval(timerRef.current);
+        timerRef.current = null;
       }
-      
+
+      // Check if attempt exists
+      if (!attempt || (!attempt._id && !attempt.id)) {
+        console.error('No valid attempt found for submission');
+        setError('Quiz session expired. Please restart the quiz to continue.');
+        toast.error('Quiz session expired. Please restart the quiz.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Check if answers exist
+      if (!answers || answers.length === 0) {
+        console.error('No answers found for submission');
+        setError('No answers to submit. Please restart the quiz.');
+        toast.error('No answers to submit. Please restart the quiz.');
+        setIsSubmitting(false);
+        return;
+      }
+
       // Submit the quiz
       const attemptId = attempt._id || attempt.id;
       const response = await quizAPI.submitQuizAttempt(attemptId, { answers });
 
+      // Mark as submitted
+      setIsSubmitted(true);
+
       // Navigate to results page
       navigate(`/courses/${courseId}/quizzes/${quizId}/results/${attemptId}`);
-      
+
       toast.success('Quiz submitted successfully!');
     } catch (err) {
       console.error('Error submitting quiz:', err);
-      setError('Failed to submit quiz. Please try again.');
-      toast.error('Failed to submit quiz');
+
+      // Check if it's a session/attempt related error
+      if (err.response && (err.response.status === 404 || err.response.status === 403)) {
+        setError('Quiz session expired or invalid. Please restart the quiz to continue.');
+        toast.error('Quiz session expired. Please restart the quiz.');
+      } else {
+        setError('Failed to submit quiz. Please try again or restart the quiz.');
+        toast.error('Failed to submit quiz. Please try again.');
+      }
+
       setIsSubmitting(false);
     }
   };
-  
+
   const formatTime = (seconds) => {
     if (seconds === null || seconds === undefined || isNaN(seconds)) {
       return '0:00';
@@ -269,7 +383,7 @@ const QuizTaker = () => {
     const remainingSeconds = seconds % 60;
     return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
   };
-  
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
@@ -277,21 +391,32 @@ const QuizTaker = () => {
       </div>
     );
   }
-  
+
   if (error) {
     return (
       <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg">
         <p className="font-medium">{error}</p>
-        <button
-          onClick={() => navigate(`/courses/${courseId}`)}
-          className="mt-4 bg-red-100 text-red-700 px-4 py-2 rounded-lg hover:bg-red-200 transition-colors"
-        >
-          Return to Course
-        </button>
+        <div className="mt-4 flex gap-3">
+          <button
+            onClick={() => {
+              setError('');
+              startQuiz();
+            }}
+            className="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-200 transition-colors"
+          >
+            Restart Quiz
+          </button>
+          <button
+            onClick={() => navigate(`/courses/${courseId}`)}
+            className="bg-red-100 text-red-700 px-4 py-2 rounded-lg hover:bg-red-200 transition-colors"
+          >
+            Return to Course
+          </button>
+        </div>
       </div>
     );
   }
-  
+
   if (!quiz || !attempt || !quiz.questions || !Array.isArray(quiz.questions) || quiz.questions.length === 0) {
     return (
       <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-6 py-4 rounded-lg">
@@ -344,58 +469,369 @@ const QuizTaker = () => {
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
 
-      <div className="relative max-w-4xl mx-auto p-4 sm:p-6">
-        {/* Quiz Header Card */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-4 sm:p-6 mb-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                <FaQuestionCircle className="text-white text-lg sm:text-xl" />
+      {/* Pause Overlay */}
+      {isPaused && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md mx-4 text-center">
+            <div className="w-16 h-16 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <FaPause className="text-white text-2xl" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-800 mb-2">Quiz Paused</h3>
+            <p className="text-gray-600 mb-6">Take a break. Your progress is saved.</p>
+            <button
+              onClick={resumeTimer}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-3 rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-300 font-medium shadow-lg transform hover:scale-105 flex items-center gap-2 mx-auto"
+            >
+              <FaPlay className="text-sm" />
+              Resume Quiz
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="relative flex max-w-7xl mx-auto p-4 sm:p-6 gap-6">
+        {/* Main Content Area */}
+        <div className={`flex-1 transition-all duration-300 ${showQuestionPalette ? 'lg:mr-0' : ''}`}>
+          {/* Quiz Header Card */}
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-4 sm:p-6 mb-6">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+              <div className="flex items-center gap-3 sm:gap-4 w-full lg:w-auto">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <FaQuestionCircle className="text-white text-lg sm:text-xl" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent truncate">
+                    {quiz.title}
+                  </h2>
+                  <p className="text-gray-600 mt-1 flex items-center gap-2 text-sm sm:text-base">
+                    <FaListAlt className="text-xs sm:text-sm flex-shrink-0" />
+                    <span className="truncate">{quiz.questions.length} questions • {quiz.timeLimit} minutes</span>
+                  </p>
+                </div>
               </div>
-              <div className="min-w-0 flex-1">
-                <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent truncate">
-                  {quiz.title}
-                </h2>
-                <p className="text-gray-600 mt-1 flex items-center gap-2 text-sm sm:text-base">
-                  <FaListAlt className="text-xs sm:text-sm flex-shrink-0" />
-                  <span className="truncate">{quiz.questions.length} questions • {quiz.timeLimit} minutes</span>
-                </p>
+
+              <div className="flex items-center gap-2 sm:gap-3 w-full lg:w-auto justify-between lg:justify-end flex-wrap">
+                {/* Question Palette Toggle (Desktop Only) */}
+                <button
+                  onClick={() => setShowQuestionPalette(!showQuestionPalette)}
+                  className="hidden lg:flex items-center gap-2 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors text-sm text-gray-700"
+                >
+                  <FaListAlt />
+                  {showQuestionPalette ? 'Hide' : 'Show'} Palette
+                </button>
+
+                {/* Pause/Resume Button */}
+                <button
+                  onClick={isPaused ? resumeTimer : pauseTimer}
+                  className="flex items-center gap-2 px-3 py-2 bg-yellow-100 hover:bg-yellow-200 rounded-lg transition-colors text-sm text-yellow-700"
+                >
+                  {isPaused ? <FaPlay /> : <FaPause />}
+                  {isPaused ? 'Resume' : 'Pause'}
+                </button>
+
+                {/* Timer */}
+                {timeLeft !== null && (
+                  <div className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 rounded-xl shadow-lg flex-shrink-0 ${
+                    timeLeft < 60
+                      ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white animate-pulse shadow-red-200'
+                      : timeLeft < 300
+                      ? 'bg-gradient-to-r from-orange-400 to-yellow-500 text-white shadow-orange-200'
+                      : 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-blue-200'
+                  }`}>
+                    <FaClock className="text-sm sm:text-lg" />
+                    <div className="text-center">
+                      <div className="font-bold text-sm sm:text-lg">{formatTime(timeLeft)}</div>
+                      <div className="text-xs opacity-90 hidden sm:block">remaining</div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Submit Button */}
+                <button
+                  onClick={() => setShowConfirmSubmit(true)}
+                  className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 font-medium flex items-center gap-2 text-sm sm:text-base"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-2 border-white border-t-transparent"></div>
+                      <span className="hidden sm:inline">Submitting...</span>
+                      <span className="sm:hidden">Submit</span>
+                    </>
+                  ) : (
+                    <>
+                      <FaCheck className="text-xs sm:text-sm" />
+                      <span className="hidden sm:inline">Submit Quiz</span>
+                      <span className="sm:hidden">Submit</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Progress Bar - Mobile Only */}
+          <div className="lg:hidden bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-4 mb-6">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-gray-700 text-sm">Progress</h3>
+              <span className="text-xs text-gray-600">
+                {currentQuestionIndex + 1} of {quiz.questions.length}
+              </span>
+            </div>
+
+            <div className="w-full bg-gray-200 rounded-full h-2 mb-3 overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-blue-500 to-purple-600 rounded-full transition-all duration-500 ease-out"
+                style={{ width: `${((currentQuestionIndex + 1) / quiz.questions.length) * 100}%` }}
+              ></div>
+            </div>
+
+            {/* Compact Question Navigation Pills - Mobile */}
+            <div className="flex flex-wrap gap-1 justify-center">
+              {quiz.questions.map((_, index) => {
+                const status = getQuestionStatus(index);
+                const statusColors = {
+                  'current': 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg',
+                  'answered-marked': 'bg-gradient-to-r from-green-400 to-emerald-500 text-white shadow-md border-2 border-yellow-400',
+                  'answered': 'bg-gradient-to-r from-green-400 to-emerald-500 text-white shadow-md',
+                  'marked': 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-md',
+                  'not-visited': 'bg-white text-gray-600 border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50'
+                };
+
+                return (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentQuestionIndex(index)}
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold transition-all duration-300 transform active:scale-95 touch-manipulation ${statusColors[status]}`}
+                  >
+                    {(status === 'answered' || status === 'answered-marked') && status !== 'current' ? <FaCheck size={8} /> : index + 1}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Current Question Card */}
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-4 sm:p-8 mb-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start gap-4 sm:gap-6 mb-6">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-base sm:text-lg flex-shrink-0">
+                  {currentQuestionIndex + 1}
+                </div>
+                <div>
+                  <h3 className="text-lg sm:text-xl font-bold text-gray-800">
+                    Question {currentQuestionIndex + 1}
+                  </h3>
+                  <p className="text-gray-600 text-sm sm:text-base">of {quiz.questions.length} questions</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 sm:gap-3">
+                {/* Mark for Review Button */}
+                <button
+                  onClick={() => toggleMarkForReview()}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-300 font-medium text-sm ${
+                    markedForReview.has(currentQuestionIndex)
+                      ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg'
+                      : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                  }`}
+                >
+                  {markedForReview.has(currentQuestionIndex) ? <FaBookmark /> : <FaRegBookmark />}
+                  <span className="hidden sm:inline">
+                    {markedForReview.has(currentQuestionIndex) ? 'Marked' : 'Mark for Review'}
+                  </span>
+                </button>
+
+                {/* Points Badge */}
+                <div className="flex items-center gap-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-3 sm:px-4 py-2 rounded-xl shadow-lg">
+                  <FaTrophy className="text-xs sm:text-sm" />
+                  <span className="font-bold text-sm sm:text-base">
+                    {currentQuestion.points} {currentQuestion.points === 1 ? 'point' : 'points'}
+                  </span>
+                </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto justify-between sm:justify-end">
-              {timeLeft !== null && (
-                <div className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-6 py-2 sm:py-3 rounded-xl shadow-lg flex-shrink-0 ${
-                  timeLeft < 60
-                    ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white animate-pulse shadow-red-200'
-                    : timeLeft < 300
-                    ? 'bg-gradient-to-r from-orange-400 to-yellow-500 text-white shadow-orange-200'
-                    : 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-blue-200'
-                }`}>
-                  <FaClock className="text-sm sm:text-lg" />
-                  <div className="text-center">
-                    <div className="font-bold text-sm sm:text-lg">{formatTime(timeLeft)}</div>
-                    <div className="text-xs opacity-90 hidden sm:block">remaining</div>
-                  </div>
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 sm:p-6 rounded-xl border border-blue-100 mb-6 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-blue-200/30 to-purple-200/30 rounded-full -translate-y-12 translate-x-12 sm:-translate-y-16 sm:translate-x-16"></div>
+              <div className="relative">
+                <div className="flex items-start gap-3">
+                  <FaQuestionCircle className="text-blue-500 mt-1 flex-shrink-0 text-sm sm:text-base" />
+                  <p className="text-gray-800 text-base sm:text-lg leading-relaxed">{currentQuestion.text}</p>
                 </div>
+              </div>
+            </div>
+
+            {/* Answer Options */}
+            <div className="space-y-3 sm:space-y-4">
+              {currentQuestion.type === 'multiple_choice' && (
+                <>
+                  <div className="flex items-center gap-2 mb-4">
+                    <FaListAlt className="text-blue-500 text-sm sm:text-base" />
+                    <p className="text-sm font-medium text-gray-700">Select all that apply:</p>
+                  </div>
+                  {currentQuestion.options.map((option, optionIndex) => {
+                    const isSelected = currentAnswer.selectedOptions.includes(option._id);
+                    const optionLetter = String.fromCharCode(65 + optionIndex); // A, B, C, D...
+
+                    return (
+                      <div
+                        key={option._id}
+                        onClick={() => handleOptionSelect(option._id)}
+                        className={`group p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 transform active:scale-95 sm:hover:scale-[1.02] touch-manipulation ${
+                          isSelected
+                            ? 'border-blue-400 bg-gradient-to-r from-blue-50 to-indigo-50 shadow-lg shadow-blue-100'
+                            : 'border-gray-200 hover:border-blue-300 hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 hover:shadow-md'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 sm:gap-4">
+                          <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl border-2 flex items-center justify-center font-bold transition-all duration-300 flex-shrink-0 ${
+                            isSelected
+                              ? 'bg-gradient-to-r from-blue-500 to-indigo-600 border-blue-500 text-white shadow-lg'
+                              : 'border-gray-300 text-gray-600 group-hover:border-blue-400 group-hover:text-blue-600'
+                          }`}>
+                            {isSelected ? <FaCheck size={12} className="sm:w-3.5 sm:h-3.5" /> : optionLetter}
+                          </div>
+                          <span className={`text-base sm:text-lg transition-colors duration-300 leading-relaxed ${
+                            isSelected ? 'text-gray-800 font-medium' : 'text-gray-700 group-hover:text-gray-800'
+                          }`}>
+                            {option.text}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </>
               )}
 
+              {currentQuestion.type === 'true_false' && (
+                <>
+                  <div className="flex items-center gap-2 mb-4">
+                    <FaCheck className="text-green-500 text-sm sm:text-base" />
+                    <p className="text-sm font-medium text-gray-700">Select one:</p>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    {currentQuestion.options.map((option, optionIndex) => {
+                      const isSelected = currentAnswer.selectedOptions.includes(option._id);
+                      const isTrue = option.text.toLowerCase().includes('true');
+
+                      return (
+                        <div
+                          key={option._id}
+                          onClick={() => handleOptionSelect(option._id)}
+                          className={`group p-4 sm:p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 transform active:scale-95 sm:hover:scale-105 touch-manipulation ${
+                            isSelected
+                              ? isTrue
+                                ? 'border-green-400 bg-gradient-to-r from-green-50 to-emerald-50 shadow-lg shadow-green-100'
+                                : 'border-red-400 bg-gradient-to-r from-red-50 to-pink-50 shadow-lg shadow-red-100'
+                              : 'border-gray-200 hover:border-gray-300 hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 hover:shadow-md'
+                          }`}
+                        >
+                          <div className="flex items-center justify-center gap-3 sm:gap-4">
+                            <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 flex items-center justify-center font-bold text-base sm:text-lg transition-all duration-300 flex-shrink-0 ${
+                              isSelected
+                                ? isTrue
+                                  ? 'bg-gradient-to-r from-green-500 to-emerald-600 border-green-500 text-white shadow-lg'
+                                  : 'bg-gradient-to-r from-red-500 to-pink-600 border-red-500 text-white shadow-lg'
+                                : 'border-gray-300 text-gray-600 group-hover:border-blue-400 group-hover:text-blue-600'
+                            }`}>
+                              {isSelected ? <FaCheck size={14} className="sm:w-4 sm:h-4" /> : (isTrue ? 'T' : 'F')}
+                            </div>
+                            <span className={`text-lg sm:text-xl font-medium transition-colors duration-300 text-center sm:text-left ${
+                              isSelected ? 'text-gray-800' : 'text-gray-700 group-hover:text-gray-800'
+                            }`}>
+                              {option.text}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+
+              {currentQuestion.type === 'short_answer' && (
+                <>
+                  <div className="flex items-center gap-2 mb-4">
+                    <FaEdit className="text-blue-500 text-sm sm:text-base" />
+                    <p className="text-sm font-medium text-gray-700">Enter your answer:</p>
+                  </div>
+                  <div className="relative">
+                    <textarea
+                      value={currentAnswer.textAnswer}
+                      onChange={handleTextAnswerChange}
+                      className="w-full p-3 sm:p-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400 transition-all duration-300 bg-white shadow-sm resize-none text-base"
+                      rows="4"
+                      placeholder="Type your answer here..."
+                    ></textarea>
+                    <div className="absolute bottom-2 sm:bottom-3 right-2 sm:right-3 text-xs text-gray-400">
+                      {currentAnswer.textAnswer?.length || 0} characters
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {currentQuestion.type === 'essay' && (
+                <>
+                  <div className="flex items-center gap-2 mb-4">
+                    <FaFileAlt className="text-purple-500 text-sm sm:text-base" />
+                    <p className="text-sm font-medium text-gray-700">Write your essay:</p>
+                  </div>
+                  <div className="relative">
+                    <textarea
+                      value={currentAnswer.textAnswer}
+                      onChange={handleTextAnswerChange}
+                      className="w-full p-3 sm:p-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-purple-100 focus:border-purple-400 transition-all duration-300 bg-white shadow-sm resize-none text-base"
+                      rows="8"
+                      placeholder="Write your essay here... Be detailed and provide examples to support your points."
+                    ></textarea>
+                    <div className="absolute bottom-2 sm:bottom-3 right-2 sm:right-3 text-xs text-gray-400">
+                      {currentAnswer.textAnswer?.length || 0} characters
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Navigation Buttons */}
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-4 sm:p-6">
+            <div className="flex justify-between items-center gap-4">
               <button
-                onClick={() => setShowConfirmSubmit(true)}
-                className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 font-medium flex items-center gap-2 text-sm sm:text-base"
-                disabled={isSubmitting}
+                onClick={goToPreviousQuestion}
+                className={`flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 sm:py-3 rounded-xl font-medium transition-all duration-300 transform touch-manipulation ${
+                  currentQuestionIndex > 0
+                    ? 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 hover:from-gray-200 hover:to-gray-300 active:scale-95 sm:hover:scale-105 shadow-md'
+                    : 'bg-gray-50 text-gray-400 cursor-not-allowed'
+                }`}
+                disabled={currentQuestionIndex === 0}
               >
-                {isSubmitting ? (
+                <FaArrowLeft className="text-sm sm:text-base" />
+                <span className="text-sm sm:text-base">Previous</span>
+              </button>
+
+              <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 text-center">
+                <span className="hidden sm:inline">Question {currentQuestionIndex + 1} of {quiz.questions.length}</span>
+                <span className="sm:hidden">{currentQuestionIndex + 1}/{quiz.questions.length}</span>
+              </div>
+
+              <button
+                onClick={isLastQuestion ? () => setShowConfirmSubmit(true) : goToNextQuestion}
+                className={`flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 sm:py-3 rounded-xl font-medium transition-all duration-300 transform active:scale-95 sm:hover:scale-105 shadow-lg touch-manipulation ${
+                  isLastQuestion
+                    ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 shadow-green-200'
+                    : 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700 shadow-blue-200'
+                }`}
+              >
+                {isLastQuestion ? (
                   <>
-                    <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-2 border-white border-t-transparent"></div>
-                    <span className="hidden sm:inline">Submitting...</span>
-                    <span className="sm:hidden">Submit</span>
+                    <FaCheck className="text-sm sm:text-base" />
+                    <span className="text-sm sm:text-base">Finish Quiz</span>
                   </>
                 ) : (
                   <>
-                    <FaCheck className="text-xs sm:text-sm" />
-                    <span className="hidden sm:inline">Submit Quiz</span>
-                    <span className="sm:hidden">Submit</span>
+                    <span className="text-sm sm:text-base">Next</span>
+                    <FaArrowRight className="text-sm sm:text-base" />
                   </>
                 )}
               </button>
@@ -403,254 +839,129 @@ const QuizTaker = () => {
           </div>
         </div>
 
-      {/* Progress Bar */}
-      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-4 sm:p-6 mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-gray-700 text-sm sm:text-base">Progress</h3>
-          <span className="text-xs sm:text-sm text-gray-600">
-            {currentQuestionIndex + 1} of {quiz.questions.length}
-          </span>
-        </div>
-
-        <div className="w-full bg-gray-200 rounded-full h-2 sm:h-3 mb-4 overflow-hidden">
-          <div
-            className="h-full bg-gradient-to-r from-blue-500 to-purple-600 rounded-full transition-all duration-500 ease-out"
-            style={{ width: `${((currentQuestionIndex + 1) / quiz.questions.length) * 100}%` }}
-          ></div>
-        </div>
-
-        {/* Question Navigation Pills */}
-        <div className="flex flex-wrap gap-1 sm:gap-2 justify-center sm:justify-start">
-          {quiz.questions.map((_, index) => {
-            const isAnswered = answers[index].selectedOptions.length > 0 || answers[index].textAnswer;
-            const isCurrent = index === currentQuestionIndex;
-
-            return (
-              <button
-                key={index}
-                onClick={() => setCurrentQuestionIndex(index)}
-                className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center text-xs sm:text-sm font-bold transition-all duration-300 transform active:scale-95 sm:hover:scale-105 touch-manipulation ${
-                  isCurrent
-                    ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg'
-                    : isAnswered
-                      ? 'bg-gradient-to-r from-green-400 to-emerald-500 text-white shadow-md'
-                      : 'bg-white text-gray-600 border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50'
-                }`}
-              >
-                {isAnswered && !isCurrent ? <FaCheck size={10} className="sm:w-3 sm:h-3" /> : index + 1}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Current Question Card */}
-      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-4 sm:p-8 mb-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start gap-4 sm:gap-6 mb-6">
-          <div className="flex items-center gap-3 sm:gap-4">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-base sm:text-lg flex-shrink-0">
-              {currentQuestionIndex + 1}
-            </div>
-            <div>
-              <h3 className="text-lg sm:text-xl font-bold text-gray-800">
-                Question {currentQuestionIndex + 1}
-              </h3>
-              <p className="text-gray-600 text-sm sm:text-base">of {quiz.questions.length} questions</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-3 sm:px-4 py-2 rounded-xl shadow-lg self-start">
-            <FaTrophy className="text-xs sm:text-sm" />
-            <span className="font-bold text-sm sm:text-base">
-              {currentQuestion.points} {currentQuestion.points === 1 ? 'point' : 'points'}
-            </span>
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 sm:p-6 rounded-xl border border-blue-100 mb-6 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-blue-200/30 to-purple-200/30 rounded-full -translate-y-12 translate-x-12 sm:-translate-y-16 sm:translate-x-16"></div>
-          <div className="relative">
-            <div className="flex items-start gap-3">
-              <FaQuestionCircle className="text-blue-500 mt-1 flex-shrink-0 text-sm sm:text-base" />
-              <p className="text-gray-800 text-base sm:text-lg leading-relaxed">{currentQuestion.text}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Answer Options */}
-        <div className="space-y-3 sm:space-y-4">
-          {currentQuestion.type === 'multiple_choice' && (
-            <>
-              <div className="flex items-center gap-2 mb-4">
-                <FaListAlt className="text-blue-500 text-sm sm:text-base" />
-                <p className="text-sm font-medium text-gray-700">Select all that apply:</p>
-              </div>
-              {currentQuestion.options.map((option, optionIndex) => {
-                const isSelected = currentAnswer.selectedOptions.includes(option._id);
-                const optionLetter = String.fromCharCode(65 + optionIndex); // A, B, C, D...
-
-                return (
-                  <div
-                    key={option._id}
-                    onClick={() => handleOptionSelect(option._id)}
-                    className={`group p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 transform active:scale-95 sm:hover:scale-[1.02] touch-manipulation ${
-                      isSelected
-                        ? 'border-blue-400 bg-gradient-to-r from-blue-50 to-indigo-50 shadow-lg shadow-blue-100'
-                        : 'border-gray-200 hover:border-blue-300 hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 hover:shadow-md'
-                    }`}
+        {/* Question Palette - Desktop Only */}
+        {showQuestionPalette && (
+          <div className="hidden lg:block w-80 flex-shrink-0">
+            <div className="sticky top-6">
+              <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                    <FaListAlt className="text-blue-500" />
+                    Question Palette
+                  </h3>
+                  <button
+                    onClick={() => setShowQuestionPalette(false)}
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
                   >
-                    <div className="flex items-center gap-3 sm:gap-4">
-                      <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl border-2 flex items-center justify-center font-bold transition-all duration-300 flex-shrink-0 ${
-                        isSelected
-                          ? 'bg-gradient-to-r from-blue-500 to-indigo-600 border-blue-500 text-white shadow-lg'
-                          : 'border-gray-300 text-gray-600 group-hover:border-blue-400 group-hover:text-blue-600'
-                      }`}>
-                        {isSelected ? <FaCheck size={12} className="sm:w-3.5 sm:h-3.5" /> : optionLetter}
-                      </div>
-                      <span className={`text-base sm:text-lg transition-colors duration-300 leading-relaxed ${
-                        isSelected ? 'text-gray-800 font-medium' : 'text-gray-700 group-hover:text-gray-800'
-                      }`}>
-                        {option.text}
-                      </span>
+                    <FaTimes />
+                  </button>
+                </div>
+
+                {/* Statistics */}
+                <div className="grid grid-cols-2 gap-3 mb-6">
+                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-3 rounded-lg border border-green-100">
+                    <div className="text-2xl font-bold text-green-600">{getAnsweredCount()}</div>
+                    <div className="text-xs text-green-700">Answered</div>
+                  </div>
+                  <div className="bg-gradient-to-r from-yellow-50 to-orange-50 p-3 rounded-lg border border-yellow-100">
+                    <div className="text-2xl font-bold text-yellow-600">{getMarkedCount()}</div>
+                    <div className="text-xs text-yellow-700">Marked</div>
+                  </div>
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-3 rounded-lg border border-blue-100">
+                    <div className="text-2xl font-bold text-blue-600">{quiz.questions.length - getAnsweredCount()}</div>
+                    <div className="text-xs text-blue-700">Not Answered</div>
+                  </div>
+                  <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-3 rounded-lg border border-purple-100">
+                    <div className="text-2xl font-bold text-purple-600">{currentQuestionIndex + 1}</div>
+                    <div className="text-xs text-purple-700">Current</div>
+                  </div>
+                </div>
+
+                {/* Legend */}
+                <div className="mb-4">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-3">Legend</h4>
+                  <div className="space-y-2 text-xs">
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded"></div>
+                      <span>Current Question</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 bg-gradient-to-r from-green-400 to-emerald-500 rounded"></div>
+                      <span>Answered</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 bg-gradient-to-r from-yellow-400 to-orange-500 rounded"></div>
+                      <span>Marked for Review</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 bg-gradient-to-r from-green-400 to-emerald-500 rounded border-2 border-yellow-400"></div>
+                      <span>Answered & Marked</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 bg-white border-2 border-gray-200 rounded"></div>
+                      <span>Not Visited</span>
                     </div>
                   </div>
-                );
-              })}
-            </>
-          )}
-          
-          {currentQuestion.type === 'true_false' && (
-            <>
-              <div className="flex items-center gap-2 mb-4">
-                <FaCheck className="text-green-500 text-sm sm:text-base" />
-                <p className="text-sm font-medium text-gray-700">Select one:</p>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                {currentQuestion.options.map((option, optionIndex) => {
-                  const isSelected = currentAnswer.selectedOptions.includes(option._id);
-                  const isTrue = option.text.toLowerCase().includes('true');
+                </div>
 
-                  return (
-                    <div
-                      key={option._id}
-                      onClick={() => handleOptionSelect(option._id)}
-                      className={`group p-4 sm:p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 transform active:scale-95 sm:hover:scale-105 touch-manipulation ${
-                        isSelected
-                          ? isTrue
-                            ? 'border-green-400 bg-gradient-to-r from-green-50 to-emerald-50 shadow-lg shadow-green-100'
-                            : 'border-red-400 bg-gradient-to-r from-red-50 to-pink-50 shadow-lg shadow-red-100'
-                          : 'border-gray-200 hover:border-gray-300 hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 hover:shadow-md'
-                      }`}
+                {/* Question Grid */}
+                <div className="max-h-96 overflow-y-auto custom-scrollbar">
+                  <div className="grid grid-cols-5 gap-2">
+                    {quiz.questions.map((_, index) => {
+                      const status = getQuestionStatus(index);
+                      const statusColors = {
+                        'current': 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg ring-2 ring-blue-300',
+                        'answered-marked': 'bg-gradient-to-r from-green-400 to-emerald-500 text-white shadow-md border-2 border-yellow-400',
+                        'answered': 'bg-gradient-to-r from-green-400 to-emerald-500 text-white shadow-md',
+                        'marked': 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-md',
+                        'not-visited': 'bg-white text-gray-600 border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50'
+                      };
+
+                      return (
+                        <button
+                          key={index}
+                          onClick={() => setCurrentQuestionIndex(index)}
+                          className={`w-12 h-12 rounded-lg flex items-center justify-center text-sm font-bold transition-all duration-300 transform hover:scale-105 ${statusColors[status]}`}
+                        >
+                          {(status === 'answered' || status === 'answered-marked') && status !== 'current' ? <FaCheck size={12} /> : index + 1}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Quick Actions */}
+                <div className="mt-6 pt-4 border-t border-gray-200">
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => {
+                        const unanswered = quiz.questions.findIndex((_, index) =>
+                          !answers[index]?.selectedOptions?.length && !answers[index]?.textAnswer
+                        );
+                        if (unanswered !== -1) setCurrentQuestionIndex(unanswered);
+                      }}
+                      className="flex items-center gap-2 px-3 py-2 bg-blue-100 hover:bg-blue-200 rounded-lg transition-colors text-sm text-blue-700"
                     >
-                      <div className="flex items-center justify-center gap-3 sm:gap-4">
-                        <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 flex items-center justify-center font-bold text-base sm:text-lg transition-all duration-300 flex-shrink-0 ${
-                          isSelected
-                            ? isTrue
-                              ? 'bg-gradient-to-r from-green-500 to-emerald-600 border-green-500 text-white shadow-lg'
-                              : 'bg-gradient-to-r from-red-500 to-pink-600 border-red-500 text-white shadow-lg'
-                            : 'border-gray-300 text-gray-600 group-hover:border-blue-400 group-hover:text-blue-600'
-                        }`}>
-                          {isSelected ? <FaCheck size={14} className="sm:w-4 sm:h-4" /> : (isTrue ? 'T' : 'F')}
-                        </div>
-                        <span className={`text-lg sm:text-xl font-medium transition-colors duration-300 text-center sm:text-left ${
-                          isSelected ? 'text-gray-800' : 'text-gray-700 group-hover:text-gray-800'
-                        }`}>
-                          {option.text}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </>
-          )}
-
-          {currentQuestion.type === 'short_answer' && (
-            <>
-              <div className="flex items-center gap-2 mb-4">
-                <FaEdit className="text-blue-500 text-sm sm:text-base" />
-                <p className="text-sm font-medium text-gray-700">Enter your answer:</p>
-              </div>
-              <div className="relative">
-                <textarea
-                  value={currentAnswer.textAnswer}
-                  onChange={handleTextAnswerChange}
-                  className="w-full p-3 sm:p-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400 transition-all duration-300 bg-white shadow-sm resize-none text-base"
-                  rows="4"
-                  placeholder="Type your answer here..."
-                ></textarea>
-                <div className="absolute bottom-2 sm:bottom-3 right-2 sm:right-3 text-xs text-gray-400">
-                  {currentAnswer.textAnswer?.length || 0} characters
+                      <FaArrowRight size={12} />
+                      Next Unanswered
+                    </button>
+                    <button
+                      onClick={() => {
+                        const marked = Array.from(markedForReview)[0];
+                        if (marked !== undefined) setCurrentQuestionIndex(marked);
+                      }}
+                      className="flex items-center gap-2 px-3 py-2 bg-yellow-100 hover:bg-yellow-200 rounded-lg transition-colors text-sm text-yellow-700"
+                      disabled={markedForReview.size === 0}
+                    >
+                      <FaBookmark size={12} />
+                      Review Marked
+                    </button>
+                  </div>
                 </div>
               </div>
-            </>
-          )}
-
-          {currentQuestion.type === 'essay' && (
-            <>
-              <div className="flex items-center gap-2 mb-4">
-                <FaFileAlt className="text-purple-500 text-sm sm:text-base" />
-                <p className="text-sm font-medium text-gray-700">Write your essay:</p>
-              </div>
-              <div className="relative">
-                <textarea
-                  value={currentAnswer.textAnswer}
-                  onChange={handleTextAnswerChange}
-                  className="w-full p-3 sm:p-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-purple-100 focus:border-purple-400 transition-all duration-300 bg-white shadow-sm resize-none text-base"
-                  rows="8"
-                  placeholder="Write your essay here... Be detailed and provide examples to support your points."
-                ></textarea>
-                <div className="absolute bottom-2 sm:bottom-3 right-2 sm:right-3 text-xs text-gray-400">
-                  {currentAnswer.textAnswer?.length || 0} characters
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Navigation Buttons */}
-      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-4 sm:p-6">
-        <div className="flex justify-between items-center gap-4">
-          <button
-            onClick={goToPreviousQuestion}
-            className={`flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 sm:py-3 rounded-xl font-medium transition-all duration-300 transform touch-manipulation ${
-              currentQuestionIndex > 0
-                ? 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 hover:from-gray-200 hover:to-gray-300 active:scale-95 sm:hover:scale-105 shadow-md'
-                : 'bg-gray-50 text-gray-400 cursor-not-allowed'
-            }`}
-            disabled={currentQuestionIndex === 0}
-          >
-            <FaArrowLeft className="text-sm sm:text-base" />
-            <span className="text-sm sm:text-base">Previous</span>
-          </button>
-
-          <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 text-center">
-            <span className="hidden sm:inline">Question {currentQuestionIndex + 1} of {quiz.questions.length}</span>
-            <span className="sm:hidden">{currentQuestionIndex + 1}/{quiz.questions.length}</span>
+            </div>
           </div>
-
-          <button
-            onClick={isLastQuestion ? () => setShowConfirmSubmit(true) : goToNextQuestion}
-            className={`flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 sm:py-3 rounded-xl font-medium transition-all duration-300 transform active:scale-95 sm:hover:scale-105 shadow-lg touch-manipulation ${
-              isLastQuestion
-                ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 shadow-green-200'
-                : 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700 shadow-blue-200'
-            }`}
-          >
-            {isLastQuestion ? (
-              <>
-                <FaCheck className="text-sm sm:text-base" />
-                <span className="text-sm sm:text-base">Finish Quiz</span>
-              </>
-            ) : (
-              <>
-                <span className="text-sm sm:text-base">Next</span>
-                <FaArrowRight className="text-sm sm:text-base" />
-              </>
-            )}
-          </button>
-        </div>
+        )}
       </div>
 
       {/* Confirm Submit Modal */}
@@ -669,10 +980,33 @@ const QuizTaker = () => {
               </div>
 
               <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-3 sm:p-4 rounded-xl mb-4 sm:mb-6 border border-blue-100">
-                <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
+                <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-4">
                   Are you sure you want to submit your quiz? Once submitted, you won't be able to change your answers.
-                  Please review your responses before proceeding.
                 </p>
+
+                {/* Quiz Summary */}
+                <div className="grid grid-cols-3 gap-3 text-center">
+                  <div className="bg-white/70 rounded-lg p-2">
+                    <div className="text-lg font-bold text-green-600">{getAnsweredCount()}</div>
+                    <div className="text-xs text-gray-600">Answered</div>
+                  </div>
+                  <div className="bg-white/70 rounded-lg p-2">
+                    <div className="text-lg font-bold text-yellow-600">{getMarkedCount()}</div>
+                    <div className="text-xs text-gray-600">Marked</div>
+                  </div>
+                  <div className="bg-white/70 rounded-lg p-2">
+                    <div className="text-lg font-bold text-red-600">{quiz.questions.length - getAnsweredCount()}</div>
+                    <div className="text-xs text-gray-600">Unanswered</div>
+                  </div>
+                </div>
+
+                {(quiz.questions.length - getAnsweredCount() > 0) && (
+                  <div className="mt-3 p-2 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-red-700 text-xs text-center">
+                      ⚠️ You have {quiz.questions.length - getAnsweredCount()} unanswered question(s)
+                    </p>
+                  </div>
+                )}
               </div>
 
               <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4">
@@ -705,7 +1039,21 @@ const QuizTaker = () => {
           </div>
         </div>
       )}
-    </div>
+
+      {/* Submitting Overlay */}
+      {(isSubmitting || isSubmitted) && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md mx-4 text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent mx-auto mb-4"></div>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">
+              {isSubmitted ? 'Quiz Submitted!' : 'Submitting Quiz...'}
+            </h3>
+            <p className="text-gray-600">
+              {isSubmitted ? 'Redirecting to results...' : 'Please wait while we process your answers.'}
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
