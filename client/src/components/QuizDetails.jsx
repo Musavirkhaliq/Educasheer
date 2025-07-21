@@ -20,7 +20,7 @@ import { toast } from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 
 const QuizDetails = () => {
-  const { courseId, quizId } = useParams();
+  const { courseId, testSeriesId, quizId } = useParams();
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const [quiz, setQuiz] = useState(null);
@@ -75,9 +75,15 @@ const QuizDetails = () => {
   const handleStartQuiz = () => {
     if (courseId) {
       navigate(`/courses/${courseId}/quizzes/${quizId}/take`);
+    } else if (testSeriesId) {
+      navigate(`/test-series/${testSeriesId}/quiz/${quizId}/take`);
     } else {
-      // For admin viewing, redirect to course page first
-      navigate(`/courses/${quiz.course._id}/quizzes/${quizId}/take`);
+      // For admin viewing, redirect to appropriate page
+      if (quiz.course) {
+        navigate(`/courses/${quiz.course._id}/quizzes/${quizId}/take`);
+      } else if (quiz.testSeries) {
+        navigate(`/test-series/${quiz.testSeries._id}/quiz/${quizId}/take`);
+      }
     }
   };
 
@@ -136,11 +142,11 @@ const QuizDetails = () => {
               <h2 className="text-2xl font-bold text-gray-800 mb-2">Quiz Not Found</h2>
               <p className="text-gray-600 mb-6">{error || 'The quiz you are looking for does not exist.'}</p>
               <Link
-                to={courseId ? `/courses/${courseId}` : '/admin/quizzes'}
+                to={courseId ? `/courses/${courseId}` : testSeriesId ? `/test-series/${testSeriesId}` : '/admin/quizzes'}
                 className="bg-[#00bcd4] text-white px-6 py-3 rounded-lg hover:bg-[#0097a7] transition-colors inline-flex items-center gap-2"
               >
                 <FaArrowLeft />
-                {courseId ? 'Back to Course' : 'Back to Quiz Management'}
+                {courseId ? 'Back to Course' : testSeriesId ? 'Back to Test Series' : 'Back to Quiz Management'}
               </Link>
             </div>
           </div>
@@ -153,7 +159,7 @@ const QuizDetails = () => {
   const attemptCount = getAttemptCount();
   const hasAttempted = attemptCount > 0;
   const isPassed = bestAttempt && bestAttempt.isPassed;
-  const canRetake = (!quiz.maxAttempts || attemptCount < quiz.maxAttempts) && courseId; // Hide for admin viewing
+  const canRetake = (!quiz.maxAttempts || attemptCount < quiz.maxAttempts) && (courseId || testSeriesId); // Allow for both course and test series
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -162,11 +168,11 @@ const QuizDetails = () => {
           {/* Header */}
           <div className="mb-6">
             <Link
-              to={courseId ? `/courses/${courseId}` : '/admin/quizzes'}
+              to={courseId ? `/courses/${courseId}` : testSeriesId ? `/test-series/${testSeriesId}` : '/admin/quizzes'}
               className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-800 mb-4 transition-colors"
             >
               <FaArrowLeft />
-              <span>{courseId ? 'Back to Course' : 'Back to Quiz Management'}</span>
+              <span>{courseId ? 'Back to Course' : testSeriesId ? 'Back to Test Series' : 'Back to Quiz Management'}</span>
             </Link>
           </div>
 
@@ -448,9 +454,12 @@ const QuizDetails = () => {
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 {hasAttempted && (
                   <>
-                    {courseId && (
+                    {(courseId || testSeriesId) && (
                       <Link
-                        to={`/courses/${courseId}/quizzes/${quizId}/attempts`}
+                        to={courseId
+                          ? `/courses/${courseId}/quizzes/${quizId}/attempts`
+                          : `/test-series/${testSeriesId}/quiz/${quizId}/attempts`
+                        }
                         className="bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition-colors inline-flex items-center justify-center gap-2"
                       >
                         <FaHistory />
@@ -458,9 +467,12 @@ const QuizDetails = () => {
                       </Link>
                     )}
 
-                    {bestAttempt && courseId && (
+                    {bestAttempt && (courseId || testSeriesId) && (
                       <Link
-                        to={`/courses/${courseId}/quizzes/${quizId}/results/${bestAttempt._id}`}
+                        to={courseId
+                          ? `/courses/${courseId}/quizzes/${quizId}/results/${bestAttempt._id}`
+                          : `/test-series/${testSeriesId}/quiz/${quizId}/results/${bestAttempt._id}`
+                        }
                         className="bg-blue-100 text-blue-700 px-6 py-3 rounded-lg hover:bg-blue-200 transition-colors inline-flex items-center justify-center gap-2"
                       >
                         <FaEye />
@@ -480,14 +492,14 @@ const QuizDetails = () => {
                   </button>
                 )}
 
-                {!canRetake && courseId && (
+                {!canRetake && (courseId || testSeriesId) && (
                   <div className="bg-red-50 text-red-700 px-6 py-3 rounded-lg border border-red-200 text-center">
                     <FaTimesCircle className="inline mr-2" />
                     You have reached the maximum number of attempts ({quiz.maxAttempts})
                   </div>
                 )}
 
-                {!courseId && (
+                {!courseId && !testSeriesId && (
                   <div className="bg-blue-50 text-blue-700 px-6 py-3 rounded-lg border border-blue-200 text-center">
                     <FaInfoCircle className="inline mr-2" />
                     Admin View - Quiz details and statistics only

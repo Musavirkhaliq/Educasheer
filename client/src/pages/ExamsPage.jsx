@@ -123,13 +123,20 @@ const ExamsPage = () => {
   const handleQuizClick = (quiz) => {
     // Check if user is authenticated before allowing quiz access
     if (!isAuthenticated) {
-      // Redirect to login with return URL
-      navigate(`/login?redirect=/courses/${quiz.course._id}/quizzes/${quiz._id}`);
+      // Redirect to login with appropriate return URL
+      const redirectUrl = quiz.course
+        ? `/courses/${quiz.course._id}/quizzes/${quiz._id}`
+        : `/test-series/${quiz.testSeries._id}/quiz/${quiz._id}`;
+      navigate(`/login?redirect=${redirectUrl}`);
       return;
     }
 
-    // Navigate to quiz taking page
-    navigate(`/courses/${quiz.course._id}/quizzes/${quiz._id}`);
+    // Navigate to quiz taking page based on context
+    if (quiz.course) {
+      navigate(`/courses/${quiz.course._id}/quizzes/${quiz._id}`);
+    } else if (quiz.testSeries) {
+      navigate(`/test-series/${quiz.testSeries._id}/quiz/${quiz._id}`);
+    }
   };
 
   const getTypeIcon = (type) => {

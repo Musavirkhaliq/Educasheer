@@ -470,6 +470,30 @@ export const homeRoutes = [
       </Suspense>
     ),
   },
+  {
+    path: "test-series/:testSeriesId/quiz/:quizId/take",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <QuizTakerPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: "test-series/:testSeriesId/quiz/:quizId/results/:attemptId",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <QuizResultsPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: "test-series/:testSeriesId/quiz/:quizId/attempts",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <QuizAttemptsPage />
+      </Suspense>
+    ),
+  },
   // Seat booking routes
   {
     path: "seat-booking",

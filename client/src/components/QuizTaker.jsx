@@ -6,7 +6,7 @@ import { toast } from 'react-hot-toast';
 import '../styles/quiz-enhancements.css';
 
 const QuizTaker = () => {
-  const { courseId, quizId } = useParams();
+  const { courseId, testSeriesId, quizId } = useParams();
   const navigate = useNavigate();
 
   const [quiz, setQuiz] = useState(null);
@@ -356,7 +356,11 @@ const QuizTaker = () => {
       setIsSubmitted(true);
 
       // Navigate to results page
-      navigate(`/courses/${courseId}/quizzes/${quizId}/results/${attemptId}`);
+      if (courseId) {
+        navigate(`/courses/${courseId}/quizzes/${quizId}/results/${attemptId}`);
+      } else if (testSeriesId) {
+        navigate(`/test-series/${testSeriesId}/quiz/${quizId}/results/${attemptId}`);
+      }
 
       toast.success('Quiz submitted successfully!');
     } catch (err) {
@@ -407,10 +411,10 @@ const QuizTaker = () => {
             Restart Quiz
           </button>
           <button
-            onClick={() => navigate(`/courses/${courseId}`)}
+            onClick={() => courseId ? navigate(`/courses/${courseId}`) : navigate(`/test-series/${testSeriesId}`)}
             className="bg-red-100 text-red-700 px-4 py-2 rounded-lg hover:bg-red-200 transition-colors"
           >
-            Return to Course
+            {courseId ? 'Return to Course' : 'Return to Test Series'}
           </button>
         </div>
       </div>
@@ -422,10 +426,10 @@ const QuizTaker = () => {
       <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-6 py-4 rounded-lg">
         <p className="font-medium">Quiz data could not be loaded.</p>
         <button
-          onClick={() => navigate(`/courses/${courseId}`)}
+          onClick={() => courseId ? navigate(`/courses/${courseId}`) : navigate(`/test-series/${testSeriesId}`)}
           className="mt-4 bg-yellow-100 text-yellow-700 px-4 py-2 rounded-lg hover:bg-yellow-200 transition-colors"
         >
-          Return to Course
+          {courseId ? 'Return to Course' : 'Return to Test Series'}
         </button>
       </div>
     );

@@ -9,7 +9,8 @@ import {
     toggleTestSeriesPublishStatus,
     addQuizToTestSeries,
     removeQuizFromTestSeries,
-    enrollInTestSeries
+    enrollInTestSeries,
+    fixTestSeriesQuizzes
 } from "../controllers/testSeries.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { isAdmin } from "../middlewares/role.middleware.js";
@@ -41,5 +42,9 @@ router.route("/:testSeriesId/quizzes/:quizId")
 // Enrollment routes
 router.route("/:testSeriesId/enroll")
     .post(enrollInTestSeries);
+
+// Migration/fix routes
+router.route("/fix-quizzes")
+    .post(isAdmin, fixTestSeriesQuizzes);
 
 export default router;

@@ -68,6 +68,16 @@ const createQuiz = asyncHandler(async (req, res) => {
 
         const quiz = await Quiz.create(quizData);
 
+        // If quiz is assigned to a test series, add it to the test series' quizzes array
+        if (testSeries) {
+            const { TestSeries } = await import("../models/testSeries.model.js");
+            await TestSeries.findByIdAndUpdate(
+                testSeries,
+                { $addToSet: { quizzes: quiz._id } },
+                { new: true }
+            );
+        }
+
         return res.status(201).json(
             new ApiResponse(201, quiz, "Quiz created successfully")
         );
@@ -126,6 +136,7 @@ const getQuizById = asyncHandler(async (req, res) => {
 
         const quiz = await Quiz.findById(quizId)
             .populate("course", "title slug")
+            .populate("testSeries", "title slug isPublished enrolledStudents")
             .populate("creator", "username fullName");
 
         if (!quiz) {
@@ -133,7 +144,25 @@ const getQuizById = asyncHandler(async (req, res) => {
         }
 
         // Check access permissions
-        if (!quiz.isPublished && req.user.role !== "admin" && quiz.creator.toString() !== req.user._id.toString()) {
+        let hasAccess = false;
+
+        // Admin and creator always have access
+        if (req.user.role === "admin" || quiz.creator.toString() === req.user._id.toString()) {
+            hasAccess = true;
+        }
+        // For course quizzes, check if quiz is published
+        else if (quiz.course && quiz.isPublished) {
+            hasAccess = true;
+        }
+        // For test series quizzes, check if test series is published and user is enrolled
+        else if (quiz.testSeries) {
+            const testSeries = quiz.testSeries;
+            if (testSeries.isPublished && testSeries.enrolledStudents.includes(req.user._id)) {
+                hasAccess = true;
+            }
+        }
+
+        if (!hasAccess) {
             throw new ApiError(403, "You don't have permission to access this quiz");
         }
 
@@ -167,12 +196,37 @@ const updateQuiz = asyncHandler(async (req, res) => {
             throw new ApiError(403, "You don't have permission to update this quiz");
         }
 
+        // Handle test series assignment changes
+        const oldTestSeries = quiz.testSeries;
+        const newTestSeries = updateData.testSeries;
+
         // Update quiz
         const updatedQuiz = await Quiz.findByIdAndUpdate(
             quizId,
             updateData,
             { new: true, runValidators: true }
         );
+
+        // Handle test series changes
+        if (oldTestSeries || newTestSeries) {
+            const { TestSeries } = await import("../models/testSeries.model.js");
+
+            // Remove from old test series if it existed and changed
+            if (oldTestSeries && oldTestSeries.toString() !== newTestSeries?.toString()) {
+                await TestSeries.findByIdAndUpdate(
+                    oldTestSeries,
+                    { $pull: { quizzes: quizId } }
+                );
+            }
+
+            // Add to new test series if it exists and is different
+            if (newTestSeries && oldTestSeries?.toString() !== newTestSeries.toString()) {
+                await TestSeries.findByIdAndUpdate(
+                    newTestSeries,
+                    { $addToSet: { quizzes: quizId } }
+                );
+            }
+        }
 
         return res.status(200).json(
             new ApiResponse(200, updatedQuiz, "Quiz updated successfully")
@@ -204,6 +258,15 @@ const deleteQuiz = asyncHandler(async (req, res) => {
         // Check if user is admin or quiz creator
         if (req.user.role !== "admin" && quiz.creator.toString() !== req.user._id.toString()) {
             throw new ApiError(403, "You don't have permission to delete this quiz");
+        }
+
+        // Remove quiz from test series if it belongs to one
+        if (quiz.testSeries) {
+            const { TestSeries } = await import("../models/testSeries.model.js");
+            await TestSeries.findByIdAndUpdate(
+                quiz.testSeries,
+                { $pull: { quizzes: quizId } }
+            );
         }
 
         // Delete quiz
@@ -491,9 +554,22 @@ const getPublishedQuizzes = asyncHandler(async (req, res) => {
     try {
         const { category, type, search, tags, difficulty, page = 1, limit = 12 } = req.query;
 
-        const filter = { isPublished: true };
+        // First, get published test series IDs
+        const { TestSeries } = await import("../models/testSeries.model.js");
+        const publishedTestSeries = await TestSeries.find({ isPublished: true }).select('_id');
+        const publishedTestSeriesIds = publishedTestSeries.map(ts => ts._id);
 
-        // Apply filters if provided
+        // Create filter for quizzes that are either:
+        // 1. Published and belong to a course, OR
+        // 2. Belong to a published test series
+        const filter = {
+            $or: [
+                { isPublished: true, course: { $exists: true } },
+                { testSeries: { $in: publishedTestSeriesIds } }
+            ]
+        };
+
+        // Apply additional filters if provided
         if (category && category !== '') filter.category = category;
         if (type && type !== '') filter.quizType = type;
         if (difficulty && difficulty !== '') filter.difficulty = difficulty;
@@ -507,12 +583,15 @@ const getPublishedQuizzes = asyncHandler(async (req, res) => {
         }
 
         if (search) {
-            filter.$or = [
-                { title: { $regex: search, $options: 'i' } },
-                { description: { $regex: search, $options: 'i' } },
-                { category: { $regex: search, $options: 'i' } },
-                { tags: { $in: [new RegExp(search, 'i')] } }
-            ];
+            filter.$and = filter.$and || [];
+            filter.$and.push({
+                $or: [
+                    { title: { $regex: search, $options: 'i' } },
+                    { description: { $regex: search, $options: 'i' } },
+                    { category: { $regex: search, $options: 'i' } },
+                    { tags: { $in: [new RegExp(search, 'i')] } }
+                ]
+            });
         }
 
         const skip = (parseInt(page) - 1) * parseInt(limit);
@@ -520,6 +599,7 @@ const getPublishedQuizzes = asyncHandler(async (req, res) => {
         const [quizzes, total] = await Promise.all([
             Quiz.find(filter)
                 .populate("course", "title slug")
+                .populate("testSeries", "title slug")
                 .populate("creator", "username fullName")
                 .sort({ createdAt: -1 })
                 .skip(skip)

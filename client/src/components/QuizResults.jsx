@@ -6,7 +6,7 @@ import { toast } from 'react-hot-toast';
 import '../styles/quiz-enhancements.css';
 
 const QuizResults = () => {
-  const { courseId, quizId, attemptId } = useParams();
+  const { courseId, testSeriesId, quizId, attemptId } = useParams();
   const navigate = useNavigate();
   
   const [attempt, setAttempt] = useState(null);
@@ -148,10 +148,14 @@ const QuizResults = () => {
       <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg">
         <p className="font-medium">{error}</p>
         <button
-          onClick={() => navigate(courseId ? `/courses/${courseId}` : '/profile')}
+          onClick={() => {
+            if (courseId) navigate(`/courses/${courseId}`);
+            else if (testSeriesId) navigate(`/test-series/${testSeriesId}`);
+            else navigate('/profile');
+          }}
           className="mt-4 bg-red-100 text-red-700 px-4 py-2 rounded-lg hover:bg-red-200 transition-colors"
         >
-          {courseId ? 'Return to Course' : 'Return to Profile'}
+          {courseId ? 'Return to Course' : testSeriesId ? 'Return to Test Series' : 'Return to Profile'}
         </button>
       </div>
     );
@@ -162,10 +166,14 @@ const QuizResults = () => {
       <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-6 py-4 rounded-lg">
         <p className="font-medium">Quiz results could not be loaded.</p>
         <button
-          onClick={() => navigate(courseId ? `/courses/${courseId}` : '/profile')}
+          onClick={() => {
+            if (courseId) navigate(`/courses/${courseId}`);
+            else if (testSeriesId) navigate(`/test-series/${testSeriesId}`);
+            else navigate('/profile');
+          }}
           className="mt-4 bg-yellow-100 text-yellow-700 px-4 py-2 rounded-lg hover:bg-yellow-200 transition-colors"
         >
-          {courseId ? 'Return to Course' : 'Return to Profile'}
+          {courseId ? 'Return to Course' : testSeriesId ? 'Return to Test Series' : 'Return to Profile'}
         </button>
       </div>
     );
@@ -186,11 +194,11 @@ const QuizResults = () => {
               </div>
               <div className="min-w-0 flex-1">
                 <Link
-                  to={courseId ? `/courses/${courseId}` : '/profile'}
+                  to={courseId ? `/courses/${courseId}` : testSeriesId ? `/test-series/${testSeriesId}` : '/profile'}
                   className="inline-flex items-center gap-2 text-gray-600 hover:text-blue-600 mb-3 sm:mb-4 transition-colors duration-300 group text-sm sm:text-base"
                 >
                   <FaArrowLeft className="group-hover:-translate-x-1 transition-transform duration-300 text-xs sm:text-sm" />
-                  <span>{courseId ? 'Back to Course' : 'Back to Profile'}</span>
+                  <span>{courseId ? 'Back to Course' : testSeriesId ? 'Back to Test Series' : 'Back to Profile'}</span>
                 </Link>
                 <h1 className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-2 leading-tight">
                   {quiz.title}

@@ -24,10 +24,10 @@ export const testSeriesAPI = {
         params.append(key, filters[key]);
       }
     });
-    
+
     const queryString = params.toString();
-    const url = queryString ? `/public/test-series?${queryString}` : '/public/test-series';
-    
+    const url = queryString ? `../public/test-series?${queryString}` : '../public/test-series';
+
     return await customFetch.get(url);
   },
 

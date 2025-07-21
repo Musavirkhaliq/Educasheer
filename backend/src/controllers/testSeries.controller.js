@@ -469,6 +469,37 @@ const enrollInTestSeries = asyncHandler(async (req, res) => {
     }
 });
 
+/**
+ * Fix test series quizzes array (migration function)
+ * @route POST /api/v1/test-series/fix-quizzes
+ * @access Admin only
+ */
+const fixTestSeriesQuizzes = asyncHandler(async (req, res) => {
+    try {
+        // Find all quizzes that have testSeries but are not in the test series' quizzes array
+        const quizzesWithTestSeries = await Quiz.find({ testSeries: { $exists: true } });
+
+        let fixed = 0;
+
+        for (const quiz of quizzesWithTestSeries) {
+            const testSeries = await TestSeries.findById(quiz.testSeries);
+            if (testSeries && !testSeries.quizzes.includes(quiz._id)) {
+                await TestSeries.findByIdAndUpdate(
+                    quiz.testSeries,
+                    { $addToSet: { quizzes: quiz._id } }
+                );
+                fixed++;
+            }
+        }
+
+        return res.status(200).json(
+            new ApiResponse(200, { fixed }, `Fixed ${fixed} test series quiz assignments`)
+        );
+    } catch (error) {
+        throw new ApiError(500, "Something went wrong while fixing test series quizzes");
+    }
+});
+
 export {
     createTestSeries,
     getAllTestSeries,
@@ -479,5 +510,6 @@ export {
     toggleTestSeriesPublishStatus,
     addQuizToTestSeries,
     removeQuizFromTestSeries,
-    enrollInTestSeries
+    enrollInTestSeries,
+    fixTestSeriesQuizzes
 };

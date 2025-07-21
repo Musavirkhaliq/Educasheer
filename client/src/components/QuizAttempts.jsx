@@ -5,7 +5,7 @@ import { quizAPI } from '../services/quizAPI';
 import { toast } from 'react-hot-toast';
 
 const QuizAttempts = () => {
-  const { courseId, quizId } = useParams();
+  const { courseId, testSeriesId, quizId } = useParams();
   const navigate = useNavigate();
   
   const [quiz, setQuiz] = useState(null);
@@ -64,10 +64,10 @@ const QuizAttempts = () => {
       <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg">
         <p className="font-medium">{error}</p>
         <button
-          onClick={() => navigate(`/courses/${courseId}`)}
+          onClick={() => courseId ? navigate(`/courses/${courseId}`) : navigate(`/test-series/${testSeriesId}`)}
           className="mt-4 bg-red-100 text-red-700 px-4 py-2 rounded-lg hover:bg-red-200 transition-colors"
         >
-          Return to Course
+          {courseId ? 'Return to Course' : 'Return to Test Series'}
         </button>
       </div>
     );
@@ -78,10 +78,10 @@ const QuizAttempts = () => {
       <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-6 py-4 rounded-lg">
         <p className="font-medium">Quiz details could not be loaded.</p>
         <button
-          onClick={() => navigate(`/courses/${courseId}`)}
+          onClick={() => courseId ? navigate(`/courses/${courseId}`) : navigate(`/test-series/${testSeriesId}`)}
           className="mt-4 bg-yellow-100 text-yellow-700 px-4 py-2 rounded-lg hover:bg-yellow-200 transition-colors"
         >
-          Return to Course
+          {courseId ? 'Return to Course' : 'Return to Test Series'}
         </button>
       </div>
     );
@@ -92,11 +92,11 @@ const QuizAttempts = () => {
       {/* Header */}
       <div className="mb-8">
         <Link
-          to={`/courses/${courseId}`}
+          to={courseId ? `/courses/${courseId}` : `/test-series/${testSeriesId}`}
           className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-800 mb-4"
         >
           <FaArrowLeft />
-          <span>Back to Course</span>
+          <span>{courseId ? 'Back to Course' : 'Back to Test Series'}</span>
         </Link>
         <h2 className="text-2xl font-semibold text-gray-800">{quiz.title} - Attempts</h2>
         <p className="text-gray-600 mt-1">
@@ -208,7 +208,10 @@ const QuizAttempts = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex items-center gap-3">
                       <Link
-                        to={`/courses/${courseId}/quizzes/${quizId}/results/${attempt._id}`}
+                        to={courseId
+                          ? `/courses/${courseId}/quizzes/${quizId}/results/${attempt._id}`
+                          : `/test-series/${testSeriesId}/quiz/${quizId}/results/${attempt._id}`
+                        }
                         className="text-[#00bcd4] hover:text-[#0097a7]"
                         title="View Results"
                       >

@@ -269,7 +269,7 @@ const TestSeriesProgress = ({ testSeriesId, testSeries, onProgressUpdate }) => {
                       </Link>
                     )}
                     <Link
-                      to={`/test-series/${testSeriesId}/quiz/${quiz._id}`}
+                      to={`/test-series/${testSeriesId}/quiz/${quiz._id}/take`}
                       className="text-sm px-3 py-1 bg-white rounded hover:bg-gray-50 transition-colors flex items-center gap-1"
                     >
                       <FaPlay size={12} />
