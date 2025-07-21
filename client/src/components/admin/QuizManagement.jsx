@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FaPlus, FaEdit, FaTrash, FaEye, FaCheck, FaTimes, FaFileImport } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaEye, FaCheck, FaTimes, FaFileImport, FaSearch } from 'react-icons/fa';
 import { quizAPI } from '../../services/quizAPI';
 import { courseAPI } from '../../services/courseAPI';
 import { toast } from 'react-hot-toast';
@@ -15,7 +15,8 @@ const QuizManagement = () => {
   const [filters, setFilters] = useState({
     course: '',
     published: '',
-    type: ''
+    type: '',
+    search: ''
   });
 
   // Fetch quizzes and courses on component mount
@@ -183,7 +184,22 @@ const QuizManagement = () => {
       {/* Filters */}
       <div className="bg-white rounded-lg shadow p-4 mb-6">
         <h3 className="text-lg font-semibold mb-3">Filters</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {/* Search */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
+            <div className="relative">
+              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                name="search"
+                placeholder="Search quizzes..."
+                value={filters.search}
+                onChange={handleFilterChange}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#00bcd4] focus:border-transparent"
+              />
+            </div>
+          </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Course</label>
             <select

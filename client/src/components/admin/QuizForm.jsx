@@ -60,13 +60,27 @@ const QuizForm = ({ isEditing = false }) => {
         if (isEditing && quizId) {
           const quizResponse = await quizAPI.getQuizById(quizId);
           const quizData = quizResponse.data.data;
-          
+
+          // Ensure all questions have proper structure
+          const processedQuestions = (quizData.questions || []).map(question => ({
+            ...question,
+            options: question.options || [],
+            text: question.text || '',
+            type: question.type || 'multiple_choice',
+            points: question.points || 1,
+            explanation: question.explanation || '',
+            correctAnswer: question.correctAnswer || ''
+          }));
+
           setFormData({
             title: quizData.title || '',
             description: quizData.description || '',
             course: quizData.course?._id || '',
             testSeries: quizData.testSeries?._id || '',
             assignmentType: quizData.testSeries ? 'testSeries' : 'course',
+            category: quizData.category || '',
+            tags: quizData.tags || [],
+            difficulty: quizData.difficulty || 'medium',
             timeLimit: quizData.timeLimit || 30,
             passingScore: quizData.passingScore || 70,
             quizType: quizData.quizType || 'quiz',
@@ -74,7 +88,7 @@ const QuizForm = ({ isEditing = false }) => {
             allowReview: quizData.allowReview !== false,
             showCorrectAnswers: quizData.showCorrectAnswers !== false,
             randomizeQuestions: quizData.randomizeQuestions || false,
-            questions: quizData.questions || []
+            questions: processedQuestions
           });
         }
       } catch (err) {
@@ -200,10 +214,11 @@ const QuizForm = ({ isEditing = false }) => {
 
   const addTag = () => {
     const tag = tagInput.trim().toLowerCase();
-    if (tag && !formData.tags.includes(tag)) {
+    const currentTags = formData.tags || [];
+    if (tag && !currentTags.includes(tag)) {
       setFormData(prev => ({
         ...prev,
-        tags: [...prev.tags, tag]
+        tags: [...currentTags, tag]
       }));
     }
     setTagInput('');
@@ -212,7 +227,7 @@ const QuizForm = ({ isEditing = false }) => {
   const removeTag = (tagToRemove) => {
     setFormData(prev => ({
       ...prev,
-      tags: prev.tags.filter(tag => tag !== tagToRemove)
+      tags: (prev.tags || []).filter(tag => tag !== tagToRemove)
     }));
   };
 
@@ -462,7 +477,7 @@ const QuizForm = ({ isEditing = false }) => {
               Tags
             </label>
             <div className="flex flex-wrap gap-2 mb-2">
-              {formData.tags.map((tag, index) => (
+              {(formData.tags || []).map((tag, index) => (
                 <span
                   key={index}
                   className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800"
@@ -720,7 +735,7 @@ const QuizForm = ({ isEditing = false }) => {
                       </div>
                       
                       <div className="space-y-2">
-                        {question.options.map((option, oIndex) => (
+                        {(question.options || []).map((option, oIndex) => (
                           <div key={oIndex} className="flex items-center gap-2">
                             <input
                               type={question.type === 'multiple_choice' ? 'checkbox' : 'radio'}

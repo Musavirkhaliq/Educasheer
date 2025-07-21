@@ -68,7 +68,7 @@ const createQuiz = asyncHandler(async (req, res) => {
 
         const quiz = await Quiz.create(quizData);
 
-        // If quiz is assigned to a test series, add it to the test series' quizzes array
+        // If quiz is assigned to a test series, add it to the test series' quizzes array and recalculate totals
         if (testSeries) {
             const { TestSeries } = await import("../models/testSeries.model.js");
             await TestSeries.findByIdAndUpdate(
@@ -76,6 +76,21 @@ const createQuiz = asyncHandler(async (req, res) => {
                 { $addToSet: { quizzes: quiz._id } },
                 { new: true }
             );
+
+            // Recalculate test series totals
+            const testSeriesDoc = await TestSeries.findById(testSeries);
+            if (testSeriesDoc) {
+                const quizzes = await Quiz.find({ _id: { $in: testSeriesDoc.quizzes } });
+                const totalQuizzes = quizzes.length;
+                const totalQuestions = quizzes.reduce((total, q) => total + (q.questions?.length || 0), 0);
+                const estimatedDuration = quizzes.reduce((total, q) => total + (q.timeLimit || 0), 0);
+
+                await TestSeries.findByIdAndUpdate(testSeries, {
+                    totalQuizzes,
+                    totalQuestions,
+                    estimatedDuration
+                });
+            }
         }
 
         return res.status(201).json(
@@ -207,7 +222,7 @@ const updateQuiz = asyncHandler(async (req, res) => {
             { new: true, runValidators: true }
         );
 
-        // Handle test series changes
+        // Handle test series changes and recalculate totals
         if (oldTestSeries || newTestSeries) {
             const { TestSeries } = await import("../models/testSeries.model.js");
 
@@ -217,6 +232,21 @@ const updateQuiz = asyncHandler(async (req, res) => {
                     oldTestSeries,
                     { $pull: { quizzes: quizId } }
                 );
+
+                // Recalculate old test series totals
+                const oldTestSeriesDoc = await TestSeries.findById(oldTestSeries);
+                if (oldTestSeriesDoc) {
+                    const quizzes = await Quiz.find({ _id: { $in: oldTestSeriesDoc.quizzes } });
+                    const totalQuizzes = quizzes.length;
+                    const totalQuestions = quizzes.reduce((total, q) => total + (q.questions?.length || 0), 0);
+                    const estimatedDuration = quizzes.reduce((total, q) => total + (q.timeLimit || 0), 0);
+
+                    await TestSeries.findByIdAndUpdate(oldTestSeries, {
+                        totalQuizzes,
+                        totalQuestions,
+                        estimatedDuration
+                    });
+                }
             }
 
             // Add to new test series if it exists and is different
@@ -225,6 +255,21 @@ const updateQuiz = asyncHandler(async (req, res) => {
                     newTestSeries,
                     { $addToSet: { quizzes: quizId } }
                 );
+
+                // Recalculate new test series totals
+                const newTestSeriesDoc = await TestSeries.findById(newTestSeries);
+                if (newTestSeriesDoc) {
+                    const quizzes = await Quiz.find({ _id: { $in: newTestSeriesDoc.quizzes } });
+                    const totalQuizzes = quizzes.length;
+                    const totalQuestions = quizzes.reduce((total, q) => total + (q.questions?.length || 0), 0);
+                    const estimatedDuration = quizzes.reduce((total, q) => total + (q.timeLimit || 0), 0);
+
+                    await TestSeries.findByIdAndUpdate(newTestSeries, {
+                        totalQuizzes,
+                        totalQuestions,
+                        estimatedDuration
+                    });
+                }
             }
         }
 
@@ -260,13 +305,28 @@ const deleteQuiz = asyncHandler(async (req, res) => {
             throw new ApiError(403, "You don't have permission to delete this quiz");
         }
 
-        // Remove quiz from test series if it belongs to one
+        // Remove quiz from test series if it belongs to one and recalculate totals
         if (quiz.testSeries) {
             const { TestSeries } = await import("../models/testSeries.model.js");
             await TestSeries.findByIdAndUpdate(
                 quiz.testSeries,
                 { $pull: { quizzes: quizId } }
             );
+
+            // Recalculate test series totals
+            const testSeriesDoc = await TestSeries.findById(quiz.testSeries);
+            if (testSeriesDoc) {
+                const quizzes = await Quiz.find({ _id: { $in: testSeriesDoc.quizzes } });
+                const totalQuizzes = quizzes.length;
+                const totalQuestions = quizzes.reduce((total, q) => total + (q.questions?.length || 0), 0);
+                const estimatedDuration = quizzes.reduce((total, q) => total + (q.timeLimit || 0), 0);
+
+                await TestSeries.findByIdAndUpdate(quiz.testSeries, {
+                    totalQuizzes,
+                    totalQuestions,
+                    estimatedDuration
+                });
+            }
         }
 
         // Delete quiz

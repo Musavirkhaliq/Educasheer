@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { quizAPI } from '../services/quizAPI';
+import { testSeriesAPI } from '../services/testSeriesAPI';
 import { useAuth } from '../context/AuthContext';
-import { FaSearch, FaFilter, FaClock, FaQuestionCircle, FaGraduationCap, FaBook, FaChevronRight, FaSpinner, FaUser, FaStar, FaPlay, FaTrophy, FaBookOpen, FaUsers, FaCalendarAlt } from 'react-icons/fa';
+import { FaSearch, FaFilter, FaClock, FaQuestionCircle, FaGraduationCap, FaBook, FaChevronRight, FaSpinner, FaUser, FaStar, FaPlay, FaTrophy, FaBookOpen, FaUsers, FaCalendarAlt, FaListAlt, FaTag } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 
 const ExamsPage = () => {
@@ -12,12 +13,15 @@ const ExamsPage = () => {
   const [selectedTags, setSelectedTags] = useState([]);
   const [selectedDifficulty, setSelectedDifficulty] = useState('');
   const [quizzes, setQuizzes] = useState([]);
+  const [testSeries, setTestSeries] = useState([]);
   const [categories, setCategories] = useState([]);
   const [tags, setTags] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [testSeriesLoading, setTestSeriesLoading] = useState(false);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [tagsLoading, setTagsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [testSeriesError, setTestSeriesError] = useState('');
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 12,
@@ -25,6 +29,7 @@ const ExamsPage = () => {
     pages: 0
   });
   const [showFilters, setShowFilters] = useState(false);
+  const [currentView, setCurrentView] = useState('quizzes'); // 'quizzes' or 'test-series'
 
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
@@ -32,12 +37,17 @@ const ExamsPage = () => {
   useEffect(() => {
     fetchCategories();
     fetchTags();
+    fetchTestSeries();
   }, []);
 
   useEffect(() => {
-    fetchQuizzes();
+    if (currentView === 'quizzes') {
+      fetchQuizzes();
+    } else {
+      fetchTestSeries();
+    }
     // eslint-disable-next-line
-  }, [search, selectedCategory, selectedType, selectedTags, selectedDifficulty, pagination.page]);
+  }, [search, selectedCategory, selectedType, selectedTags, selectedDifficulty, pagination.page, currentView]);
 
   const fetchCategories = async () => {
     setCategoriesLoading(true);
@@ -86,6 +96,25 @@ const ExamsPage = () => {
       console.error('Error fetching quizzes:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchTestSeries = async () => {
+    setTestSeriesLoading(true);
+    setTestSeriesError('');
+    try {
+      const params = {};
+      if (search) params.search = search;
+      if (selectedCategory) params.category = selectedCategory;
+      if (selectedDifficulty) params.difficulty = selectedDifficulty;
+
+      const response = await testSeriesAPI.getPublishedTestSeries(params);
+      setTestSeries(response.data.data || []);
+    } catch (err) {
+      setTestSeriesError('Failed to load test series.');
+      console.error('Error fetching test series:', err);
+    } finally {
+      setTestSeriesLoading(false);
     }
   };
 
@@ -208,6 +237,38 @@ const ExamsPage = () => {
       </div>
 
       <div className="container mx-auto px-4 py-8">
+        {/* View Toggle */}
+        <div className="mb-8">
+          <div className="bg-white rounded-lg shadow-md p-4">
+            <div className="flex items-center justify-center">
+              <div className="bg-gray-100 rounded-lg p-1 flex">
+                <button
+                  onClick={() => setCurrentView('quizzes')}
+                  className={`px-6 py-2 rounded-md font-medium transition-all duration-300 flex items-center gap-2 ${
+                    currentView === 'quizzes'
+                      ? 'bg-[#00bcd4] text-white shadow-md'
+                      : 'text-gray-600 hover:text-gray-800'
+                  }`}
+                >
+                  <FaBookOpen />
+                  Individual Quizzes
+                </button>
+                <button
+                  onClick={() => setCurrentView('test-series')}
+                  className={`px-6 py-2 rounded-md font-medium transition-all duration-300 flex items-center gap-2 ${
+                    currentView === 'test-series'
+                      ? 'bg-[#00bcd4] text-white shadow-md'
+                      : 'text-gray-600 hover:text-gray-800'
+                  }`}
+                >
+                  <FaListAlt />
+                  Test Series
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar - Categories */}
           <div className="lg:w-1/4">
@@ -422,36 +483,46 @@ const ExamsPage = () => {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-2xl font-bold text-gray-800">
-                  {selectedCategory ? `${selectedCategory} ` : ''}
-                  {selectedType ? (selectedType === 'exam' ? 'Exams' : 'Quizzes') : 'Exams & Quizzes'}
+                  {currentView === 'test-series' ? (
+                    selectedCategory ? `${selectedCategory} Test Series` : 'Available Test Series'
+                  ) : (
+                    selectedCategory ? `${selectedCategory} ` : '' +
+                    (selectedType ? (selectedType === 'exam' ? 'Exams' : 'Quizzes') : 'Exams & Quizzes')
+                  )}
                 </h2>
                 <p className="text-gray-600 mt-1">
-                  {loading ? 'Loading...' : `${pagination.total} results found`}
+                  {currentView === 'test-series' ? (
+                    testSeriesLoading ? 'Loading...' : `${testSeries.length} test series found`
+                  ) : (
+                    loading ? 'Loading...' : `${pagination.total} results found`
+                  )}
                 </p>
               </div>
             </div>
 
             {/* Loading State */}
-            {loading && (
+            {((currentView === 'quizzes' && loading) || (currentView === 'test-series' && testSeriesLoading)) && (
               <div className="flex flex-col items-center justify-center py-16">
                 <div className="relative">
                   <div className="w-16 h-16 bg-gradient-to-r from-[#00bcd4] to-[#00acc1] rounded-full animate-pulse"></div>
                   <FaSpinner className="absolute inset-0 m-auto animate-spin text-2xl text-white" />
                 </div>
-                <p className="text-gray-600 mt-4 text-lg font-medium">Loading amazing quizzes...</p>
+                <p className="text-gray-600 mt-4 text-lg font-medium">
+                  Loading amazing {currentView === 'test-series' ? 'test series' : 'quizzes'}...
+                </p>
               </div>
             )}
 
             {/* Error State */}
-            {error && (
+            {((currentView === 'quizzes' && error) || (currentView === 'test-series' && testSeriesError)) && (
               <div className="bg-gradient-to-br from-red-50 to-red-100 border border-red-200 rounded-2xl p-8 text-center shadow-lg">
                 <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
                   <FaBook className="text-white text-2xl" />
                 </div>
                 <h3 className="text-xl font-bold text-red-700 mb-2">Oops! Something went wrong</h3>
-                <p className="text-red-600 mb-6">{error}</p>
+                <p className="text-red-600 mb-6">{currentView === 'test-series' ? testSeriesError : error}</p>
                 <button
-                  onClick={fetchQuizzes}
+                  onClick={currentView === 'test-series' ? fetchTestSeries : fetchQuizzes}
                   className="bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
                 >
                   Try Again
@@ -459,8 +530,8 @@ const ExamsPage = () => {
               </div>
             )}
 
-            {/* Quiz Grid */}
-            {!loading && !error && (
+            {/* Content Grid */}
+            {currentView === 'quizzes' && !loading && !error && (
               <>
                 {quizzes.length === 0 ? (
                   <div className="text-center py-16">
@@ -645,6 +716,131 @@ const ExamsPage = () => {
                     >
                       Next
                     </button>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* Test Series Grid */}
+            {currentView === 'test-series' && !testSeriesLoading && !testSeriesError && (
+              <>
+                {testSeries.length === 0 ? (
+                  <div className="text-center py-16">
+                    <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
+                      <FaListAlt className="text-4xl text-gray-400" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-700 mb-3">No test series found</h3>
+                    <p className="text-gray-500 text-lg mb-6 max-w-md mx-auto">
+                      Try adjusting your search criteria or browse different categories to discover available test series.
+                    </p>
+                    <button
+                      onClick={() => {
+                        setSearch('');
+                        setSelectedCategory('');
+                        setSelectedDifficulty('');
+                      }}
+                      className="bg-gradient-to-r from-[#00bcd4] to-[#00acc1] text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
+                    >
+                      Clear Filters
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                    {testSeries.map((series, index) => (
+                      <motion.div
+                        key={series._id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, delay: index * 0.1 }}
+                        className="group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer overflow-hidden border border-gray-100 hover:border-[#00bcd4]/20 hover:-translate-y-1"
+                      >
+                        <Link to={`/test-series/${series._id}`}>
+                          {/* Header with gradient background */}
+                          <div className="relative p-6 bg-gradient-to-br from-[#00bcd4] to-[#00acc1] text-white">
+                            <div className="absolute top-0 right-0 w-32 h-32 opacity-10">
+                              <div className="absolute top-4 right-4">
+                                <FaListAlt className="text-6xl" />
+                              </div>
+                            </div>
+                            <div className="relative z-10">
+                              <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-2">
+                                  <FaTrophy className="text-xl" />
+                                  <span className="font-semibold">Test Series</span>
+                                </div>
+                                {series.examType && (
+                                  <span className="bg-white/90 backdrop-blur-sm text-gray-800 px-2 py-1 rounded-full text-xs font-medium">
+                                    {series.examType}
+                                  </span>
+                                )}
+                              </div>
+                              <h3 className="text-xl font-bold mb-2 line-clamp-2">{series.title}</h3>
+                              <p className="text-white/90 text-sm line-clamp-2">{series.description}</p>
+                            </div>
+                          </div>
+
+                          {/* Content */}
+                          <div className="p-6">
+                            {/* Stats */}
+                            <div className="grid grid-cols-2 gap-4 mb-4 text-sm text-gray-600">
+                              <div className="flex items-center gap-2">
+                                <FaQuestionCircle className="text-[#00bcd4]" />
+                                <span>{series.totalQuizzes || 0} Tests</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <FaClock className="text-[#00bcd4]" />
+                                <span>{series.estimatedDuration || 0} min</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <FaUsers className="text-[#00bcd4]" />
+                                <span>{series.enrolledStudents?.length || 0} enrolled</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <FaTag className="text-[#00bcd4]" />
+                                <span>{series.category}</span>
+                              </div>
+                            </div>
+
+                            {/* Tags */}
+                            {series.tags && series.tags.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mb-4">
+                                {series.tags.slice(0, 3).map((tag, tagIndex) => (
+                                  <span
+                                    key={tagIndex}
+                                    className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs"
+                                  >
+                                    {tag}
+                                  </span>
+                                ))}
+                                {series.tags.length > 3 && (
+                                  <span className="text-gray-500 text-xs">+{series.tags.length - 3} more</span>
+                                )}
+                              </div>
+                            )}
+
+                            {/* Subject */}
+                            {series.subject && (
+                              <div className="mb-4">
+                                <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm font-medium">
+                                  {series.subject}
+                                </span>
+                              </div>
+                            )}
+
+                            {/* Action Button */}
+                            <div className="flex items-center justify-between">
+                              <div className="text-sm text-gray-500">
+                                {series.totalQuestions || 0} questions
+                              </div>
+                              <div className="bg-[#00bcd4] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#0097a7] transition-colors flex items-center gap-2">
+                                <FaPlay size={12} />
+                                View Series
+                              </div>
+                            </div>
+                          </div>
+                        </Link>
+                      </motion.div>
+                    ))}
                   </div>
                 )}
               </>

@@ -470,7 +470,31 @@ const enrollInTestSeries = asyncHandler(async (req, res) => {
 });
 
 /**
- * Fix test series quizzes array (migration function)
+ * Recalculate test series totals
+ */
+const recalculateTestSeriesTotals = async (testSeriesId) => {
+    try {
+        const testSeries = await TestSeries.findById(testSeriesId);
+        if (!testSeries) return;
+
+        const quizzes = await Quiz.find({ _id: { $in: testSeries.quizzes } });
+
+        const totalQuizzes = quizzes.length;
+        const totalQuestions = quizzes.reduce((total, quiz) => total + (quiz.questions?.length || 0), 0);
+        const estimatedDuration = quizzes.reduce((total, quiz) => total + (quiz.timeLimit || 0), 0);
+
+        await TestSeries.findByIdAndUpdate(testSeriesId, {
+            totalQuizzes,
+            totalQuestions,
+            estimatedDuration
+        });
+    } catch (error) {
+        console.error('Error recalculating test series totals:', error);
+    }
+};
+
+/**
+ * Fix test series quizzes array and recalculate totals (migration function)
  * @route POST /api/v1/test-series/fix-quizzes
  * @access Admin only
  */
@@ -480,6 +504,7 @@ const fixTestSeriesQuizzes = asyncHandler(async (req, res) => {
         const quizzesWithTestSeries = await Quiz.find({ testSeries: { $exists: true } });
 
         let fixed = 0;
+        const testSeriesToUpdate = new Set();
 
         for (const quiz of quizzesWithTestSeries) {
             const testSeries = await TestSeries.findById(quiz.testSeries);
@@ -488,12 +513,18 @@ const fixTestSeriesQuizzes = asyncHandler(async (req, res) => {
                     quiz.testSeries,
                     { $addToSet: { quizzes: quiz._id } }
                 );
+                testSeriesToUpdate.add(quiz.testSeries.toString());
                 fixed++;
             }
         }
 
+        // Recalculate totals for all affected test series
+        for (const testSeriesId of testSeriesToUpdate) {
+            await recalculateTestSeriesTotals(testSeriesId);
+        }
+
         return res.status(200).json(
-            new ApiResponse(200, { fixed }, `Fixed ${fixed} test series quiz assignments`)
+            new ApiResponse(200, { fixed }, `Fixed ${fixed} test series quiz assignments and recalculated totals`)
         );
     } catch (error) {
         throw new ApiError(500, "Something went wrong while fixing test series quizzes");
