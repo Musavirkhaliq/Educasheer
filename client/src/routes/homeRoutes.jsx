@@ -42,6 +42,10 @@ import MyBookingsPage from "../pages/MyBookingsPage";
 import QRBookingPage from "../pages/QRBookingPage";
 import QuizzesExamsPage from '../pages/QuizzesExamsPage';
 import ExamsPage from '../pages/ExamsPage';
+import TestSeriesPage from '../pages/TestSeriesPage';
+import TestSeriesDetail from '../components/TestSeriesDetail';
+import TestSeriesManagement from '../components/admin/TestSeriesManagement';
+import TestSeriesForm from '../components/admin/TestSeriesForm';
 import CategoryManagementPage from '../pages/CategoryManagementPage';
 import AdminBookingManagementPage from '../pages/AdminBookingManagementPage';
 
@@ -356,6 +360,31 @@ export const homeRoutes = [
       </Suspense>
     ),
   },
+  // Test Series routes (admin)
+  {
+    path: "admin/test-series",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <TestSeriesManagement />
+      </Suspense>
+    ),
+  },
+  {
+    path: "admin/test-series/create",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <TestSeriesForm />
+      </Suspense>
+    ),
+  },
+  {
+    path: "admin/test-series/:testSeriesId/edit",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <TestSeriesForm isEditing={true} />
+      </Suspense>
+    ),
+  },
   // Category management routes (admin)
   {
     path: "admin/categories",
@@ -413,6 +442,31 @@ export const homeRoutes = [
     element: (
       <Suspense fallback={<h1>Loading</h1>}>
         <QuizResultsPage />
+      </Suspense>
+    ),
+  },
+  // Test Series routes (public)
+  {
+    path: "test-series",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <TestSeriesPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: "test-series/:testSeriesId",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <TestSeriesDetail />
+      </Suspense>
+    ),
+  },
+  {
+    path: "test-series/:testSeriesId/quiz/:quizId",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <QuizDetailsPage />
       </Suspense>
     ),
   },

@@ -93,6 +93,9 @@ app.get("/api/public/quizzes", getPublishedQuizzes);
 app.get("/api/public/quiz-categories", getQuizCategories);
 app.get("/api/public/quiz-tags", getQuizTags);
 
+// Public test series endpoints under /api/public/
+app.get("/api/public/test-series", getPublishedTestSeries);
+
 // Public testimonial endpoints under /api/public/
 app.get("/api/public/testimonials", getApprovedTestimonials);
 
@@ -119,11 +122,14 @@ import videoProgressRouter from "./routes/videoProgress.routes.js";
 import courseProgressRouter from "./routes/courseProgress.routes.js";
 import rewardRouter from "./routes/reward.routes.js";
 import quizRouter from "./routes/quiz.routes.js";
+import testSeriesRouter from "./routes/testSeries.routes.js";
 import seatRouter from "./routes/seat.routes.js";
 import categoryRouter from "./routes/category.routes.js";
 
 // Import public quiz routes
 import { getPublishedQuizzes, getQuizCategories, getQuizTags } from "./controllers/quiz.controller.js";
+// Import public test series routes
+import { getPublishedTestSeries } from "./controllers/testSeries.controller.js";
 // Import public testimonial routes
 import { getApprovedTestimonials } from "./controllers/testimonial.controller.js";
 
@@ -158,6 +164,7 @@ app.get("/api/v1/public/quiz-test", (req, res) => {
 });
 
 app.use("/api/v1/quizzes", quizRouter);
+app.use("/api/v1/test-series", testSeriesRouter);
 app.use("/api/v1/seats", seatRouter);
 app.use("/api/v1/categories", categoryRouter);
 

@@ -17,12 +17,15 @@ const QuizForm = ({ isEditing = false }) => {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [courses, setCourses] = useState([]);
+  const [testSeries, setTestSeries] = useState([]);
   const [showJSONUpload, setShowJSONUpload] = useState(false);
   
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     course: '',
+    testSeries: '',
+    assignmentType: 'course', // 'course' or 'testSeries'
     category: '',
     tags: [],
     difficulty: 'medium',
@@ -47,6 +50,11 @@ const QuizForm = ({ isEditing = false }) => {
         // Fetch courses
         const coursesResponse = await courseAPI.getAllCourses();
         setCourses(coursesResponse.data.data);
+
+        // Fetch test series
+        const { testSeriesAPI } = await import('../../services/testSeriesAPI');
+        const testSeriesResponse = await testSeriesAPI.getAllTestSeries();
+        setTestSeries(testSeriesResponse.data.data);
         
         // If editing, fetch quiz data
         if (isEditing && quizId) {
@@ -57,6 +65,8 @@ const QuizForm = ({ isEditing = false }) => {
             title: quizData.title || '',
             description: quizData.description || '',
             course: quizData.course?._id || '',
+            testSeries: quizData.testSeries?._id || '',
+            assignmentType: quizData.testSeries ? 'testSeries' : 'course',
             timeLimit: quizData.timeLimit || 30,
             passingScore: quizData.passingScore || 70,
             quizType: quizData.quizType || 'quiz',
@@ -216,8 +226,13 @@ const QuizForm = ({ isEditing = false }) => {
       return;
     }
     
-    if (!formData.course) {
+    if (formData.assignmentType === 'course' && !formData.course) {
       toast.error('Please select a course');
+      return;
+    }
+
+    if (formData.assignmentType === 'testSeries' && !formData.testSeries) {
+      toast.error('Please select a test series');
       return;
     }
     
@@ -260,12 +275,22 @@ const QuizForm = ({ isEditing = false }) => {
     
     try {
       setSubmitting(true);
-      
+
+      // Prepare data for submission
+      const submitData = {
+        ...formData,
+        course: formData.assignmentType === 'course' ? formData.course : undefined,
+        testSeries: formData.assignmentType === 'testSeries' ? formData.testSeries : undefined
+      };
+
+      // Remove assignmentType as it's not needed in the API
+      delete submitData.assignmentType;
+
       if (isEditing) {
-        await quizAPI.updateQuiz(quizId, formData);
+        await quizAPI.updateQuiz(quizId, submitData);
         toast.success('Quiz updated successfully');
       } else {
-        await quizAPI.createQuiz(formData);
+        await quizAPI.createQuiz(submitData);
         toast.success('Quiz created successfully');
       }
       
@@ -323,23 +348,65 @@ const QuizForm = ({ isEditing = false }) => {
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Course <span className="text-red-500">*</span>
+                Assignment Type <span className="text-red-500">*</span>
               </label>
               <select
-                name="course"
-                value={formData.course}
+                name="assignmentType"
+                value={formData.assignmentType}
                 onChange={handleInputChange}
                 className="w-full border border-gray-300 rounded-md px-3 py-2"
                 required
               >
-                <option value="">Select a course</option>
-                {courses.map(course => (
-                  <option key={course._id} value={course._id}>
-                    {course.title}
-                  </option>
-                ))}
+                <option value="course">Course</option>
+                <option value="testSeries">Test Series</option>
               </select>
             </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            {formData.assignmentType === 'course' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Course <span className="text-red-500">*</span>
+                </label>
+                <select
+                  name="course"
+                  value={formData.course}
+                  onChange={handleInputChange}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  required
+                >
+                  <option value="">Select a course</option>
+                  {courses.map(course => (
+                    <option key={course._id} value={course._id}>
+                      {course.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {formData.assignmentType === 'testSeries' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Test Series <span className="text-red-500">*</span>
+                </label>
+                <select
+                  name="testSeries"
+                  value={formData.testSeries}
+                  onChange={handleInputChange}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  required
+                >
+                  <option value="">Select a test series</option>
+                  {testSeries.map(series => (
+                    <option key={series._id} value={series._id}>
+                      {series.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
           
           <div className="mb-4">

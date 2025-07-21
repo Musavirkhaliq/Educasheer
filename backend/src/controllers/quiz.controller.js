@@ -16,24 +16,39 @@ import path from "path";
  */
 const createQuiz = asyncHandler(async (req, res) => {
     try {
-        const { title, description, course, questions, timeLimit, passingScore, quizType, maxAttempts } = req.body;
+        const { title, description, course, testSeries, questions, timeLimit, passingScore, quizType, maxAttempts } = req.body;
 
         // Validate required fields
-        if (!title || !description || !course || !questions || !Array.isArray(questions) || questions.length === 0) {
-            throw new ApiError(400, "Title, description, course ID, and at least one question are required");
+        if (!title || !description || !questions || !Array.isArray(questions) || questions.length === 0) {
+            throw new ApiError(400, "Title, description, and at least one question are required");
         }
 
-        // Check if course exists
-        const courseExists = await Course.findById(course);
-        if (!courseExists) {
-            throw new ApiError(404, "Course not found");
+        // Either course or testSeries must be provided
+        if (!course && !testSeries) {
+            throw new ApiError(400, "Either course ID or test series ID is required");
+        }
+
+        // Check if course exists (if provided)
+        if (course) {
+            const courseExists = await Course.findById(course);
+            if (!courseExists) {
+                throw new ApiError(404, "Course not found");
+            }
+        }
+
+        // Check if test series exists (if provided)
+        if (testSeries) {
+            const { TestSeries } = await import("../models/testSeries.model.js");
+            const testSeriesExists = await TestSeries.findById(testSeries);
+            if (!testSeriesExists) {
+                throw new ApiError(404, "Test series not found");
+            }
         }
 
         // Create quiz
-        const quiz = await Quiz.create({
+        const quizData = {
             title,
             description,
-            course,
             questions,
             timeLimit: timeLimit || 30,
             passingScore: passingScore || 70,
@@ -41,7 +56,17 @@ const createQuiz = asyncHandler(async (req, res) => {
             maxAttempts: maxAttempts || 0,
             creator: req.user._id,
             isPublished: false
-        });
+        };
+
+        // Add course or testSeries reference
+        if (course) {
+            quizData.course = course;
+        }
+        if (testSeries) {
+            quizData.testSeries = testSeries;
+        }
+
+        const quiz = await Quiz.create(quizData);
 
         return res.status(201).json(
             new ApiResponse(201, quiz, "Quiz created successfully")

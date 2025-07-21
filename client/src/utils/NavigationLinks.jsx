@@ -39,6 +39,11 @@ const navLinks = [
     icon: <FaLayerGroup />,
   },
   {
+    name: "Test Series",
+    address: "/test-series",
+    icon: <FaGraduationCap />,
+  },
+  {
     name: "Exams",
     address: "/exams",
     icon: <FaGraduationCap />,
@@ -137,6 +142,11 @@ const adminLinks = [
   {
     name: "Manage Quizzes",
     address: "quizzes",
+    icon: <FaGraduationCap />,
+  },
+  {
+    name: "Manage Test Series",
+    address: "test-series",
     icon: <FaGraduationCap />,
   },
   {
