@@ -286,7 +286,7 @@ const SeatBookingForm = ({ center, onBookingSuccess, preSelectedSeatId }) => {
                                     Seat Selected via QR Code
                                 </h3>
                                 <div className="mt-2 text-sm text-green-700">
-                                    <p>✅ Perfect! You've selected Seat {selectedSeat.seatNumber} via QR code.</p>
+                                    <p>✅ Perfect! You've selected Seat <span className="text-2xl font-black text-green-800">{selectedSeat.seatNumber}</span> via QR code.</p>
                                     <p className="mt-1">📅 <strong>Next:</strong> Choose your date and time below to see comprehensive booking information and available slots.</p>
                                 </div>
                             </div>
@@ -313,7 +313,7 @@ const SeatBookingForm = ({ center, onBookingSuccess, preSelectedSeatId }) => {
                                 </div>
                                 <div className="ml-3 flex-1">
                                     <h4 className="text-lg font-semibold text-blue-800 mb-2">
-                                        Selected Seat: {selectedSeat.seatNumber}
+                                        Selected Seat: <span className={`${preSelectedSeatId ? 'text-3xl font-black text-blue-900' : 'text-xl font-bold'}`}>{selectedSeat.seatNumber}</span>
                                         {preSelectedSeatId && <span className="text-sm font-normal text-blue-600 ml-2">(via QR Code)</span>}
                                     </h4>
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">

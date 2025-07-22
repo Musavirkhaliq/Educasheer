@@ -100,17 +100,18 @@ const SeatLayout = ({
     };
 
     const getSeatClassName = (seat, status) => {
-        const baseClasses = 'w-12 h-12 m-1 rounded-lg border-2 cursor-pointer transition-all duration-200 flex items-center justify-center text-sm font-semibold';
-        
+        // Larger seats for better visibility, especially for QR booking
+        const baseClasses = 'w-16 h-16 m-1 rounded-xl border-2 cursor-pointer transition-all duration-200 flex items-center justify-center text-lg font-bold shadow-sm';
+
         const isSelected = selectedSeat && selectedSeat._id === seat._id;
-        
+
         if (isSelected) {
             return `${baseClasses} bg-blue-500 border-blue-600 text-white shadow-lg transform scale-105`;
         }
-        
+
         switch (status) {
             case 'available':
-                return `${baseClasses} bg-green-100 border-green-300 text-green-800 hover:bg-green-200 hover:border-green-400`;
+                return `${baseClasses} bg-green-100 border-green-300 text-green-800 hover:bg-green-200 hover:border-green-400 hover:shadow-md`;
             case 'booked':
                 return `${baseClasses} bg-red-100 border-red-300 text-red-800 cursor-not-allowed`;
             case 'inactive':
@@ -254,10 +255,10 @@ const SeatLayout = ({
                                                     title={`Seat ${seat.seatNumber} (${seat.seatType})`}
                                                 >
                                                     <div className="text-center">
-                                                        <div className="text-xs">
+                                                        <div className="text-xs mb-1">
                                                             {getSeatTypeIcon(seat.seatType)}
                                                         </div>
-                                                        <div>{seat.seatNumber}</div>
+                                                        <div className="text-xl font-black leading-none">{seat.seatNumber}</div>
                                                     </div>
                                                 </div>
 
@@ -317,8 +318,8 @@ const SeatLayout = ({
 
                         <div className="text-center">
                             <div className="mb-4">
-                                <p className="font-medium">Seat {selectedSeatQR.seatNumber}</p>
-                                <p className="text-sm text-gray-500">Row {selectedSeatQR.row} • {selectedSeatQR.seatType}</p>
+                                <p className="font-medium text-lg">Seat <span className="text-4xl font-black text-gray-900">{selectedSeatQR.seatNumber}</span></p>
+                                <p className="text-sm text-gray-500 mt-2">Row {selectedSeatQR.row} • {selectedSeatQR.seatType}</p>
                             </div>
 
                             {selectedSeatQR.qrCode ? (
