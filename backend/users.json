@@ -1,0 +1,28 @@
+[
+  {
+    "username": "aamina",
+    "email": "aamina@educasheer.in",
+    "fullName": "Aamina",
+    "password": "Educasheer@123",
+    "role": "learner",
+    "tutorStatus": "none",
+    "authProvider": "local",
+    "isEmailVerified": false,
+    "avatar": "https://example.com/avatar.jpg",
+    "coverImage": "https://example.com/cover.jpg",
+    "currentLevel": 1
+  },
+  {
+    "username": "subeena",
+    "email": "Subeena@educasheer.in",
+    "fullName": "Subeena",
+    "password": "Educasheer@123",
+    "role": "learner",
+    "tutorStatus": "none",
+    "authProvider": "local",
+    "isEmailVerified": false,
+    "avatar": "https://example.com/avatar.jpg",
+    "coverImage": "https://example.com/cover.jpg",
+    "currentLevel": 1
+  }
+]

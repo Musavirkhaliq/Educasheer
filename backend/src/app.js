@@ -19,11 +19,11 @@ app.use(cors({
     credentials: true
 }));
 
-// Parse JSON request body
-app.use(express.json({ limit: "16kb" }));
+// Parse JSON request body with increased limit for large quizzes
+app.use(express.json({ limit: "10mb" }));
 
-// Parse URL-encoded request body
-app.use(express.urlencoded({ extended: true, limit: "16kb" }));
+// Parse URL-encoded request body with increased limit for large quizzes
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // Serve static files from public directory with cache control
 app.use(express.static("public", {

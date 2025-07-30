@@ -97,6 +97,10 @@ const createQuiz = asyncHandler(async (req, res) => {
             new ApiResponse(201, quiz, "Quiz created successfully")
         );
     } catch (error) {
+        console.error("Error creating quiz:", error);
+        console.error("Quiz data size:", JSON.stringify(req.body).length, "bytes");
+        console.error("Number of questions:", req.body.questions?.length || 0);
+
         if (error instanceof mongoose.Error.ValidationError) {
             throw new ApiError(400, error.message);
         }
@@ -277,6 +281,10 @@ const updateQuiz = asyncHandler(async (req, res) => {
             new ApiResponse(200, updatedQuiz, "Quiz updated successfully")
         );
     } catch (error) {
+        console.error("Error updating quiz:", error);
+        console.error("Quiz data size:", JSON.stringify(req.body).length, "bytes");
+        console.error("Number of questions:", req.body.questions?.length || 0);
+
         if (error instanceof mongoose.Error.ValidationError) {
             throw new ApiError(400, error.message);
         }
