@@ -48,9 +48,37 @@ const startQuizAttempt = asyncHandler(async (req, res) => {
         });
         
         if (incompleteAttempt) {
-            return res.status(200).json(
-                new ApiResponse(200, incompleteAttempt, "Continuing previous quiz attempt")
-            );
+            // Check if the incomplete attempt has expired
+            if (quiz.timeLimit && quiz.timeLimit > 0) {
+                const startTime = new Date(incompleteAttempt.startTime);
+                const currentTime = new Date();
+                const elapsedMinutes = Math.floor((currentTime - startTime) / (1000 * 60));
+
+                console.log('Found incomplete attempt - checking expiry:', {
+                    attemptId: incompleteAttempt._id,
+                    startTime: startTime.toISOString(),
+                    currentTime: currentTime.toISOString(),
+                    elapsedMinutes,
+                    timeLimit: quiz.timeLimit
+                });
+
+                if (elapsedMinutes >= quiz.timeLimit) {
+                    console.log('Incomplete attempt has expired, deleting and creating new attempt');
+                    // Delete the expired attempt and create a new one
+                    await QuizAttempt.findByIdAndDelete(incompleteAttempt._id);
+                    // Continue to create new attempt below
+                } else {
+                    console.log('Incomplete attempt is still valid, continuing');
+                    return res.status(200).json(
+                        new ApiResponse(200, incompleteAttempt, "Continuing previous quiz attempt")
+                    );
+                }
+            } else {
+                // No time limit, continue with existing attempt
+                return res.status(200).json(
+                    new ApiResponse(200, incompleteAttempt, "Continuing previous quiz attempt")
+                );
+            }
         }
         
         // Create a new attempt
@@ -117,16 +145,23 @@ const submitQuizAttempt = asyncHandler(async (req, res) => {
         // Find the attempt
         const attempt = await QuizAttempt.findById(attemptId);
         if (!attempt) {
-            throw new ApiError(404, "Quiz attempt not found");
+            console.error("Quiz attempt not found:", { attemptId, userId });
+            throw new ApiError(404, "Quiz attempt not found or has expired");
         }
-        
+
         // Check if this attempt belongs to the user
         if (attempt.user.toString() !== userId.toString()) {
+            console.error("Attempt ownership mismatch:", {
+                attemptId,
+                attemptUserId: attempt.user.toString(),
+                requestUserId: userId.toString()
+            });
             throw new ApiError(403, "You don't have permission to submit this attempt");
         }
-        
+
         // Check if attempt is already completed
         if (attempt.isCompleted) {
+            console.log("Attempt already completed:", { attemptId, userId });
             throw new ApiError(400, "This quiz attempt has already been submitted");
         }
         
@@ -134,6 +169,31 @@ const submitQuizAttempt = asyncHandler(async (req, res) => {
         const quiz = await Quiz.findById(attempt.quiz);
         if (!quiz) {
             throw new ApiError(404, "Quiz not found");
+        }
+
+        // Check if the quiz attempt has expired based on time limit
+        if (quiz.timeLimit && quiz.timeLimit > 0) {
+            const startTime = new Date(attempt.startTime);
+            const currentTime = new Date();
+            const elapsedMinutes = Math.floor((currentTime - startTime) / (1000 * 60));
+
+            if (elapsedMinutes > quiz.timeLimit) {
+                console.log("Quiz attempt has expired:", {
+                    attemptId,
+                    startTime: attempt.startTime,
+                    currentTime,
+                    elapsedMinutes,
+                    timeLimit: quiz.timeLimit
+                });
+
+                // Auto-submit the quiz with current answers if any exist
+                if (attempt.answers && attempt.answers.length > 0) {
+                    console.log("Auto-submitting expired quiz with existing answers");
+                    // Continue with submission process
+                } else {
+                    throw new ApiError(400, "Quiz time has expired and no answers were provided");
+                }
+            }
         }
         
         // Process answers and calculate score

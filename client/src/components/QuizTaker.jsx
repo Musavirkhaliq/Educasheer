@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FaClock, FaExclamationTriangle, FaCheck, FaTimes, FaArrowLeft, FaArrowRight, FaQuestionCircle, FaListAlt, FaTrophy, FaEdit, FaFileAlt, FaBookmark, FaRegBookmark, FaEye, FaFlag, FaChevronLeft, FaChevronRight, FaHome, FaCalculator, FaPause, FaPlay } from 'react-icons/fa';
 import { quizAPI } from '../services/quizAPI';
@@ -25,6 +25,7 @@ const QuizTaker = () => {
   const [showInstructions, setShowInstructions] = useState(false);
 
   const timerRef = useRef(null);
+  const sessionCheckRef = useRef(null);
 
   useEffect(() => {
     startQuiz();
@@ -35,11 +36,38 @@ const QuizTaker = () => {
         clearInterval(timerRef.current);
         timerRef.current = null;
       }
+      if (sessionCheckRef.current) {
+        clearInterval(sessionCheckRef.current);
+        sessionCheckRef.current = null;
+      }
     };
   }, [quizId]);
 
+  // Handle timer expiration with proper state access
+  const handleTimerExpiration = useCallback(() => {
+    console.log('Timer expired - checking quiz state', {
+      hasAttempt: !!attempt,
+      attemptId: attempt?._id || attempt?.id,
+      hasAnswers: !!answers,
+      answersLength: answers?.length,
+      isSubmitted: isSubmitted
+    });
+
+    // Only submit if we have a valid attempt and answers and haven't submitted yet
+    if (!isSubmitted && attempt && (attempt._id || attempt.id) && answers && answers.length > 0) {
+      console.log('Timer expired - auto-submitting quiz');
+      submitQuiz();
+    } else if (isSubmitted) {
+      console.log('Timer expired but quiz already submitted');
+    } else {
+      console.error('Timer expired but no valid attempt or answers found');
+      setError('Quiz session expired. Please restart the quiz to continue.');
+      toast.error('Quiz session expired. Please restart the quiz.');
+    }
+  }, [attempt, answers, isSubmitted]);
+
   // FIX: Created a dedicated function to start the timer
-  const startTimer = () => {
+  const startTimer = useCallback(() => {
     if (timerRef.current) {
         clearInterval(timerRef.current);
     }
@@ -47,22 +75,17 @@ const QuizTaker = () => {
       setTimeLeft(prevTime => {
         if (prevTime <= 1) {
           clearInterval(timerRef.current);
-          // Only submit if we have a valid attempt and answers and haven't submitted yet
-          if (!isSubmitted && attempt && (attempt._id || attempt.id) && answers && answers.length > 0) {
-            submitQuiz();
-          } else if (isSubmitted) {
-            console.log('Timer expired but quiz already submitted');
-          } else {
-            console.error('Timer expired but no valid attempt or answers found');
-            setError('Quiz session expired. Please restart the quiz to continue.');
-            toast.error('Quiz session expired. Please restart the quiz.');
-          }
+          timerRef.current = null;
+
+          // Use a timeout to ensure state is properly updated before checking
+          setTimeout(handleTimerExpiration, 100);
+
           return 0;
         }
         return prevTime - 1;
       });
     }, 1000);
-  };
+  }, [handleTimerExpiration]);
 
   const startQuiz = async () => {
     try {
@@ -102,12 +125,20 @@ const QuizTaker = () => {
         // New attempt case
         newAttempt = response.data.data.attempt;
         quizData = response.data.data.quiz;
+        console.log('Started new quiz attempt:', { attemptId: newAttempt._id || newAttempt.id });
       } else if (response.data.data._id || response.data.data.id) {
         // Continuing existing attempt case
         newAttempt = response.data.data;
+        console.log('Continuing existing quiz attempt:', { attemptId: newAttempt._id || newAttempt.id });
+
         // We need to fetch the quiz data separately
-        const quizResponse = await quizAPI.getQuizById(newAttempt.quiz);
-        quizData = quizResponse.data.data;
+        try {
+          const quizResponse = await quizAPI.getQuizById(newAttempt.quiz);
+          quizData = quizResponse.data.data;
+        } catch (quizError) {
+          console.error('Failed to fetch quiz data for existing attempt:', quizError);
+          throw new Error('Failed to load quiz data. Please restart the quiz.');
+        }
       } else {
         throw new Error('Unexpected response structure from server');
       }
@@ -179,9 +210,22 @@ const QuizTaker = () => {
           const elapsedSeconds = Math.floor((currentTime - startTime) / 1000);
           const totalTimeLimit = quizData.timeLimit * 60; // convert to seconds
           calculatedTimeLeft = Math.max(0, totalTimeLimit - elapsedSeconds);
+
+          console.log('Time calculation for continuing attempt:', {
+            startTime: startTime.toISOString(),
+            currentTime: currentTime.toISOString(),
+            elapsedSeconds,
+            totalTimeLimit,
+            calculatedTimeLeft,
+            timeLimitMinutes: quizData.timeLimit
+          });
         } else {
           // New attempt
           calculatedTimeLeft = quizData.timeLimit * 60; // convert to seconds
+          console.log('Time calculation for new attempt:', {
+            timeLimitMinutes: quizData.timeLimit,
+            calculatedTimeLeft
+          });
         }
 
         setTimeLeft(calculatedTimeLeft);
@@ -190,24 +234,42 @@ const QuizTaker = () => {
           // FIX: Call the new startTimer function
           startTimer();
         } else {
-          // Time has already expired
-          setTimeout(() => {
-            if (!isSubmitted && attempt && (attempt._id || attempt.id) && answers && answers.length > 0) {
-              submitQuiz();
-            } else if (isSubmitted) {
-              console.log('Time already expired but quiz already submitted');
-            } else {
-              console.error('Time already expired and no valid attempt or answers found');
-              setError('Quiz session expired. Please restart the quiz to continue.');
-              toast.error('Quiz session expired. Please restart the quiz.');
-            }
-          }, 100);
+          // Time has already expired - this should rarely happen now that backend handles expired attempts
+          console.log('Quiz time has already expired on load', {
+            calculatedTimeLeft,
+            startTime: newAttempt.startTime,
+            timeLimit: quizData.timeLimit
+          });
+
+          setError('Quiz time has expired. Please restart the quiz to continue.');
+          toast.error('Quiz time has expired. Please restart the quiz.');
         }
       }
 
+      // Start session validation (check every 30 seconds)
+      if (sessionCheckRef.current) {
+        clearInterval(sessionCheckRef.current);
+      }
+      sessionCheckRef.current = setInterval(validateSession, 30000);
+
     } catch (err) {
       console.error('Error starting quiz:', err);
-      const errorMessage = err.message || 'Failed to start quiz. Please try again.';
+
+      // Handle specific error cases
+      let errorMessage = 'Failed to start quiz. Please try again.';
+
+      if (err.response) {
+        if (err.response.status === 404) {
+          errorMessage = 'Quiz not found or no longer available.';
+        } else if (err.response.status === 403) {
+          errorMessage = 'You do not have permission to take this quiz.';
+        } else if (err.response.status === 400) {
+          errorMessage = err.response.data?.message || 'Invalid quiz request.';
+        }
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -318,7 +380,7 @@ const QuizTaker = () => {
     }
   };
 
-  const submitQuiz = async () => {
+  const submitQuiz = useCallback(async () => {
     if (isSubmitting || isSubmitted) return;
 
     try {
@@ -332,7 +394,10 @@ const QuizTaker = () => {
 
       // Check if attempt exists
       if (!attempt || (!attempt._id && !attempt.id)) {
-        console.error('No valid attempt found for submission');
+        console.error('No valid attempt found for submission', {
+          hasAttempt: !!attempt,
+          attemptId: attempt?._id || attempt?.id
+        });
         setError('Quiz session expired. Please restart the quiz to continue.');
         toast.error('Quiz session expired. Please restart the quiz.');
         setIsSubmitting(false);
@@ -341,7 +406,10 @@ const QuizTaker = () => {
 
       // Check if answers exist
       if (!answers || answers.length === 0) {
-        console.error('No answers found for submission');
+        console.error('No answers found for submission', {
+          hasAnswers: !!answers,
+          answersLength: answers?.length
+        });
         setError('No answers to submit. Please restart the quiz.');
         toast.error('No answers to submit. Please restart the quiz.');
         setIsSubmitting(false);
@@ -350,7 +418,21 @@ const QuizTaker = () => {
 
       // Submit the quiz
       const attemptId = attempt._id || attempt.id;
-      const response = await quizAPI.submitQuizAttempt(attemptId, { answers });
+      console.log('Submitting quiz attempt:', { attemptId, answersCount: answers.length });
+
+      // Validate attempt before submission
+      try {
+        // First, try to get the attempt to make sure it still exists
+        await quizAPI.getQuizAttempt(attemptId);
+      } catch (validateError) {
+        console.error('Attempt validation failed:', validateError);
+        if (validateError.response && validateError.response.status === 404) {
+          throw new Error('Quiz session has expired. Please restart the quiz.');
+        }
+        throw validateError;
+      }
+
+      await quizAPI.submitQuizAttempt(attemptId, { answers });
 
       // Mark as submitted
       setIsSubmitted(true);
@@ -377,7 +459,52 @@ const QuizTaker = () => {
 
       setIsSubmitting(false);
     }
-  };
+  }, [isSubmitting, isSubmitted, attempt, answers, courseId, testSeriesId, quizId, navigate]);
+
+  // Validate session periodically
+  const validateSession = useCallback(async () => {
+    if (!attempt || isSubmitted || isSubmitting) return;
+
+    try {
+      const attemptId = attempt._id || attempt.id;
+      await quizAPI.getQuizAttempt(attemptId);
+    } catch (error) {
+      console.error('Session validation failed:', error);
+      if (error.response && error.response.status === 404) {
+        setError('Quiz session has expired. Please restart the quiz.');
+        toast.error('Quiz session has expired. Please restart the quiz.');
+
+        // Clear timers
+        if (timerRef.current) {
+          clearInterval(timerRef.current);
+          timerRef.current = null;
+        }
+        if (sessionCheckRef.current) {
+          clearInterval(sessionCheckRef.current);
+          sessionCheckRef.current = null;
+        }
+      }
+    }
+  }, [attempt, isSubmitted, isSubmitting]);
+
+  // Force restart quiz - the backend will handle expired attempts
+  const forceRestartQuiz = useCallback(async () => {
+    try {
+      console.log('Force restarting quiz - backend will handle expired attempts');
+
+      // Clear current state
+      setAttempt(null);
+      setAnswers([]);
+      setError('');
+
+      // Restart the quiz - backend will detect expired attempt and create new one
+      startQuiz();
+    } catch (error) {
+      console.error('Error force restarting quiz:', error);
+      setError('Failed to restart quiz. Please refresh the page.');
+      toast.error('Failed to restart quiz. Please refresh the page.');
+    }
+  }, []);
 
   const formatTime = (seconds) => {
     if (seconds === null || seconds === undefined || isNaN(seconds)) {
