@@ -23,9 +23,11 @@ const QuizTaker = () => {
   const [showQuestionPalette, setShowQuestionPalette] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
+  const [lastProgressSave, setLastProgressSave] = useState(null);
 
   const timerRef = useRef(null);
   const sessionCheckRef = useRef(null);
+  const progressSaveRef = useRef(null);
 
   useEffect(() => {
     startQuiz();
@@ -39,6 +41,10 @@ const QuizTaker = () => {
       if (sessionCheckRef.current) {
         clearInterval(sessionCheckRef.current);
         sessionCheckRef.current = null;
+      }
+      if (progressSaveRef.current) {
+        clearInterval(progressSaveRef.current);
+        progressSaveRef.current = null;
       }
     };
   }, [quizId]);
@@ -251,6 +257,12 @@ const QuizTaker = () => {
         clearInterval(sessionCheckRef.current);
       }
       sessionCheckRef.current = setInterval(validateSession, 30000);
+
+      // Start automatic progress saving (every 30 seconds when there are answers)
+      if (progressSaveRef.current) {
+        clearInterval(progressSaveRef.current);
+      }
+      progressSaveRef.current = setInterval(saveProgress, 30000);
 
     } catch (err) {
       console.error('Error starting quiz:', err);
@@ -486,6 +498,92 @@ const QuizTaker = () => {
       }
     }
   }, [attempt, isSubmitted, isSubmitting]);
+
+  // Save quiz progress automatically and on user actions
+  const saveProgress = useCallback(async () => {
+    // Only save if we have an active attempt, answers, and haven't submitted
+    if (!attempt || isSubmitted || isSubmitting || !answers || answers.length === 0) {
+      return;
+    }
+
+    // Check if user has answered at least one question
+    const hasAnswers = answers.some(answer => 
+      answer.selectedOptions?.length > 0 || answer.textAnswer?.trim()
+    );
+    
+    if (!hasAnswers) {
+      return; // Don't save if no answers provided yet
+    }
+
+    try {
+      const attemptId = attempt._id || attempt.id;
+      const progressData = {
+        answers,
+        currentQuestionIndex
+      };
+      
+      await quizAPI.saveQuizProgress(attemptId, progressData);
+      setLastProgressSave(new Date());
+      
+      console.log('Quiz progress saved successfully', {
+        attemptId,
+        currentQuestionIndex,
+        answersCount: answers.length,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Failed to save quiz progress:', error);
+      
+      // Handle session expiry
+      if (error.response && error.response.status === 408) {
+        setError('Quiz session expired due to inactivity. Please restart.');
+        toast.error('Quiz session expired due to inactivity. Please restart the quiz.');
+        
+        // Clear timers
+        if (timerRef.current) {
+          clearInterval(timerRef.current);
+          timerRef.current = null;
+        }
+        if (sessionCheckRef.current) {
+          clearInterval(sessionCheckRef.current);
+          sessionCheckRef.current = null;
+        }
+        if (progressSaveRef.current) {
+          clearInterval(progressSaveRef.current);
+          progressSaveRef.current = null;
+        }
+      }
+      // Don't show toast for other progress save errors to avoid user annoyance
+    }
+  }, [attempt, answers, currentQuestionIndex, isSubmitted, isSubmitting]);
+
+  // Save progress when answers change (debounced)
+  useEffect(() => {
+    if (!attempt || isSubmitted || isSubmitting || !answers || answers.length === 0) {
+      return;
+    }
+
+    // Debounce progress saving - save 2 seconds after user stops interacting
+    const timeoutId = setTimeout(() => {
+      saveProgress();
+    }, 2000);
+
+    return () => clearTimeout(timeoutId);
+  }, [answers, saveProgress]);
+
+  // Save progress when navigating between questions
+  useEffect(() => {
+    if (!attempt || isSubmitted || isSubmitting) {
+      return;
+    }
+
+    // Save immediately when question changes
+    const timeoutId = setTimeout(() => {
+      saveProgress();
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
+  }, [currentQuestionIndex, saveProgress]);
 
   // Force restart quiz - the backend will handle expired attempts
   const forceRestartQuiz = useCallback(async () => {

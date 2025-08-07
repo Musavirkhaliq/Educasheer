@@ -137,6 +137,10 @@ export const quizAPI = {
   submitQuizAttempt: (attemptId, data) =>
     api.post(`/quizzes/attempts/${attemptId}/submit`, data),
 
+  // Save quiz progress during attempt
+  saveQuizProgress: (attemptId, data) =>
+    api.put(`/quizzes/attempts/${attemptId}/progress`, data),
+
   // Get quiz attempt by ID
   getQuizAttempt: (attemptId) => api.get(`/quizzes/attempts/${attemptId}`),
 
