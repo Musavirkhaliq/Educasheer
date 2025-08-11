@@ -5,6 +5,7 @@ import { quizAPI } from '../../services/quizAPI';
 import { courseAPI } from '../../services/courseAPI';
 import { toast } from 'react-hot-toast';
 import QuizJSONUpload from './QuizJSONUpload';
+import ImageUpload from './ImageUpload';
 
 // Removed the following imports as they are Node.js modules and cannot be used in the browser.
 // import path from 'path';
@@ -147,15 +148,16 @@ const QuizForm = ({ isEditing = false }) => {
     const newQuestion = {
       text: '',
       type: 'multiple_choice',
+      image: '',
       options: [
-        { text: '', isCorrect: false },
-        { text: '', isCorrect: false }
+        { text: '', isCorrect: false, image: '' },
+        { text: '', isCorrect: false, image: '' }
       ],
       correctAnswer: '',
       points: 1,
       explanation: ''
     };
-    
+
     setFormData(prev => ({
       ...prev,
       questions: [...prev.questions, newQuestion]
@@ -176,8 +178,8 @@ const QuizForm = ({ isEditing = false }) => {
   // Add an option to a question
   const addOption = (questionIndex) => {
     const updatedQuestions = [...formData.questions];
-    updatedQuestions[questionIndex].options.push({ text: '', isCorrect: false });
-    
+    updatedQuestions[questionIndex].options.push({ text: '', isCorrect: false, image: '' });
+
     setFormData(prev => ({
       ...prev,
       questions: updatedQuestions
@@ -189,6 +191,50 @@ const QuizForm = ({ isEditing = false }) => {
     const updatedQuestions = [...formData.questions];
     updatedQuestions[questionIndex].options.splice(optionIndex, 1);
     
+    setFormData(prev => ({
+      ...prev,
+      questions: updatedQuestions
+    }));
+  };
+
+  // Handle question image change
+  const handleQuestionImageChange = (questionIndex, imageUrl) => {
+    const updatedQuestions = [...formData.questions];
+    updatedQuestions[questionIndex].image = imageUrl;
+
+    setFormData(prev => ({
+      ...prev,
+      questions: updatedQuestions
+    }));
+  };
+
+  // Handle question image removal
+  const handleQuestionImageRemove = (questionIndex) => {
+    const updatedQuestions = [...formData.questions];
+    updatedQuestions[questionIndex].image = '';
+
+    setFormData(prev => ({
+      ...prev,
+      questions: updatedQuestions
+    }));
+  };
+
+  // Handle option image change
+  const handleOptionImageChange = (questionIndex, optionIndex, imageUrl) => {
+    const updatedQuestions = [...formData.questions];
+    updatedQuestions[questionIndex].options[optionIndex].image = imageUrl;
+
+    setFormData(prev => ({
+      ...prev,
+      questions: updatedQuestions
+    }));
+  };
+
+  // Handle option image removal
+  const handleOptionImageRemove = (questionIndex, optionIndex) => {
+    const updatedQuestions = [...formData.questions];
+    updatedQuestions[questionIndex].options[optionIndex].image = '';
+
     setFormData(prev => ({
       ...prev,
       questions: updatedQuestions
@@ -715,7 +761,21 @@ const QuizForm = ({ isEditing = false }) => {
                       </div>
                     </div>
                   </div>
-                  
+
+                  {/* Question Image Upload */}
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Question Image (Optional)
+                    </label>
+                    <ImageUpload
+                      currentImage={question.image}
+                      onImageChange={(imageUrl) => handleQuestionImageChange(qIndex, imageUrl)}
+                      onImageRemove={() => handleQuestionImageRemove(qIndex)}
+                      placeholder="Upload question image"
+                      size="medium"
+                    />
+                  </div>
+
                   {/* Options for multiple choice and true/false questions */}
                   {(question.type === 'multiple_choice' || question.type === 'true_false') && (
                     <div className="mb-4">
@@ -734,33 +794,49 @@ const QuizForm = ({ isEditing = false }) => {
                         )}
                       </div>
                       
-                      <div className="space-y-2">
+                      <div className="space-y-4">
                         {(question.options || []).map((option, oIndex) => (
-                          <div key={oIndex} className="flex items-center gap-2">
-                            <input
-                              type={question.type === 'multiple_choice' ? 'checkbox' : 'radio'}
-                              name={`question-${qIndex}-correct`}
-                              checked={option.isCorrect}
-                              onChange={(e) => handleOptionChange(qIndex, oIndex, 'isCorrect', e.target.checked)}
-                              className="h-4 w-4 text-[#00bcd4] focus:ring-[#00bcd4] border-gray-300 rounded"
-                            />
-                            <input
-                              type="text"
-                              value={option.text}
-                              onChange={(e) => handleOptionChange(qIndex, oIndex, 'text', e.target.value)}
-                              className="flex-1 border border-gray-300 rounded-md px-3 py-1"
-                              placeholder="Option text"
-                              required
-                            />
-                            {question.type === 'multiple_choice' && question.options.length > 2 && (
-                              <button
-                                type="button"
-                                onClick={() => removeOption(qIndex, oIndex)}
-                                className="text-red-500 hover:text-red-700"
-                              >
-                                <FaTrash size={14} />
-                              </button>
-                            )}
+                          <div key={oIndex} className="border border-gray-200 rounded-lg p-3">
+                            <div className="flex items-center gap-2 mb-3">
+                              <input
+                                type={question.type === 'multiple_choice' ? 'checkbox' : 'radio'}
+                                name={`question-${qIndex}-correct`}
+                                checked={option.isCorrect}
+                                onChange={(e) => handleOptionChange(qIndex, oIndex, 'isCorrect', e.target.checked)}
+                                className="h-4 w-4 text-[#00bcd4] focus:ring-[#00bcd4] border-gray-300 rounded"
+                              />
+                              <input
+                                type="text"
+                                value={option.text}
+                                onChange={(e) => handleOptionChange(qIndex, oIndex, 'text', e.target.value)}
+                                className="flex-1 border border-gray-300 rounded-md px-3 py-1"
+                                placeholder="Option text"
+                                required
+                              />
+                              {question.type === 'multiple_choice' && question.options.length > 2 && (
+                                <button
+                                  type="button"
+                                  onClick={() => removeOption(qIndex, oIndex)}
+                                  className="text-red-500 hover:text-red-700"
+                                >
+                                  <FaTrash size={14} />
+                                </button>
+                              )}
+                            </div>
+
+                            {/* Option Image Upload */}
+                            <div className="ml-6">
+                              <label className="block text-xs font-medium text-gray-600 mb-1">
+                                Option Image (Optional)
+                              </label>
+                              <ImageUpload
+                                currentImage={option.image}
+                                onImageChange={(imageUrl) => handleOptionImageChange(qIndex, oIndex, imageUrl)}
+                                onImageRemove={() => handleOptionImageRemove(qIndex, oIndex)}
+                                placeholder="Upload option image"
+                                size="small"
+                              />
+                            </div>
                           </div>
                         ))}
                       </div>

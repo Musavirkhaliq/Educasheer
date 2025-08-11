@@ -530,7 +530,22 @@ const QuizResults = () => {
                 </div>
                 
                 <div className="bg-gray-50 p-4 rounded-lg mb-4">
-                  <p className="text-gray-800">{question.text}</p>
+                  <p className="text-gray-800 mb-3">{question.text}</p>
+
+                  {/* Question Image */}
+                  {question.image && (
+                    <div className="flex justify-center">
+                      <img
+                        src={question.image}
+                        alt="Question illustration"
+                        className="max-w-full h-auto max-h-48 sm:max-h-64 rounded-lg shadow-sm object-contain border border-gray-200"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = "https://via.placeholder.com/400x200/e2e8f0/64748b?text=Image+Not+Available";
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
                 
                 {/* Multiple Choice or True/False */}

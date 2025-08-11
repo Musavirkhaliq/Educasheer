@@ -37,6 +37,19 @@
     "explanation": "Jupiter is the largest planet in our solar system, with a mass greater than all other planets combined."
   },
   {
+    "text": "What mathematical concept is illustrated in this diagram?",
+    "type": "multiple_choice",
+    "image": "https://via.placeholder.com/400x300/4CAF50/FFFFFF?text=Pythagorean+Theorem+Diagram",
+    "options": [
+      {"text": "Quadratic Formula", "isCorrect": false},
+      {"text": "Pythagorean Theorem", "isCorrect": true},
+      {"text": "Law of Cosines", "isCorrect": false},
+      {"text": "Area of Circle", "isCorrect": false}
+    ],
+    "points": 2,
+    "explanation": "The diagram shows a right triangle illustrating the Pythagorean theorem: a² + b² = c²."
+  },
+  {
     "text": "Which HTTP status code indicates a successful request?",
     "type": "multiple_choice",
     "options": [

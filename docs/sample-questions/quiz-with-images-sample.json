@@ -1,0 +1,77 @@
+[
+  {
+    "text": "What is the capital of France?",
+    "type": "multiple_choice",
+    "options": [
+      {"text": "London", "isCorrect": false},
+      {"text": "Paris", "isCorrect": true},
+      {"text": "Berlin", "isCorrect": false},
+      {"text": "Madrid", "isCorrect": false}
+    ],
+    "points": 1,
+    "explanation": "Paris is the capital and largest city of France."
+  },
+  {
+    "text": "What mathematical concept is illustrated in this diagram?",
+    "type": "multiple_choice",
+    "image": "https://via.placeholder.com/400x300/4CAF50/FFFFFF?text=Right+Triangle+a²+%2B+b²+%3D+c²",
+    "options": [
+      {"text": "Quadratic Formula", "isCorrect": false},
+      {"text": "Pythagorean Theorem", "isCorrect": true},
+      {"text": "Law of Cosines", "isCorrect": false},
+      {"text": "Area of Circle", "isCorrect": false}
+    ],
+    "points": 2,
+    "explanation": "The diagram shows a right triangle illustrating the Pythagorean theorem: a² + b² = c²."
+  },
+  {
+    "text": "Which programming language logo is shown in the image?",
+    "type": "multiple_choice",
+    "image": "https://via.placeholder.com/200x200/2196F3/FFFFFF?text=JS",
+    "options": [
+      {"text": "Python", "isCorrect": false, "image": "https://via.placeholder.com/100x60/3776ab/FFFFFF?text=Python"},
+      {"text": "JavaScript", "isCorrect": true, "image": "https://via.placeholder.com/100x60/f7df1e/000000?text=JS"},
+      {"text": "Java", "isCorrect": false, "image": "https://via.placeholder.com/100x60/ed8b00/FFFFFF?text=Java"},
+      {"text": "C++", "isCorrect": false, "image": "https://via.placeholder.com/100x60/00599c/FFFFFF?text=C%2B%2B"}
+    ],
+    "points": 1,
+    "explanation": "The image shows the JavaScript logo, identifiable by the 'JS' text."
+  },
+  {
+    "text": "What type of chart is displayed in this image?",
+    "type": "multiple_choice",
+    "image": "https://via.placeholder.com/350x250/FF9800/FFFFFF?text=Bar+Chart+Example",
+    "options": [
+      {"text": "Pie Chart", "isCorrect": false},
+      {"text": "Line Chart", "isCorrect": false},
+      {"text": "Bar Chart", "isCorrect": true},
+      {"text": "Scatter Plot", "isCorrect": false}
+    ],
+    "points": 1,
+    "explanation": "The image shows a bar chart, which uses rectangular bars to represent data values."
+  },
+  {
+    "text": "The Earth is the third planet from the Sun.",
+    "type": "true_false",
+    "options": [
+      {"text": "True", "isCorrect": true},
+      {"text": "False", "isCorrect": false}
+    ],
+    "points": 1,
+    "explanation": "This is true. Earth is indeed the third planet from the Sun in our solar system."
+  },
+  {
+    "text": "What does HTML stand for?",
+    "type": "short_answer",
+    "correctAnswer": "HyperText Markup Language",
+    "points": 2,
+    "explanation": "HTML stands for HyperText Markup Language, which is the standard markup language for creating web pages."
+  },
+  {
+    "text": "Based on the diagram shown, explain how photosynthesis works in plants.",
+    "type": "essay",
+    "image": "https://via.placeholder.com/400x300/8BC34A/FFFFFF?text=Photosynthesis+Diagram+CO2+%2B+H2O+%2B+Light+→+Glucose+%2B+O2",
+    "points": 5,
+    "explanation": "Photosynthesis is the process by which plants convert carbon dioxide and water into glucose using sunlight energy, releasing oxygen as a byproduct."
+  }
+]

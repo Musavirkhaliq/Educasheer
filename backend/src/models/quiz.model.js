@@ -12,12 +12,22 @@ const questionSchema = new Schema({
         enum: ["multiple_choice", "true_false", "short_answer", "essay"],
         default: "multiple_choice"
     },
+    image: {
+        type: String,
+        trim: true,
+        default: null
+    },
     options: [{
         text: {
             type: String,
             required: function() {
                 return this.parent().type === "multiple_choice";
             }
+        },
+        image: {
+            type: String,
+            trim: true,
+            default: null
         },
         isCorrect: {
             type: Boolean,

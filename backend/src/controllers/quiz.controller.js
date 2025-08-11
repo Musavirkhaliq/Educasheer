@@ -590,6 +590,7 @@ const uploadQuestionsFromJSON = asyncHandler(async (req, res) => {
             validatedQuestions.push({
                 text: question.text.trim(),
                 type: question.type,
+                image: question.image || '',
                 options: question.options || [],
                 correctAnswer: question.correctAnswer || '',
                 points: question.points,

@@ -790,6 +790,27 @@ const QuizTaker = () => {
                   <FaQuestionCircle className="text-blue-500 mt-1 flex-shrink-0 text-sm sm:text-base" />
                   <p className="text-gray-800 text-base sm:text-lg leading-relaxed">{currentQuestion.text}</p>
                 </div>
+
+                {/* Question Image */}
+                {currentQuestion.image && (
+                  <div className="mt-4 flex justify-center">
+                    <div className="relative max-w-full">
+                      <img
+                        src={currentQuestion.image}
+                        alt="Question illustration"
+                        className="max-w-full h-auto max-h-64 sm:max-h-80 md:max-h-96 rounded-lg shadow-md object-contain border border-gray-200"
+                        style={{
+                          maxWidth: '100%',
+                          height: 'auto'
+                        }}
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = "https://via.placeholder.com/400x200/e2e8f0/64748b?text=Image+Not+Available";
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -815,19 +836,35 @@ const QuizTaker = () => {
                             : 'border-gray-200 hover:border-blue-300 hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 hover:shadow-md'
                         }`}
                       >
-                        <div className="flex items-center gap-3 sm:gap-4">
-                          <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl border-2 flex items-center justify-center font-bold transition-all duration-300 flex-shrink-0 ${
+                        <div className="flex items-start gap-3 sm:gap-4">
+                          <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl border-2 flex items-center justify-center font-bold transition-all duration-300 flex-shrink-0 mt-1 ${
                             isSelected
                               ? 'bg-gradient-to-r from-blue-500 to-indigo-600 border-blue-500 text-white shadow-lg'
                               : 'border-gray-300 text-gray-600 group-hover:border-blue-400 group-hover:text-blue-600'
                           }`}>
                             {isSelected ? <FaCheck size={12} className="sm:w-3.5 sm:h-3.5" /> : optionLetter}
                           </div>
-                          <span className={`text-base sm:text-lg transition-colors duration-300 leading-relaxed ${
-                            isSelected ? 'text-gray-800 font-medium' : 'text-gray-700 group-hover:text-gray-800'
-                          }`}>
-                            {option.text}
-                          </span>
+                          <div className="flex-1">
+                            <span className={`text-base sm:text-lg transition-colors duration-300 leading-relaxed block ${
+                              isSelected ? 'text-gray-800 font-medium' : 'text-gray-700 group-hover:text-gray-800'
+                            }`}>
+                              {option.text}
+                            </span>
+                            {/* Option Image */}
+                            {option.image && (
+                              <div className="mt-3">
+                                <img
+                                  src={option.image}
+                                  alt="Option illustration"
+                                  className="max-w-full h-auto max-h-32 sm:max-h-40 rounded-lg shadow-sm object-contain border border-gray-200"
+                                  onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.src = "https://via.placeholder.com/200x100/e2e8f0/64748b?text=Image+Not+Available";
+                                  }}
+                                />
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
                     );
@@ -858,21 +895,37 @@ const QuizTaker = () => {
                               : 'border-gray-200 hover:border-gray-300 hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 hover:shadow-md'
                           }`}
                         >
-                          <div className="flex items-center justify-center gap-3 sm:gap-4">
-                            <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 flex items-center justify-center font-bold text-base sm:text-lg transition-all duration-300 flex-shrink-0 ${
-                              isSelected
-                                ? isTrue
-                                  ? 'bg-gradient-to-r from-green-500 to-emerald-600 border-green-500 text-white shadow-lg'
-                                  : 'bg-gradient-to-r from-red-500 to-pink-600 border-red-500 text-white shadow-lg'
-                                : 'border-gray-300 text-gray-600 group-hover:border-blue-400 group-hover:text-blue-600'
-                            }`}>
-                              {isSelected ? <FaCheck size={14} className="sm:w-4 sm:h-4" /> : (isTrue ? 'T' : 'F')}
+                          <div className="flex flex-col items-center gap-3 sm:gap-4">
+                            <div className="flex items-center gap-3 sm:gap-4">
+                              <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 flex items-center justify-center font-bold text-base sm:text-lg transition-all duration-300 flex-shrink-0 ${
+                                isSelected
+                                  ? isTrue
+                                    ? 'bg-gradient-to-r from-green-500 to-emerald-600 border-green-500 text-white shadow-lg'
+                                    : 'bg-gradient-to-r from-red-500 to-pink-600 border-red-500 text-white shadow-lg'
+                                  : 'border-gray-300 text-gray-600 group-hover:border-blue-400 group-hover:text-blue-600'
+                              }`}>
+                                {isSelected ? <FaCheck size={14} className="sm:w-4 sm:h-4" /> : (isTrue ? 'T' : 'F')}
+                              </div>
+                              <span className={`text-lg sm:text-xl font-medium transition-colors duration-300 text-center sm:text-left ${
+                                isSelected ? 'text-gray-800' : 'text-gray-700 group-hover:text-gray-800'
+                              }`}>
+                                {option.text}
+                              </span>
                             </div>
-                            <span className={`text-lg sm:text-xl font-medium transition-colors duration-300 text-center sm:text-left ${
-                              isSelected ? 'text-gray-800' : 'text-gray-700 group-hover:text-gray-800'
-                            }`}>
-                              {option.text}
-                            </span>
+                            {/* Option Image */}
+                            {option.image && (
+                              <div className="w-full">
+                                <img
+                                  src={option.image}
+                                  alt="Option illustration"
+                                  className="max-w-full h-auto max-h-32 sm:max-h-40 rounded-lg shadow-sm object-contain border border-gray-200 mx-auto"
+                                  onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.src = "https://via.placeholder.com/200x100/e2e8f0/64748b?text=Image+Not+Available";
+                                  }}
+                                />
+                              </div>
+                            )}
                           </div>
                         </div>
                       );

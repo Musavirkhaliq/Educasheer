@@ -125,6 +125,7 @@ import quizRouter from "./routes/quiz.routes.js";
 import testSeriesRouter from "./routes/testSeries.routes.js";
 import seatRouter from "./routes/seat.routes.js";
 import categoryRouter from "./routes/category.routes.js";
+import imageUploadRouter from "./routes/imageUpload.routes.js";
 
 // Import public quiz routes
 import { getPublishedQuizzes, getQuizCategories, getQuizTags } from "./controllers/quiz.controller.js";
@@ -167,6 +168,7 @@ app.use("/api/v1/quizzes", quizRouter);
 app.use("/api/v1/test-series", testSeriesRouter);
 app.use("/api/v1/seats", seatRouter);
 app.use("/api/v1/categories", categoryRouter);
+app.use("/api/v1/images", imageUploadRouter);
 
 // Serve frontend for all non-API routes
 app.get("*", (req, res, next) => {

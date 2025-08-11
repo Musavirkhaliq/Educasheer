@@ -224,21 +224,51 @@ const QuizJSONUpload = ({ onQuestionsImported }) => {
                 </div>
                 
                 <p className="text-gray-700 mb-3">{question.text}</p>
-                
+
+                {question.image && (
+                  <div className="mb-3">
+                    <img
+                      src={question.image}
+                      alt="Question image"
+                      className="max-w-full h-auto max-h-48 rounded-lg border border-gray-200 object-contain"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = "https://via.placeholder.com/400x200?text=Image+Not+Found";
+                      }}
+                    />
+                  </div>
+                )}
+
                 {question.type === 'multiple_choice' && (
-                  <div className="space-y-1">
+                  <div className="space-y-2">
                     {question.options.map((option, optIndex) => (
                       <div key={optIndex} className="flex items-center gap-2">
                         <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                          option.isCorrect 
-                            ? 'border-green-500 bg-green-500' 
+                          option.isCorrect
+                            ? 'border-green-500 bg-green-500'
                             : 'border-gray-300'
                         }`}>
                           {option.isCorrect && <FaCheck className="text-white text-xs" />}
                         </span>
-                        <span className={option.isCorrect ? 'text-green-700 font-medium' : 'text-gray-600'}>
-                          {option.text}
-                        </span>
+                        <div className="flex-1">
+                          <span className={option.isCorrect ? 'text-green-700 font-medium' : 'text-gray-600'}>
+                            {option.text}
+                          </span>
+                          {/* Option Image */}
+                          {option.image && (
+                            <div className="mt-1">
+                              <img
+                                src={option.image}
+                                alt="Option"
+                                className="w-16 h-10 rounded border object-cover"
+                                onError={(e) => {
+                                  e.target.onerror = null;
+                                  e.target.src = "https://via.placeholder.com/64x40/e2e8f0/64748b?text=?";
+                                }}
+                              />
+                            </div>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -273,13 +303,26 @@ const QuizJSONUpload = ({ onQuestionsImported }) => {
   {
     "text": "What is the capital of France?",
     "type": "multiple_choice",
+    "image": "https://example.com/question-image.jpg",
     "options": [
-      {"text": "London", "isCorrect": false},
-      {"text": "Paris", "isCorrect": true},
-      {"text": "Berlin", "isCorrect": false}
+      {"text": "London", "isCorrect": false, "image": "https://example.com/london.jpg"},
+      {"text": "Paris", "isCorrect": true, "image": "https://example.com/paris.jpg"},
+      {"text": "Berlin", "isCorrect": false, "image": "https://example.com/berlin.jpg"}
     ],
     "points": 1,
     "explanation": "Paris is the capital and largest city of France."
+  },
+  {
+    "text": "What landmark is shown in this image?",
+    "type": "multiple_choice",
+    "image": "https://example.com/landmark.jpg",
+    "options": [
+      {"text": "Big Ben", "isCorrect": false},
+      {"text": "Eiffel Tower", "isCorrect": true},
+      {"text": "Statue of Liberty", "isCorrect": false}
+    ],
+    "points": 2,
+    "explanation": "The image shows the Eiffel Tower."
   }
 ]`}
         </pre>

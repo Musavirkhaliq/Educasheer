@@ -20,6 +20,7 @@ The JSON file should contain an array of question objects. Each question object 
   {
     "text": "Question text here",
     "type": "multiple_choice",
+    "image": "https://example.com/question-image.jpg",
     "options": [
       {"text": "Option 1", "isCorrect": false},
       {"text": "Option 2", "isCorrect": true},
@@ -42,6 +43,7 @@ The JSON file should contain an array of question objects. Each question object 
 
 - **points** (number): Points awarded for correct answer (default: 1)
 - **explanation** (string): Explanation shown after quiz completion
+- **image** (string): URL of an image to display with the question (optional)
 
 ### Type-Specific Fields
 
@@ -87,6 +89,25 @@ The JSON file should contain an array of question objects. Each question object 
     ],
     "points": 1,
     "explanation": "Paris is the capital and largest city of France."
+  }
+]
+```
+
+### Multiple Choice with Image Example
+```json
+[
+  {
+    "text": "What landmark is shown in this image?",
+    "type": "multiple_choice",
+    "image": "https://example.com/eiffel-tower.jpg",
+    "options": [
+      {"text": "Big Ben", "isCorrect": false},
+      {"text": "Eiffel Tower", "isCorrect": true},
+      {"text": "Statue of Liberty", "isCorrect": false},
+      {"text": "Colosseum", "isCorrect": false}
+    ],
+    "points": 2,
+    "explanation": "The image shows the Eiffel Tower, located in Paris, France."
   }
 ]
 ```
