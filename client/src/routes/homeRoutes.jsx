@@ -32,6 +32,7 @@ import QuizTakerPage from "../pages/QuizTakerPage";
 import QuizDetailsPage from "../pages/QuizDetailsPage";
 import QuizResultsPage from "../pages/QuizResultsPage";
 import QuizAttemptsPage from "../pages/QuizAttemptsPage";
+import QuizAttemptsOverview from "../components/admin/QuizAttemptsOverview";
 import CenterDetailPage from "../pages/CenterDetailPage";
 import CenterCreatePage from "../pages/CenterCreatePage";
 import CenterEditPage from "../pages/CenterEditPage";
@@ -400,6 +401,15 @@ export const homeRoutes = [
     element: (
       <Suspense fallback={<h1>Loading</h1>}>
         <AdminBookingManagementPage />
+      </Suspense>
+    ),
+  },
+  // Admin quiz attempts overview route
+  {
+    path: "admin/quiz-attempts",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <QuizAttemptsOverview />
       </Suspense>
     ),
   },

@@ -17,11 +17,13 @@ import {
 } from 'react-icons/fa';
 import { quizAPI } from '../../services/quizAPI';
 import { courseAPI } from '../../services/courseAPI';
+import { testSeriesAPI } from '../../services/testSeriesAPI';
 import { toast } from 'react-hot-toast';
 
 const QuizAttemptsOverview = () => {
   const [attempts, setAttempts] = useState([]);
   const [courses, setCourses] = useState([]);
+  const [testSeries, setTestSeries] = useState([]);
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -35,6 +37,7 @@ const QuizAttemptsOverview = () => {
   const [filters, setFilters] = useState({
     search: '',
     course: '',
+    testSeries: '',
     quiz: '',
     status: '',
     page: 1,
@@ -43,6 +46,7 @@ const QuizAttemptsOverview = () => {
 
   useEffect(() => {
     fetchCourses();
+    fetchTestSeries();
     fetchQuizzes();
   }, []);
 
@@ -56,6 +60,15 @@ const QuizAttemptsOverview = () => {
       setCourses(response.data.data);
     } catch (err) {
       console.error('Error fetching courses:', err);
+    }
+  };
+
+  const fetchTestSeries = async () => {
+    try {
+      const response = await testSeriesAPI.getAllTestSeries();
+      setTestSeries(response.data.data);
+    } catch (err) {
+      console.error('Error fetching test series:', err);
     }
   };
 
@@ -183,7 +196,7 @@ const QuizAttemptsOverview = () => {
 
       {/* Filters */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           {/* Search */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -220,6 +233,25 @@ const QuizAttemptsOverview = () => {
             </select>
           </div>
 
+          {/* Test Series Filter */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Test Series
+            </label>
+            <select
+              value={filters.testSeries}
+              onChange={(e) => handleFilterChange('testSeries', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00bcd4] focus:border-transparent"
+            >
+              <option value="">All Test Series</option>
+              {testSeries.map(series => (
+                <option key={series._id} value={series._id}>
+                  {series.title}
+                </option>
+              ))}
+            </select>
+          </div>
+
           {/* Quiz Filter */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -232,10 +264,14 @@ const QuizAttemptsOverview = () => {
             >
               <option value="">All Quizzes</option>
               {quizzes
-                .filter(quiz => !filters.course || quiz.course._id === filters.course)
+                .filter(quiz => {
+                  if (filters.course) return quiz.course?._id === filters.course;
+                  if (filters.testSeries) return quiz.testSeries?._id === filters.testSeries;
+                  return true;
+                })
                 .map(quiz => (
                   <option key={quiz._id} value={quiz._id}>
-                    {quiz.title}
+                    {quiz.title} {quiz.course ? `(Course: ${quiz.course.title})` : quiz.testSeries ? `(Test Series: ${quiz.testSeries.title})` : ''}
                   </option>
                 ))}
             </select>
@@ -298,7 +334,7 @@ const QuizAttemptsOverview = () => {
                     Quiz
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Course
+                    Course/Test Series
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Score
@@ -345,7 +381,19 @@ const QuizAttemptsOverview = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        {attempt.quiz.course.title}
+                        {attempt.quiz.course?.title && (
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
+                            Course: {attempt.quiz.course.title}
+                          </span>
+                        )}
+                        {attempt.quiz.testSeries?.title && (
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-800">
+                            Test Series: {attempt.quiz.testSeries.title}
+                          </span>
+                        )}
+                        {!attempt.quiz.course?.title && !attempt.quiz.testSeries?.title && (
+                          <span className="text-gray-400">No association</span>
+                        )}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -384,7 +432,7 @@ const QuizAttemptsOverview = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       {attempt.isCompleted && (
                         <Link
-                          to={`/courses/${attempt.quiz.course._id}/quizzes/${attempt.quiz._id}/results/${attempt._id}`}
+                          to={`/quiz-attempts/${attempt._id}`}
                           className="text-[#00bcd4] hover:text-[#0097a7] flex items-center gap-1"
                           title="View Results"
                         >

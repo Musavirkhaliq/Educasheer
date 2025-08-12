@@ -3,41 +3,48 @@ import { Link } from 'react-router-dom';
 import { FaPlus, FaEdit, FaTrash, FaEye, FaCheck, FaTimes, FaFileImport, FaSearch } from 'react-icons/fa';
 import { quizAPI } from '../../services/quizAPI';
 import { courseAPI } from '../../services/courseAPI';
+import { testSeriesAPI } from '../../services/testSeriesAPI';
 import { toast } from 'react-hot-toast';
 import BulkQuizImport from './BulkQuizImport';
 
 const QuizManagement = () => {
   const [quizzes, setQuizzes] = useState([]);
   const [courses, setCourses] = useState([]);
+  const [testSeries, setTestSeries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showBulkImport, setShowBulkImport] = useState(false);
   const [filters, setFilters] = useState({
     course: '',
+    testSeries: '',
     published: '',
     type: '',
     search: ''
   });
 
-  // Fetch quizzes and courses on component mount
+  // Fetch quizzes, courses, and test series on component mount
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [quizzesResponse, coursesResponse] = await Promise.all([
+        const [quizzesResponse, coursesResponse, testSeriesResponse] = await Promise.all([
           quizAPI.getAllQuizzes(filters),
-          courseAPI.getAllCourses()
+          courseAPI.getAllCourses(),
+          testSeriesAPI.getAllTestSeries()
         ]);
 
-        // Make sure we're setting arrays for both quizzes and courses
+        // Make sure we're setting arrays for all data
         const quizzesData = Array.isArray(quizzesResponse.data.data) ? quizzesResponse.data.data : [];
         const coursesData = Array.isArray(coursesResponse.data.data) ? coursesResponse.data.data : [];
+        const testSeriesData = Array.isArray(testSeriesResponse.data.data) ? testSeriesResponse.data.data : [];
 
         console.log('Quizzes response:', quizzesResponse.data);
         console.log('Courses response:', coursesResponse.data);
+        console.log('Test Series response:', testSeriesResponse.data);
 
         setQuizzes(quizzesData);
         setCourses(coursesData);
+        setTestSeries(testSeriesData);
         setError(null);
       } catch (err) {
         console.error('Error fetching data:', err);
@@ -184,7 +191,7 @@ const QuizManagement = () => {
       {/* Filters */}
       <div className="bg-white rounded-lg shadow p-4 mb-6">
         <h3 className="text-lg font-semibold mb-3">Filters</h3>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           {/* Search */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
@@ -212,6 +219,23 @@ const QuizManagement = () => {
               {courses.map(course => (
                 <option key={course._id} value={course._id}>
                   {course.title}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Test Series</label>
+            <select
+              name="testSeries"
+              value={filters.testSeries}
+              onChange={handleFilterChange}
+              className="w-full border border-gray-300 rounded-md px-3 py-2"
+            >
+              <option value="">All Test Series</option>
+              {testSeries.map(series => (
+                <option key={series._id} value={series._id}>
+                  {series.title}
                 </option>
               ))}
             </select>
@@ -261,7 +285,7 @@ const QuizManagement = () => {
                   Title
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Course
+                  Course/Test Series
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Type
@@ -285,7 +309,19 @@ const QuizManagement = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-500">
-                      {quiz.course?.title || 'Unknown Course'}
+                      {quiz.course?.title && (
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
+                          Course: {quiz.course.title}
+                        </span>
+                      )}
+                      {quiz.testSeries?.title && (
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-800">
+                          Test Series: {quiz.testSeries.title}
+                        </span>
+                      )}
+                      {!quiz.course?.title && !quiz.testSeries?.title && (
+                        <span className="text-gray-400">No association</span>
+                      )}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
