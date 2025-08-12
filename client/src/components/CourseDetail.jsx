@@ -753,9 +753,9 @@ const CourseDetail = () => {
               <div className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <span className="text-3xl font-bold text-[#01427a]">${course.price.toFixed(2)}</span>
+                    <span className="text-3xl font-bold text-[#01427a]">₹{course.price.toFixed(2)}</span>
                     {course.originalPrice > course.price && (
-                      <span className="text-lg text-gray-400 line-through ml-2">${course.originalPrice.toFixed(2)}</span>
+                      <span className="text-lg text-gray-400 line-through ml-2">₹{course.originalPrice.toFixed(2)}</span>
                     )}
                   </div>
                   {course.price === 0 && (

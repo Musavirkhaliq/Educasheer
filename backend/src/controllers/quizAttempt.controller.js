@@ -534,7 +534,7 @@ const getAllQuizAttempts = asyncHandler(async (req, res) => {
             throw new ApiError(403, "You don't have permission to view all quiz attempts");
         }
 
-        const { page = 1, limit = 20, quiz, user, course, status } = req.query;
+        const { page = 1, limit = 20, quiz, user, course, testSeries, status } = req.query;
 
         // Build filter object
         const filter = {};
@@ -552,6 +552,43 @@ const getAllQuizAttempts = asyncHandler(async (req, res) => {
                 filter.isCompleted = true;
             } else if (status === 'in-progress') {
                 filter.isCompleted = false;
+            }
+        }
+
+        // Handle course or test series filtering
+        if (course || testSeries) {
+            // We need to find quizzes that belong to the specified course or test series
+            const Quiz = (await import("../models/quiz.model.js")).Quiz;
+            let quizFilter = {};
+
+            if (course) {
+                quizFilter.course = course;
+            }
+
+            if (testSeries) {
+                quizFilter.testSeries = testSeries;
+            }
+
+            const matchingQuizzes = await Quiz.find(quizFilter).select('_id');
+            const quizIds = matchingQuizzes.map(q => q._id);
+
+            if (quizIds.length > 0) {
+                filter.quiz = { $in: quizIds };
+            } else {
+                // No matching quizzes found, return empty result
+                return res.status(200).json(
+                    new ApiResponse(200, {
+                        attempts: [],
+                        pagination: {
+                            currentPage: parseInt(page),
+                            totalPages: 0,
+                            totalItems: 0,
+                            itemsPerPage: parseInt(limit),
+                            hasNextPage: false,
+                            hasPrevPage: false
+                        }
+                    }, "No quiz attempts found")
+                );
             }
         }
 
@@ -580,7 +617,7 @@ const getAllQuizAttempts = asyncHandler(async (req, res) => {
                     foreignField: "_id",
                     as: "quiz",
                     pipeline: [
-                        { $project: { title: 1, quizType: 1, course: 1 } }
+                        { $project: { title: 1, quizType: 1, course: 1, testSeries: 1 } }
                     ]
                 }
             },
@@ -590,41 +627,34 @@ const getAllQuizAttempts = asyncHandler(async (req, res) => {
                     from: "courses",
                     localField: "quiz.course",
                     foreignField: "_id",
-                    as: "course",
+                    as: "courseData",
                     pipeline: [
                         { $project: { title: 1 } }
                     ]
                 }
             },
-            { $unwind: "$course" },
             {
-                $addFields: {
-                    "quiz.course": "$course"
+                $lookup: {
+                    from: "testseries",
+                    localField: "quiz.testSeries",
+                    foreignField: "_id",
+                    as: "testSeriesData",
+                    pipeline: [
+                        { $project: { title: 1 } }
+                    ]
                 }
             },
-            { $project: { course: 0 } },
+            {
+                $addFields: {
+                    "quiz.course": { $arrayElemAt: ["$courseData", 0] },
+                    "quiz.testSeries": { $arrayElemAt: ["$testSeriesData", 0] }
+                }
+            },
+            { $project: { courseData: 0, testSeriesData: 0 } },
             { $sort: { createdAt: -1 } },
             { $skip: skip },
             { $limit: parseInt(limit) }
         ];
-
-        // Add course filter if specified
-        if (course) {
-            pipeline.unshift({
-                $lookup: {
-                    from: "quizzes",
-                    localField: "quiz",
-                    foreignField: "_id",
-                    as: "quizInfo"
-                }
-            });
-            pipeline.unshift({ $unwind: "$quizInfo" });
-            pipeline.unshift({
-                $match: {
-                    "quizInfo.course": new mongoose.Types.ObjectId(course)
-                }
-            });
-        }
 
         // Get attempts with populated data
         const attempts = await QuizAttempt.aggregate(pipeline);
@@ -633,23 +663,6 @@ const getAllQuizAttempts = asyncHandler(async (req, res) => {
         const totalCountPipeline = [
             { $match: filter }
         ];
-
-        if (course) {
-            totalCountPipeline.unshift({
-                $lookup: {
-                    from: "quizzes",
-                    localField: "quiz",
-                    foreignField: "_id",
-                    as: "quizInfo"
-                }
-            });
-            totalCountPipeline.unshift({ $unwind: "$quizInfo" });
-            totalCountPipeline.unshift({
-                $match: {
-                    "quizInfo.course": new mongoose.Types.ObjectId(course)
-                }
-            });
-        }
 
         totalCountPipeline.push({ $count: "total" });
         const totalResult = await QuizAttempt.aggregate(totalCountPipeline);

@@ -202,9 +202,9 @@ const UserFeeDetails = ({ userId }) => {
             <FaMoneyBillWave className="text-green-800 mr-2 text-xl" />
             <h4 className="text-lg font-medium text-green-800">Total Fees</h4>
           </div>
-          <p className="text-2xl font-bold text-green-900">${totalFees.toFixed(2)}</p>
+          <p className="text-2xl font-bold text-green-900">₹{totalFees.toFixed(2)}</p>
           <p className="text-xs text-green-700 mt-1">
-            Paid: ${(totalFees - pendingFees).toFixed(2)} | Pending: ${pendingFees.toFixed(2)}
+            Paid: ₹{(totalFees - pendingFees).toFixed(2)} | Pending: ₹{pendingFees.toFixed(2)}
           </p>
         </div>
 

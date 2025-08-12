@@ -103,9 +103,9 @@ const ProgramCard = ({ program, showControls, onDelete }) => {
               <span className="text-lg font-bold text-green-600">Free</span>
             ) : (
               <>
-                <span className="text-lg font-bold text-[#01427a]">${program.price.toFixed(2)}</span>
+                <span className="text-lg font-bold text-[#01427a]">₹{program.price.toFixed(2)}</span>
                 {program.originalPrice > program.price && (
-                  <span className="text-sm text-gray-400 line-through ml-2">${program.originalPrice.toFixed(2)}</span>
+                  <span className="text-sm text-gray-400 line-through ml-2">₹{program.originalPrice.toFixed(2)}</span>
                 )}
               </>
             )}

@@ -483,15 +483,15 @@ const FeeManagement = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <div className="bg-blue-50 p-4 rounded-lg shadow-sm">
                   <h4 className="text-lg font-medium text-blue-800 mb-2">Total Fees</h4>
-                  <p className="text-2xl font-bold text-blue-900">${totalFees.toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-blue-900">₹{totalFees.toFixed(2)}</p>
                 </div>
                 <div className="bg-green-50 p-4 rounded-lg shadow-sm">
                   <h4 className="text-lg font-medium text-green-800 mb-2">Paid Amount</h4>
-                  <p className="text-2xl font-bold text-green-900">${paidAmount.toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-green-900">₹{paidAmount.toFixed(2)}</p>
                 </div>
                 <div className="bg-red-50 p-4 rounded-lg shadow-sm">
                   <h4 className="text-lg font-medium text-red-800 mb-2">Pending Amount</h4>
-                  <p className="text-2xl font-bold text-red-900">${pendingAmount.toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-red-900">₹{pendingAmount.toFixed(2)}</p>
                 </div>
               </div>
 
@@ -813,14 +813,14 @@ const FeeManagement = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div className="bg-blue-50 p-4 rounded-lg shadow-sm">
               <h4 className="text-lg font-medium text-blue-800 mb-2">Total Fee</h4>
-              <p className="text-2xl font-bold text-blue-900">${selectedFee.amount.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-blue-900">₹{selectedFee.amount.toFixed(2)}</p>
               <p className="text-xs text-blue-700 mt-1">Due: {new Date(selectedFee.dueDate).toLocaleDateString()}</p>
             </div>
 
             <div className="bg-green-50 p-4 rounded-lg shadow-sm">
               <h4 className="text-lg font-medium text-green-800 mb-2">Amount Paid</h4>
               <p className="text-2xl font-bold text-green-900">
-                ${payments.reduce((sum, payment) => sum + payment.amount, 0).toFixed(2)}
+                ₹{payments.reduce((sum, payment) => sum + payment.amount, 0).toFixed(2)}
               </p>
               <p className="text-xs text-green-700 mt-1">{payments.length} payment(s) recorded</p>
             </div>
@@ -830,7 +830,7 @@ const FeeManagement = () => {
                 {selectedFee.status === "paid" ? "Fully Paid" : "Balance Due"}
               </h4>
               <p className={`text-2xl font-bold ${selectedFee.status === "paid" ? "text-green-900" : "text-red-900"}`}>
-                ${Math.max(0, selectedFee.amount - payments.reduce((sum, payment) => sum + payment.amount, 0)).toFixed(2)}
+                ₹{Math.max(0, selectedFee.amount - payments.reduce((sum, payment) => sum + payment.amount, 0)).toFixed(2)}
               </p>
               <div className="flex items-center mt-1">
                 <span

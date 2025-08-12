@@ -83,15 +83,15 @@ const InvoiceGenerator = ({ fee, onSuccess, onCancel }) => {
           </div>
           <div className="flex justify-between mb-2">
             <span className="font-medium">Total Fee:</span>
-            <span>${fee.amount.toFixed(2)}</span>
+            <span>₹{fee.amount.toFixed(2)}</span>
           </div>
           <div className="flex justify-between mb-2">
             <span className="font-medium">Amount Paid:</span>
-            <span className="font-bold text-green-700">${fetchingPayments ? "Loading..." : totalPaid.toFixed(2)}</span>
+            <span className="font-bold text-green-700">₹{fetchingPayments ? "Loading..." : totalPaid.toFixed(2)}</span>
           </div>
           <div className="flex justify-between mb-2">
             <span className="font-medium">Balance:</span>
-            <span className="font-bold text-blue-700">${fetchingPayments ? "Loading..." : balance.toFixed(2)}</span>
+            <span className="font-bold text-blue-700">₹{fetchingPayments ? "Loading..." : balance.toFixed(2)}</span>
           </div>
           <div className="flex justify-between">
             <span className="font-medium">Status:</span>
@@ -133,7 +133,7 @@ const InvoiceGenerator = ({ fee, onSuccess, onCancel }) => {
                     <td className="px-3 py-2 whitespace-nowrap">
                       <div className="flex items-center">
                         <FaMoneyBillWave className="text-green-600 mr-1" />
-                        <span className="text-sm font-medium">${payment.amount.toFixed(2)}</span>
+                        <span className="text-sm font-medium">₹{payment.amount.toFixed(2)}</span>
                       </div>
                     </td>
                     <td className="px-3 py-2 whitespace-nowrap text-xs">

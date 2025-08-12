@@ -171,9 +171,9 @@ const CourseCard = ({ course, showControls, onDelete }) => {
               <span className="text-base sm:text-lg font-bold text-green-600">Free</span>
             ) : (
               <>
-                <span className="text-base sm:text-lg font-bold text-[#01427a]">${course.price.toFixed(2)}</span>
+                <span className="text-base sm:text-lg font-bold text-[#01427a]">₹{course.price.toFixed(2)}</span>
                 {course.originalPrice > course.price && (
-                  <span className="text-xs sm:text-sm text-gray-400 line-through ml-2">${course.originalPrice.toFixed(2)}</span>
+                  <span className="text-xs sm:text-sm text-gray-400 line-through ml-2">₹{course.originalPrice.toFixed(2)}</span>
                 )}
               </>
             )}

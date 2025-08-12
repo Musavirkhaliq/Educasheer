@@ -115,12 +115,13 @@ const createQuiz = asyncHandler(async (req, res) => {
  */
 const getAllQuizzes = asyncHandler(async (req, res) => {
     try {
-        const { course, published, type, category, search } = req.query;
+        const { course, testSeries, published, type, category, search } = req.query;
 
         const filter = {};
 
         // Apply filters if provided
         if (course) filter.course = course;
+        if (testSeries) filter.testSeries = testSeries;
         if (published !== undefined) filter.isPublished = published === 'true';
         if (type) filter.quizType = type;
         if (category) filter.category = category;
@@ -133,6 +134,7 @@ const getAllQuizzes = asyncHandler(async (req, res) => {
 
         const quizzes = await Quiz.find(filter)
             .populate("course", "title slug")
+            .populate("testSeries", "title slug")
             .populate("creator", "username fullName")
             .sort({ createdAt: -1 });
 

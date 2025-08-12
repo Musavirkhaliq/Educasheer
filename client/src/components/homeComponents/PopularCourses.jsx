@@ -78,9 +78,9 @@ const CourseCard = ({ course, index }) => {
         {/* Price tag */}
         <div className="absolute top-2 sm:top-4 right-2 sm:right-4">
           <div className="bg-white/90 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full shadow-md">
-            <span className="text-xs sm:text-sm font-bold text-[#01427a]">${course.price.toFixed(2)}</span>
+            <span className="text-xs sm:text-sm font-bold text-[#01427a]">₹{course.price.toFixed(2)}</span>
             {course.originalPrice > course.price && (
-              <span className="text-xs text-gray-500 line-through ml-1">${course.originalPrice.toFixed(2)}</span>
+              <span className="text-xs text-gray-500 line-through ml-1">₹{course.originalPrice.toFixed(2)}</span>
             )}
           </div>
         </div>
