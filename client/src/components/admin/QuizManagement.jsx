@@ -188,6 +188,79 @@ const QuizManagement = () => {
         </div>
       )}
 
+      {/* Quiz Statistics */}
+      {quizzes.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm font-medium text-gray-500">Total Quizzes</p>
+                <p className="text-2xl font-semibold text-gray-900">{quizzes.length}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                  <FaCheck className="w-5 h-5 text-green-600" />
+                </div>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm font-medium text-gray-500">Published</p>
+                <p className="text-2xl font-semibold text-gray-900">
+                  {quizzes.filter(quiz => quiz.isPublished).length}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                  <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  </svg>
+                </div>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm font-medium text-gray-500">Drafts</p>
+                <p className="text-2xl font-semibold text-gray-900">
+                  {quizzes.filter(quiz => !quiz.isPublished).length}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                  <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm font-medium text-gray-500">Total Questions</p>
+                <p className="text-2xl font-semibold text-gray-900">
+                  {quizzes.reduce((total, quiz) => total + (quiz.questions?.length || 0), 0)}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Filters */}
       <div className="bg-white rounded-lg shadow p-4 mb-6">
         <h3 className="text-lg font-semibold mb-3">Filters</h3>
@@ -273,8 +346,21 @@ const QuizManagement = () => {
 
       {/* Quizzes List */}
       {quizzes.length === 0 ? (
-        <div className="bg-white rounded-lg shadow p-8 text-center">
-          <p className="text-gray-500">No quizzes found. Create your first quiz to get started!</p>
+        <div className="bg-white rounded-lg shadow p-12 text-center">
+          <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+            <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No quizzes found</h3>
+          <p className="text-gray-500 mb-6">Create your first quiz to get started with assessments!</p>
+          <Link
+            to="/admin/quizzes/create"
+            className="inline-flex items-center px-4 py-2 bg-[#00bcd4] text-white rounded-lg hover:bg-[#0097a7] transition-colors"
+          >
+            <FaPlus className="mr-2" size={14} />
+            Create Your First Quiz
+          </Link>
         </div>
       ) : (
         <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -282,16 +368,13 @@ const QuizManagement = () => {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Title
+                  Quiz Details
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Course/Test Series
+                  Assignment
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Type
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Questions
+                  Configuration
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
@@ -303,81 +386,153 @@ const QuizManagement = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {quizzes.map(quiz => (
-                <tr key={quiz._id}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{quiz.title}</div>
+                <tr key={quiz._id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4">
+                    <div className="flex flex-col">
+                      <div className="text-sm font-medium text-gray-900 mb-1">{quiz.title}</div>
+                      <div className="text-xs text-gray-500 mb-2">
+                        {quiz.description && quiz.description.length > 100 
+                          ? `${quiz.description.substring(0, 100)}...` 
+                          : quiz.description || 'No description'}
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                          quiz.quizType === 'exam' 
+                            ? 'bg-red-100 text-red-800' 
+                            : 'bg-blue-100 text-blue-800'
+                        }`}>
+                          {quiz.quizType === 'exam' ? 'Exam' : 'Quiz'}
+                        </span>
+                        {quiz.category && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                            {quiz.category}
+                          </span>
+                        )}
+                        {quiz.difficulty && (
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                            quiz.difficulty === 'hard' ? 'bg-red-100 text-red-800' :
+                            quiz.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-green-100 text-green-800'
+                          }`}>
+                            {quiz.difficulty}
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4">
                     <div className="text-sm text-gray-500">
                       {quiz.course?.title && (
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
-                          Course: {quiz.course.title}
-                        </span>
+                        <div className="flex items-center mb-1">
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
+                            📚 {quiz.course.title}
+                          </span>
+                        </div>
                       )}
                       {quiz.testSeries?.title && (
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-800">
-                          Test Series: {quiz.testSeries.title}
-                        </span>
+                        <div className="flex items-center mb-1">
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-800">
+                            📝 {quiz.testSeries.title}
+                          </span>
+                        </div>
                       )}
                       {!quiz.course?.title && !quiz.testSeries?.title && (
-                        <span className="text-gray-400">No association</span>
+                        <span className="text-gray-400 text-xs">No assignment</span>
                       )}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500 capitalize">
-                      {quiz.quizType}
+                  <td className="px-6 py-4">
+                    <div className="text-sm text-gray-500 space-y-1">
+                      <div className="flex items-center">
+                        <span className="text-xs text-gray-600">Questions:</span>
+                        <span className="ml-2 font-medium">{quiz.questions?.length || 0}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <span className="text-xs text-gray-600">Time:</span>
+                        <span className="ml-2 font-medium">{quiz.timeLimit || 0} min</span>
+                      </div>
+                      <div className="flex items-center">
+                        <span className="text-xs text-gray-600">Pass:</span>
+                        <span className="ml-2 font-medium">{quiz.passingScore || 0}%</span>
+                      </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500">
-                      {quiz.questions?.length || 0}
+                    <div className="flex items-center">
+                      <span
+                        className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          quiz.isPublished
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-gray-100 text-gray-800'
+                        }`}
+                      >
+                        {quiz.isPublished ? (
+                          <>
+                            <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                            Published
+                          </>
+                        ) : (
+                          <>
+                            <span className="w-2 h-2 bg-gray-500 rounded-full mr-2"></span>
+                            Draft
+                          </>
+                        )}
+                      </span>
                     </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        quiz.isPublished
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-yellow-100 text-yellow-800'
-                      }`}
-                    >
-                      {quiz.isPublished ? 'Published' : 'Draft'}
-                    </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex space-x-2">
+                    <div className="flex space-x-3">
+                      {/* Publish/Unpublish Button */}
                       <button
                         onClick={() => handleTogglePublish(quiz._id, quiz.isPublished)}
-                        className={`${
+                        className={`flex items-center px-3 py-1 rounded-md text-sm font-medium transition-colors ${
                           quiz.isPublished
-                            ? 'text-yellow-600 hover:text-yellow-900'
-                            : 'text-green-600 hover:text-green-900'
+                            ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
+                            : 'bg-green-100 text-green-700 hover:bg-green-200'
                         }`}
-                        title={quiz.isPublished ? 'Unpublish' : 'Publish'}
+                        title={quiz.isPublished ? 'Unpublish Quiz' : 'Publish Quiz'}
                       >
-                        {quiz.isPublished ? <FaTimes /> : <FaCheck />}
+                        {quiz.isPublished ? (
+                          <>
+                            <FaTimes className="mr-1" size={12} />
+                            Unpublish
+                          </>
+                        ) : (
+                          <>
+                            <FaCheck className="mr-1" size={12} />
+                            Publish
+                          </>
+                        )}
                       </button>
+
+                      {/* View Button */}
                       <Link
                         to={`/admin/quizzes/${quiz._id}`}
-                        className="text-indigo-600 hover:text-indigo-900"
-                        title="View"
+                        className="flex items-center px-3 py-1 rounded-md text-sm font-medium bg-indigo-100 text-indigo-700 hover:bg-indigo-200 transition-colors"
+                        title="View Quiz Details"
                       >
-                        <FaEye />
+                        <FaEye className="mr-1" size={12} />
+                        View
                       </Link>
+
+                      {/* Edit Button */}
                       <Link
                         to={`/admin/quizzes/edit/${quiz._id}`}
-                        className="text-blue-600 hover:text-blue-900"
-                        title="Edit"
+                        className="flex items-center px-3 py-1 rounded-md text-sm font-medium bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors"
+                        title="Edit Quiz"
                       >
-                        <FaEdit />
+                        <FaEdit className="mr-1" size={12} />
+                        Edit
                       </Link>
+
+                      {/* Delete Button */}
                       <button
                         onClick={() => handleDeleteQuiz(quiz._id)}
-                        className="text-red-600 hover:text-red-900"
-                        title="Delete"
+                        className="flex items-center px-3 py-1 rounded-md text-sm font-medium bg-red-100 text-red-700 hover:bg-red-200 transition-colors"
+                        title="Delete Quiz"
                       >
-                        <FaTrash />
+                        <FaTrash className="mr-1" size={12} />
+                        Delete
                       </button>
                     </div>
                   </td>

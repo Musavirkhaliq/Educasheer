@@ -37,6 +37,7 @@ const QuizForm = ({ isEditing = false }) => {
     allowReview: true,
     showCorrectAnswers: true,
     randomizeQuestions: false,
+    isPublished: false, // Add this to ensure quizzes start as drafts
     questions: []
   });
 
@@ -89,6 +90,7 @@ const QuizForm = ({ isEditing = false }) => {
             allowReview: quizData.allowReview !== false,
             showCorrectAnswers: quizData.showCorrectAnswers !== false,
             randomizeQuestions: quizData.randomizeQuestions || false,
+            isPublished: quizData.isPublished || false,
             questions: processedQuestions
           });
         }
@@ -622,47 +624,68 @@ const QuizForm = ({ isEditing = false }) => {
               />
             </div>
             
-            <div className="flex items-center space-x-4 mt-6">
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="allowReview"
-                  name="allowReview"
-                  checked={formData.allowReview}
-                  onChange={handleInputChange}
-                  className="h-4 w-4 text-[#00bcd4] focus:ring-[#00bcd4] border-gray-300 rounded"
-                />
-                <label htmlFor="allowReview" className="ml-2 text-sm text-gray-700">
-                  Allow Review
-                </label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+              <div className="space-y-3">
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="allowReview"
+                    name="allowReview"
+                    checked={formData.allowReview}
+                    onChange={handleInputChange}
+                    className="h-4 w-4 text-[#00bcd4] focus:ring-[#00bcd4] border-gray-300 rounded"
+                  />
+                  <label htmlFor="allowReview" className="ml-2 text-sm text-gray-700">
+                    Allow Review
+                  </label>
+                </div>
+                
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="showCorrectAnswers"
+                    name="showCorrectAnswers"
+                    checked={formData.showCorrectAnswers}
+                    onChange={handleInputChange}
+                    className="h-4 w-4 text-[#00bcd4] focus:ring-[#00bcd4] border-gray-300 rounded"
+                  />
+                  <label htmlFor="showCorrectAnswers" className="ml-2 text-sm text-gray-700">
+                    Show Correct Answers
+                  </label>
+                </div>
               </div>
-              
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="showCorrectAnswers"
-                  name="showCorrectAnswers"
-                  checked={formData.showCorrectAnswers}
-                  onChange={handleInputChange}
-                  className="h-4 w-4 text-[#00bcd4] focus:ring-[#00bcd4] border-gray-300 rounded"
-                />
-                <label htmlFor="showCorrectAnswers" className="ml-2 text-sm text-gray-700">
-                  Show Correct Answers
-                </label>
-              </div>
-              
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="randomizeQuestions"
-                  name="randomizeQuestions"
-                  checked={formData.randomizeQuestions}
-                  onChange={handleInputChange}
-                  className="h-4 w-4 text-[#00bcd4] focus:ring-[#00bcd4] border-gray-300 rounded"
-                />
-                <label htmlFor="randomizeQuestions" className="ml-2 text-sm text-gray-700">
-                  Randomize Questions
-                </label>
+
+              <div className="space-y-3">
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="randomizeQuestions"
+                    name="randomizeQuestions"
+                    checked={formData.randomizeQuestions}
+                    onChange={handleInputChange}
+                    className="h-4 w-4 text-[#00bcd4] focus:ring-[#00bcd4] border-gray-300 rounded"
+                  />
+                  <label htmlFor="randomizeQuestions" className="ml-2 text-sm text-gray-700">
+                    Randomize Questions
+                  </label>
+                </div>
+
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="isPublished"
+                    name="isPublished"
+                    checked={formData.isPublished}
+                    onChange={handleInputChange}
+                    className="h-4 w-4 text-[#00bcd4] focus:ring-[#00bcd4] border-gray-300 rounded"
+                  />
+                  <label htmlFor="isPublished" className="ml-2 text-sm text-gray-700">
+                    <span className="font-medium">Publish immediately</span>
+                    <span className="block text-xs text-gray-500">
+                      Uncheck to save as draft
+                    </span>
+                  </label>
+                </div>
               </div>
             </div>
           </div>
@@ -877,25 +900,55 @@ const QuizForm = ({ isEditing = false }) => {
           )}
         </div>
         
-        {/* Submit Button */}
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            disabled={submitting}
-            className="bg-[#00bcd4] text-white px-6 py-2 rounded-lg flex items-center gap-2 hover:bg-[#0097a7] transition-colors disabled:bg-gray-400"
-          >
-            {submitting ? (
-              <>
-                <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
-                <span>Saving...</span>
-              </>
-            ) : (
-              <>
-                <FaSave />
-                <span>{isEditing ? 'Update Quiz' : 'Create Quiz'}</span>
-              </>
-            )}
-          </button>
+        {/* Action Buttons */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="text-sm text-gray-600">
+              {formData.isPublished ? (
+                <div className="flex items-center text-green-600">
+                  <FaCheck className="mr-2" size={14} />
+                  This quiz will be published and visible to students
+                </div>
+              ) : (
+                <div className="flex items-center text-gray-600">
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  </svg>
+                  This quiz will be saved as a draft
+                </div>
+              )}
+            </div>
+            
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => navigate('/admin/quizzes')}
+                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              
+              <button
+                type="submit"
+                disabled={submitting}
+                className="bg-[#00bcd4] text-white px-6 py-2 rounded-lg flex items-center gap-2 hover:bg-[#0097a7] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+              >
+                {submitting ? (
+                  <>
+                    <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
+                    <span>Saving...</span>
+                  </>
+                ) : (
+                  <>
+                    <FaSave />
+                    <span>
+                      {isEditing ? 'Update Quiz' : (formData.isPublished ? 'Create & Publish' : 'Save as Draft')}
+                    </span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
         </div>
       </form>
     </div>
