@@ -40,7 +40,15 @@ const startQuizAttempt = asyncHandler(async (req, res) => {
             }
         }
         
-        // Check if user has an incomplete attempt
+        // Clean up any expired attempts for this user and quiz first
+        try {
+            const { cleanupExpiredAttempts } = await import("../services/quizCleanup.service.js");
+            await cleanupExpiredAttempts();
+        } catch (cleanupError) {
+            console.warn("Failed to cleanup expired attempts:", cleanupError);
+        }
+
+        // Check if user has an incomplete attempt (after cleanup)
         const incompleteAttempt = await QuizAttempt.findOne({
             quiz: quizId,
             user: userId,
@@ -53,16 +61,18 @@ const startQuizAttempt = asyncHandler(async (req, res) => {
                 const startTime = new Date(incompleteAttempt.startTime);
                 const currentTime = new Date();
                 const elapsedMinutes = Math.floor((currentTime - startTime) / (1000 * 60));
+                const gracePeriodMinutes = 5; // Small grace period for network delays
 
                 console.log('Found incomplete attempt - checking expiry:', {
                     attemptId: incompleteAttempt._id,
                     startTime: startTime.toISOString(),
                     currentTime: currentTime.toISOString(),
                     elapsedMinutes,
-                    timeLimit: quiz.timeLimit
+                    timeLimit: quiz.timeLimit,
+                    gracePeriod: gracePeriodMinutes
                 });
 
-                if (elapsedMinutes >= quiz.timeLimit) {
+                if (elapsedMinutes >= (quiz.timeLimit + gracePeriodMinutes)) {
                     console.log('Incomplete attempt has expired, deleting and creating new attempt');
                     // Delete the expired attempt and create a new one
                     await QuizAttempt.findByIdAndDelete(incompleteAttempt._id);

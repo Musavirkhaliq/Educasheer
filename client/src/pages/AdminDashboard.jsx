@@ -10,6 +10,7 @@ import QuizManagement from "../components/admin/QuizManagement";
 import TestSeriesManagement from "../components/admin/TestSeriesManagement";
 import QuizAttemptsOverview from "../components/admin/QuizAttemptsOverview";
 import SeatManagement from "../components/admin/SeatManagement";
+import QuizCleanupManager from "../components/admin/QuizCleanupManager";
 
 const AdminDashboard = () => {
   const { currentUser, isAuthenticated, logout } = useAuth();
@@ -309,6 +310,16 @@ const AdminDashboard = () => {
         >
           Seat Bookings
         </button>
+        <button
+          className={`py-2 px-4 font-medium ${
+            activeTab === "quiz-cleanup"
+              ? "text-[#00bcd4] border-b-2 border-[#00bcd4]"
+              : "text-gray-500 hover:text-gray-700"
+          }`}
+          onClick={() => setActiveTab("quiz-cleanup")}
+        >
+          Quiz Cleanup
+        </button>
       </div>
 
       {/* Content */}
@@ -562,6 +573,11 @@ const AdminDashboard = () => {
           {/* Seat Management Tab */}
           {activeTab === "seat-bookings" && (
             <SeatManagement />
+          )}
+
+          {/* Quiz Cleanup Tab */}
+          {activeTab === "quiz-cleanup" && (
+            <QuizCleanupManager />
           )}
         </>
       )}

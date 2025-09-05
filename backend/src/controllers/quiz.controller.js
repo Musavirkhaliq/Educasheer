@@ -217,6 +217,15 @@ const updateQuiz = asyncHandler(async (req, res) => {
             throw new ApiError(403, "You don't have permission to update this quiz");
         }
 
+        // Clean up expired attempts before allowing edit
+        try {
+            const { cleanupExpiredAttempts } = await import("../services/quizCleanup.service.js");
+            await cleanupExpiredAttempts();
+        } catch (cleanupError) {
+            console.warn("Failed to cleanup expired attempts:", cleanupError);
+            // Continue with update even if cleanup fails
+        }
+
         // Handle test series assignment changes
         const oldTestSeries = quiz.testSeries;
         const newTestSeries = updateData.testSeries;

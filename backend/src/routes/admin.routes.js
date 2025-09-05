@@ -8,6 +8,12 @@ import {
     updateBookingStatus,
     controlScheduledTasks
 } from "../controllers/admin.controller.js";
+import {
+    getCleanupStatistics,
+    cleanupExpired,
+    cleanupOldAttempts,
+    performFullCleanup
+} from "../controllers/quizCleanup.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
 const router = Router();
@@ -22,5 +28,11 @@ router.route("/create-admin").post(createAdminUser);
 router.route("/system/status").get(verifyJWT, getSystemStatus);
 router.route("/system/booking-status").post(verifyJWT, updateBookingStatus);
 router.route("/system/scheduled-tasks").post(verifyJWT, controlScheduledTasks);
+
+// Quiz cleanup routes
+router.route("/quiz-cleanup/stats").get(verifyJWT, getCleanupStatistics);
+router.route("/quiz-cleanup/expired").post(verifyJWT, cleanupExpired);
+router.route("/quiz-cleanup/old").post(verifyJWT, cleanupOldAttempts);
+router.route("/quiz-cleanup/full").post(verifyJWT, performFullCleanup);
 
 export default router;

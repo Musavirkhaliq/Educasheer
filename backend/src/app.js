@@ -134,6 +134,16 @@ import { getPublishedTestSeries } from "./controllers/testSeries.controller.js";
 // Import public testimonial routes
 import { getApprovedTestimonials } from "./controllers/testimonial.controller.js";
 
+// Initialize quiz cleanup scheduler
+import { initializeCleanupScheduler } from "./services/quizCleanup.service.js";
+
+// Initialize cleanup scheduler when app starts
+try {
+    initializeCleanupScheduler();
+} catch (error) {
+    console.error("Failed to initialize quiz cleanup scheduler:", error);
+}
+
 // Routes declaration
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/tutor-applications", tutorApplicationRouter);
