@@ -202,7 +202,7 @@ const QuizResults = () => {
                   <FaArrowLeft className="group-hover:-translate-x-1 transition-transform duration-300 text-xs sm:text-sm" />
                   <span>{courseId ? 'Back to Course' : testSeriesId ? 'Back to Test Series' : 'Back to Profile'}</span>
                 </Link>
-                <h1 className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-2 leading-tight">
+                <h1 className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-2 leading-tight break-words">
                   {quiz.title}
                 </h1>
                 <p className="text-gray-600 flex items-center gap-2 text-sm sm:text-base">

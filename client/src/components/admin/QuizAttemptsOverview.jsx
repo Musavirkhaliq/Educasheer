@@ -271,7 +271,7 @@ const QuizAttemptsOverview = () => {
                 })
                 .map(quiz => (
                   <option key={quiz._id} value={quiz._id}>
-                    {quiz.title} {quiz.course ? `(Course: ${quiz.course.title})` : quiz.testSeries ? `(Test Series: ${quiz.testSeries.title})` : ''}
+                    {quiz.title.length > 50 ? `${quiz.title.substring(0, 50)}...` : quiz.title} {quiz.course ? `(Course: ${quiz.course.title})` : quiz.testSeries ? `(Test Series: ${quiz.testSeries.title})` : ''}
                   </option>
                 ))}
             </select>
@@ -371,8 +371,8 @@ const QuizAttemptsOverview = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
+                    <td className="px-6 py-4">
+                      <div className="text-sm font-medium text-gray-900 break-words max-w-xs">
                         {attempt.quiz.title}
                       </div>
                       <div className="text-sm text-gray-500">

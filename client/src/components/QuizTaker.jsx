@@ -631,7 +631,7 @@ const QuizTaker = () => {
                   <FaQuestionCircle className="text-white text-lg sm:text-xl" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent truncate">
+                  <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent quiz-title">
                     {quiz.title}
                   </h2>
                   <p className="text-gray-600 mt-1 flex items-center gap-2 text-sm sm:text-base">

@@ -98,7 +98,7 @@ const QuizAttempts = () => {
           <FaArrowLeft />
           <span>{courseId ? 'Back to Course' : 'Back to Test Series'}</span>
         </Link>
-        <h2 className="text-2xl font-semibold text-gray-800">{quiz.title} - Attempts</h2>
+        <h2 className="text-2xl font-semibold text-gray-800 break-words">{quiz.title} - Attempts</h2>
         <p className="text-gray-600 mt-1">
           {attempts.length} {attempts.length === 1 ? 'attempt' : 'attempts'} made
         </p>

@@ -297,9 +297,9 @@ const ExamPerformance = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {attempts.map((attempt) => (
                   <tr key={attempt._id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-6 py-4">
                       <div>
-                        <div className="text-sm font-medium text-gray-900">
+                        <div className="text-sm font-medium text-gray-900 break-words max-w-xs">
                           {attempt.quiz.title}
                         </div>
                         <div className="text-sm text-gray-500">
@@ -313,8 +313,8 @@ const ExamPerformance = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {attempt.quiz.course.title}
+                    <td className="px-6 py-4 text-sm text-gray-900">
+                      <div className="break-words max-w-xs">{attempt.quiz.course.title}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm">

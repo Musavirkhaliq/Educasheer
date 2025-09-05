@@ -76,8 +76,12 @@ const QuizzesExamsPage = () => {
             <div className="col-span-full text-center text-gray-500">No quizzes or exams found.</div>
           ) : quizzes.map(quiz => (
             <div key={quiz._id} className="border rounded-lg p-4 shadow hover:shadow-lg transition">
-              <h3 className="font-semibold text-lg mb-1">{quiz.title}</h3>
-              <div className="text-sm text-gray-600 mb-2">{quiz.description}</div>
+              <h3 className="font-semibold text-lg mb-1 break-words">{quiz.title}</h3>
+              <div className="text-sm text-gray-600 mb-2 break-words">
+                {quiz.description && quiz.description.length > 150 
+                  ? `${quiz.description.substring(0, 150)}...` 
+                  : quiz.description}
+              </div>
               <div className="flex flex-wrap gap-2 text-xs mb-2">
                 <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded">{quiz.quizType === 'quiz' ? 'Quiz' : 'Exam'}</span>
                 {quiz.category && <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded">{quiz.category}</span>}

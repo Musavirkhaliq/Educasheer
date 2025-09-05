@@ -192,8 +192,8 @@ const QuizDetails = () => {
                       </span>
                     </div>
                   </div>
-                  <h1 className="text-3xl font-bold mb-2">{quiz.title}</h1>
-                  <p className="text-white/90 text-lg">{quiz.description}</p>
+                  <h1 className="text-3xl font-bold mb-2 break-words">{quiz.title}</h1>
+                  <p className="text-white/90 text-lg break-words">{quiz.description}</p>
                 </div>
               </div>
             </div>

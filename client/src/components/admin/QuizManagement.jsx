@@ -389,7 +389,7 @@ const QuizManagement = () => {
                 <tr key={quiz._id} className="hover:bg-gray-50">
                   <td className="px-6 py-4">
                     <div className="flex flex-col">
-                      <div className="text-sm font-medium text-gray-900 mb-1">{quiz.title}</div>
+                      <div className="text-sm font-medium text-gray-900 mb-1 quiz-title-compact max-w-xs">{quiz.title}</div>
                       <div className="text-xs text-gray-500 mb-2">
                         {quiz.description && quiz.description.length > 100 
                           ? `${quiz.description.substring(0, 100)}...` 
@@ -424,15 +424,15 @@ const QuizManagement = () => {
                     <div className="text-sm text-gray-500">
                       {quiz.course?.title && (
                         <div className="flex items-center mb-1">
-                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
-                            📚 {quiz.course.title}
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800 max-w-full">
+                            <span className="truncate">📚 {quiz.course.title}</span>
                           </span>
                         </div>
                       )}
                       {quiz.testSeries?.title && (
                         <div className="flex items-center mb-1">
-                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-800">
-                            📝 {quiz.testSeries.title}
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-800 max-w-full">
+                            <span className="truncate">📝 {quiz.testSeries.title}</span>
                           </span>
                         </div>
                       )}

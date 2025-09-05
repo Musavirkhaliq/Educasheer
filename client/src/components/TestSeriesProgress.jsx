@@ -239,8 +239,8 @@ const TestSeriesProgress = ({ testSeriesId, testSeries, onProgressUpdate }) => {
                     <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white border-2 border-current">
                       {getStatusIcon(status)}
                     </div>
-                    <div>
-                      <h4 className="font-medium">{quiz.title}</h4>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-medium quiz-title-compact">{quiz.title}</h4>
                       <div className="flex items-center gap-4 text-sm mt-1">
                         <span>{quiz.questions?.length || 0} questions</span>
                         <span>{quiz.timeLimit} min</span>

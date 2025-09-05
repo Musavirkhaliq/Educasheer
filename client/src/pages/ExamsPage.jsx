@@ -581,7 +581,7 @@ const ExamsPage = () => {
                           <div className="relative z-10">
                             <div className="flex items-start justify-between mb-3">
                               <div className="flex-1">
-                                <h3 className="text-xl font-bold mb-2 line-clamp-2 leading-tight">
+                                <h3 className="text-xl font-bold mb-2 quiz-title">
                                   {quiz.title}
                                 </h3>
                                 <div className="flex items-center space-x-4 text-white/90">
@@ -602,8 +602,10 @@ const ExamsPage = () => {
 
                         {/* Content */}
                         <div className="p-6">
-                          <p className="text-gray-600 text-sm mb-4 line-clamp-3 leading-relaxed">
-                            {quiz.description || "Test your knowledge with this comprehensive quiz covering important topics."}
+                          <p className="text-gray-600 text-sm mb-4 quiz-description">
+                            {quiz.description && quiz.description.length > 120 
+                              ? `${quiz.description.substring(0, 120)}...` 
+                              : quiz.description || "Test your knowledge with this comprehensive quiz covering important topics."}
                           </p>
 
                           {/* Tags */}

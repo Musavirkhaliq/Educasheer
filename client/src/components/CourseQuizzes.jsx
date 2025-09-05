@@ -161,9 +161,13 @@ const CourseQuizzes = ({ courseId, courseName, isInstructor = false }) => {
               className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-200"
             >
               <div className="flex justify-between items-start">
-                <div>
-                  <h4 className="font-medium text-gray-800">{quiz.title}</h4>
-                  <p className="text-gray-600 text-sm mt-1">{quiz.description}</p>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-medium text-gray-800 quiz-title-compact">{quiz.title}</h4>
+                  <p className="text-gray-600 text-sm mt-1 quiz-description">
+                    {quiz.description && quiz.description.length > 100 
+                      ? `${quiz.description.substring(0, 100)}...` 
+                      : quiz.description}
+                  </p>
 
                   <div className="flex flex-wrap gap-3 mt-3">
                     <div className="flex items-center gap-1 text-sm text-gray-500">
