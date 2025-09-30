@@ -27,10 +27,17 @@ const QuizManagement = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
+        
+        // Build test series filters based on selected course
+        const testSeriesFilters = {};
+        if (filters.course) {
+          testSeriesFilters.course = filters.course;
+        }
+        
         const [quizzesResponse, coursesResponse, testSeriesResponse] = await Promise.all([
           quizAPI.getAllQuizzes(filters),
           courseAPI.getAllCourses(),
-          testSeriesAPI.getAllTestSeries()
+          testSeriesAPI.getAllTestSeries(testSeriesFilters)
         ]);
 
         // Make sure we're setting arrays for all data
@@ -61,10 +68,19 @@ const QuizManagement = () => {
   // Handle filter changes
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
-    setFilters(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFilters(prev => {
+      const newFilters = {
+        ...prev,
+        [name]: value
+      };
+      
+      // If course changes, reset test series filter to show only test series for that course
+      if (name === 'course') {
+        newFilters.testSeries = '';
+      }
+      
+      return newFilters;
+    });
   };
 
   // Handle publish/unpublish quiz
@@ -298,20 +314,35 @@ const QuizManagement = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Test Series</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Test Series
+              {filters.course && (
+                <span className="text-xs text-blue-600 ml-1">(filtered by course)</span>
+              )}
+            </label>
             <select
               name="testSeries"
               value={filters.testSeries}
               onChange={handleFilterChange}
               className="w-full border border-gray-300 rounded-md px-3 py-2"
             >
-              <option value="">All Test Series</option>
+              <option value="">
+                {filters.course ? 'All Test Series in Course' : 'All Test Series'}
+              </option>
               {testSeries.map(series => (
                 <option key={series._id} value={series._id}>
                   {series.title}
+                  {series.course?.title && (
+                    <span className="text-gray-500"> (Course: {series.course.title})</span>
+                  )}
                 </option>
               ))}
             </select>
+            {testSeries.length === 0 && filters.course && (
+              <p className="text-xs text-gray-500 mt-1">
+                No test series found for the selected course
+              </p>
+            )}
           </div>
 
           <div>
@@ -371,7 +402,7 @@ const QuizManagement = () => {
                   Quiz Details
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Assignment
+                  Test Series & Course
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Configuration
@@ -422,13 +453,6 @@ const QuizManagement = () => {
                   </td>
                   <td className="px-6 py-4">
                     <div className="text-sm text-gray-500">
-                      {quiz.course?.title && (
-                        <div className="flex items-center mb-1">
-                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800 max-w-full">
-                            <span className="truncate">📚 {quiz.course.title}</span>
-                          </span>
-                        </div>
-                      )}
                       {quiz.testSeries?.title && (
                         <div className="flex items-center mb-1">
                           <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-800 max-w-full">
@@ -436,8 +460,15 @@ const QuizManagement = () => {
                           </span>
                         </div>
                       )}
-                      {!quiz.course?.title && !quiz.testSeries?.title && (
-                        <span className="text-gray-400 text-xs">No assignment</span>
+                      {quiz.testSeries?.course?.title && (
+                        <div className="flex items-center mb-1">
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800 max-w-full">
+                            <span className="truncate">📚 {quiz.testSeries.course.title}</span>
+                          </span>
+                        </div>
+                      )}
+                      {!quiz.testSeries?.title && (
+                        <span className="text-gray-400 text-xs">No test series</span>
                       )}
                     </div>
                   </td>

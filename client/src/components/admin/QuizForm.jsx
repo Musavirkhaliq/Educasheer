@@ -24,9 +24,7 @@ const QuizForm = ({ isEditing = false }) => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    course: '',
     testSeries: '',
-    assignmentType: 'course', // 'course' or 'testSeries'
     category: '',
     tags: [],
     difficulty: 'medium',
@@ -77,9 +75,7 @@ const QuizForm = ({ isEditing = false }) => {
           setFormData({
             title: quizData.title || '',
             description: quizData.description || '',
-            course: quizData.course?._id || '',
             testSeries: quizData.testSeries?._id || '',
-            assignmentType: quizData.testSeries ? 'testSeries' : 'course',
             category: quizData.category || '',
             tags: quizData.tags || [],
             difficulty: quizData.difficulty || 'medium',
@@ -289,13 +285,8 @@ const QuizForm = ({ isEditing = false }) => {
       return;
     }
     
-    if (formData.assignmentType === 'course' && !formData.course) {
-      toast.error('Please select a course');
-      return;
-    }
-
-    if (formData.assignmentType === 'testSeries' && !formData.testSeries) {
-      toast.error('Please select a test series');
+    if (!formData.testSeries) {
+      toast.error('Please select a test series - all quizzes must belong to a test series');
       return;
     }
     
@@ -341,13 +332,8 @@ const QuizForm = ({ isEditing = false }) => {
 
       // Prepare data for submission
       const submitData = {
-        ...formData,
-        course: formData.assignmentType === 'course' ? formData.course : undefined,
-        testSeries: formData.assignmentType === 'testSeries' ? formData.testSeries : undefined
+        ...formData
       };
-
-      // Remove assignmentType as it's not needed in the API
-      delete submitData.assignmentType;
 
       if (isEditing) {
         await quizAPI.updateQuiz(quizId, submitData);
@@ -411,65 +397,29 @@ const QuizForm = ({ isEditing = false }) => {
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Assignment Type <span className="text-red-500">*</span>
+                Test Series <span className="text-red-500">*</span>
               </label>
               <select
-                name="assignmentType"
-                value={formData.assignmentType}
+                name="testSeries"
+                value={formData.testSeries}
                 onChange={handleInputChange}
                 className="w-full border border-gray-300 rounded-md px-3 py-2"
                 required
               >
-                <option value="course">Course</option>
-                <option value="testSeries">Test Series</option>
+                <option value="">Select a test series</option>
+                {testSeries.map(series => (
+                  <option key={series._id} value={series._id}>
+                    {series.title}
+                    {series.course?.title && (
+                      <span className="text-gray-500"> (Course: {series.course.title})</span>
+                    )}
+                  </option>
+                ))}
               </select>
+              <p className="text-xs text-gray-500 mt-1">
+                All quizzes must belong to a test series. Test series can optionally be linked to courses.
+              </p>
             </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            {formData.assignmentType === 'course' && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Course <span className="text-red-500">*</span>
-                </label>
-                <select
-                  name="course"
-                  value={formData.course}
-                  onChange={handleInputChange}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2"
-                  required
-                >
-                  <option value="">Select a course</option>
-                  {courses.map(course => (
-                    <option key={course._id} value={course._id}>
-                      {course.title}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            {formData.assignmentType === 'testSeries' && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Test Series <span className="text-red-500">*</span>
-                </label>
-                <select
-                  name="testSeries"
-                  value={formData.testSeries}
-                  onChange={handleInputChange}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2"
-                  required
-                >
-                  <option value="">Select a test series</option>
-                  {testSeries.map(series => (
-                    <option key={series._id} value={series._id}>
-                      {series.title}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
           </div>
           
           <div className="mb-4">

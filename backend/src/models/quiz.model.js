@@ -66,19 +66,10 @@ const quizSchema = new Schema({
         type: String,
         required: true
     },
-    course: {
-        type: Schema.Types.ObjectId,
-        ref: "Course",
-        required: function() {
-            return !this.testSeries; // Course is required only if testSeries is not provided
-        }
-    },
     testSeries: {
         type: Schema.Types.ObjectId,
         ref: "TestSeries",
-        required: function() {
-            return !this.course; // TestSeries is required only if course is not provided
-        }
+        required: true // Test Series is always required - quizzes can only belong to test series
     },
     questions: [questionSchema],
     timeLimit: {

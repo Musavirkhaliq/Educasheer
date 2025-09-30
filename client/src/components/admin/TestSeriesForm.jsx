@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { FaSave, FaTimes, FaPlus, FaTrash } from 'react-icons/fa';
 import { testSeriesAPI } from '../../services/testSeriesAPI';
 import { quizAPI } from '../../services/quizAPI';
+import { courseAPI } from '../../services/courseAPI';
 import { toast } from 'react-hot-toast';
 
 const TestSeriesForm = ({ isEditing = false }) => {
@@ -12,10 +13,12 @@ const TestSeriesForm = ({ isEditing = false }) => {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [availableQuizzes, setAvailableQuizzes] = useState([]);
+  const [courses, setCourses] = useState([]);
   
   const [formData, setFormData] = useState({
     title: '',
     description: '',
+    course: '',
     category: 'General',
     tags: [],
     difficulty: 'medium',
@@ -41,9 +44,14 @@ const TestSeriesForm = ({ isEditing = false }) => {
       try {
         setLoading(true);
         
-        // Fetch available quizzes
-        const quizzesResponse = await quizAPI.getAllQuizzes();
+        // Fetch available quizzes and courses
+        const [quizzesResponse, coursesResponse] = await Promise.all([
+          quizAPI.getAllQuizzes(),
+          courseAPI.getAllCourses()
+        ]);
+        
         setAvailableQuizzes(quizzesResponse.data.data);
+        setCourses(coursesResponse.data.data);
         
         // If editing, fetch test series data
         if (isEditing && testSeriesId) {
@@ -53,6 +61,7 @@ const TestSeriesForm = ({ isEditing = false }) => {
           setFormData({
             title: testSeriesData.title || '',
             description: testSeriesData.description || '',
+            course: testSeriesData.course?._id || '',
             category: testSeriesData.category || 'General',
             tags: testSeriesData.tags || [],
             difficulty: testSeriesData.difficulty || 'medium',
@@ -191,6 +200,30 @@ const TestSeriesForm = ({ isEditing = false }) => {
               />
             </div>
 
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Course (Optional)
+              </label>
+              <select
+                name="course"
+                value={formData.course}
+                onChange={handleInputChange}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#00bcd4]"
+              >
+                <option value="">No Course (Standalone)</option>
+                {courses.map(course => (
+                  <option key={course._id} value={course._id}>
+                    {course.title}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-gray-500 mt-1">
+                Link this test series to a course to group related tests together
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Category

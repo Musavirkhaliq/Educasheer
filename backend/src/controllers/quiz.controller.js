@@ -4,6 +4,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { Quiz, QuizAttempt } from "../models/quiz.model.js";
 import { Course } from "../models/course.model.js";
 import { Category } from "../models/category.model.js";
+import { TestSeries } from "../models/testSeries.model.js";
 import { updateCourseProgressForQuiz } from "../services/courseCompletion.service.js";
 import mongoose from "mongoose";
 import fs from "fs";
@@ -16,39 +17,29 @@ import path from "path";
  */
 const createQuiz = asyncHandler(async (req, res) => {
     try {
-        const { title, description, course, testSeries, questions, timeLimit, passingScore, quizType, maxAttempts } = req.body;
+        const { title, description, testSeries, questions, timeLimit, passingScore, quizType, maxAttempts } = req.body;
 
         // Validate required fields
         if (!title || !description || !questions || !Array.isArray(questions) || questions.length === 0) {
             throw new ApiError(400, "Title, description, and at least one question are required");
         }
 
-        // Either course or testSeries must be provided
-        if (!course && !testSeries) {
-            throw new ApiError(400, "Either course ID or test series ID is required");
+        // Test series is required
+        if (!testSeries) {
+            throw new ApiError(400, "Test series ID is required - quizzes must belong to a test series");
         }
 
-        // Check if course exists (if provided)
-        if (course) {
-            const courseExists = await Course.findById(course);
-            if (!courseExists) {
-                throw new ApiError(404, "Course not found");
-            }
-        }
-
-        // Check if test series exists (if provided)
-        if (testSeries) {
-            const { TestSeries } = await import("../models/testSeries.model.js");
-            const testSeriesExists = await TestSeries.findById(testSeries);
-            if (!testSeriesExists) {
-                throw new ApiError(404, "Test series not found");
-            }
+        // Check if test series exists
+        const testSeriesExists = await TestSeries.findById(testSeries);
+        if (!testSeriesExists) {
+            throw new ApiError(404, "Test series not found");
         }
 
         // Create quiz
         const quizData = {
             title,
             description,
+            testSeries,
             questions,
             timeLimit: timeLimit || 30,
             passingScore: passingScore || 70,
@@ -58,39 +49,28 @@ const createQuiz = asyncHandler(async (req, res) => {
             isPublished: false
         };
 
-        // Add course or testSeries reference
-        if (course) {
-            quizData.course = course;
-        }
-        if (testSeries) {
-            quizData.testSeries = testSeries;
-        }
-
         const quiz = await Quiz.create(quizData);
 
-        // If quiz is assigned to a test series, add it to the test series' quizzes array and recalculate totals
-        if (testSeries) {
-            const { TestSeries } = await import("../models/testSeries.model.js");
-            await TestSeries.findByIdAndUpdate(
-                testSeries,
-                { $addToSet: { quizzes: quiz._id } },
-                { new: true }
-            );
+        // Add quiz to the test series' quizzes array and recalculate totals
+        await TestSeries.findByIdAndUpdate(
+            testSeries,
+            { $addToSet: { quizzes: quiz._id } },
+            { new: true }
+        );
 
-            // Recalculate test series totals
-            const testSeriesDoc = await TestSeries.findById(testSeries);
-            if (testSeriesDoc) {
-                const quizzes = await Quiz.find({ _id: { $in: testSeriesDoc.quizzes } });
-                const totalQuizzes = quizzes.length;
-                const totalQuestions = quizzes.reduce((total, q) => total + (q.questions?.length || 0), 0);
-                const estimatedDuration = quizzes.reduce((total, q) => total + (q.timeLimit || 0), 0);
+        // Recalculate test series totals
+        const testSeriesDoc = await TestSeries.findById(testSeries);
+        if (testSeriesDoc) {
+            const quizzes = await Quiz.find({ _id: { $in: testSeriesDoc.quizzes } });
+            const totalQuizzes = quizzes.length;
+            const totalQuestions = quizzes.reduce((total, q) => total + (q.questions?.length || 0), 0);
+            const estimatedDuration = quizzes.reduce((total, q) => total + (q.timeLimit || 0), 0);
 
-                await TestSeries.findByIdAndUpdate(testSeries, {
-                    totalQuizzes,
-                    totalQuestions,
-                    estimatedDuration
-                });
-            }
+            await TestSeries.findByIdAndUpdate(testSeries, {
+                totalQuizzes,
+                totalQuestions,
+                estimatedDuration
+            });
         }
 
         return res.status(201).json(
@@ -120,7 +100,6 @@ const getAllQuizzes = asyncHandler(async (req, res) => {
         const filter = {};
 
         // Apply filters if provided
-        if (course) filter.course = course;
         if (testSeries) filter.testSeries = testSeries;
         if (published !== undefined) filter.isPublished = published === 'true';
         if (type) filter.quizType = type;
@@ -132,9 +111,30 @@ const getAllQuizzes = asyncHandler(async (req, res) => {
             ];
         }
 
+        // If course filter is provided, find test series belonging to that course first
+        if (course) {
+            const courseTestSeries = await TestSeries.find({ course }).select('_id');
+            const testSeriesIds = courseTestSeries.map(ts => ts._id);
+            
+            if (testSeriesIds.length > 0) {
+                filter.testSeries = { $in: testSeriesIds };
+            } else {
+                // No test series found for this course, return empty result
+                return res.status(200).json(
+                    new ApiResponse(200, [], "No quizzes found for the selected course")
+                );
+            }
+        }
+
         const quizzes = await Quiz.find(filter)
-            .populate("course", "title slug")
-            .populate("testSeries", "title slug")
+            .populate({
+                path: "testSeries",
+                select: "title slug course",
+                populate: {
+                    path: "course",
+                    select: "title slug"
+                }
+            })
             .populate("creator", "username fullName")
             .sort({ createdAt: -1 });
 
@@ -156,8 +156,14 @@ const getQuizById = asyncHandler(async (req, res) => {
         const { quizId } = req.params;
 
         const quiz = await Quiz.findById(quizId)
-            .populate("course", "title slug")
-            .populate("testSeries", "title slug isPublished enrolledStudents")
+            .populate({
+                path: "testSeries",
+                select: "title slug isPublished enrolledStudents course",
+                populate: {
+                    path: "course",
+                    select: "title slug"
+                }
+            })
             .populate("creator", "username fullName");
 
         if (!quiz) {
@@ -169,10 +175,6 @@ const getQuizById = asyncHandler(async (req, res) => {
 
         // Admin and creator always have access
         if (req.user.role === "admin" || quiz.creator.toString() === req.user._id.toString()) {
-            hasAccess = true;
-        }
-        // For course quizzes, check if quiz is published
-        else if (quiz.course && quiz.isPublished) {
             hasAccess = true;
         }
         // For test series quizzes, check if test series is published and user is enrolled
@@ -239,7 +241,6 @@ const updateQuiz = asyncHandler(async (req, res) => {
 
         // Handle test series changes and recalculate totals
         if (oldTestSeries || newTestSeries) {
-            const { TestSeries } = await import("../models/testSeries.model.js");
 
             // Remove from old test series if it existed and changed
             if (oldTestSeries && oldTestSeries.toString() !== newTestSeries?.toString()) {
@@ -326,7 +327,6 @@ const deleteQuiz = asyncHandler(async (req, res) => {
 
         // Remove quiz from test series if it belongs to one and recalculate totals
         if (quiz.testSeries) {
-            const { TestSeries } = await import("../models/testSeries.model.js");
             await TestSeries.findByIdAndUpdate(
                 quiz.testSeries,
                 { $pull: { quizzes: quizId } }
@@ -632,21 +632,19 @@ const uploadQuestionsFromJSON = asyncHandler(async (req, res) => {
  */
 const getPublishedQuizzes = asyncHandler(async (req, res) => {
     try {
+        console.log('getPublishedQuizzes called with params:', req.query);
+        
         const { category, type, search, tags, difficulty, page = 1, limit = 12 } = req.query;
 
-        // First, get published test series IDs
-        const { TestSeries } = await import("../models/testSeries.model.js");
+        // Simplified approach - just get quizzes that belong to published test series
         const publishedTestSeries = await TestSeries.find({ isPublished: true }).select('_id');
         const publishedTestSeriesIds = publishedTestSeries.map(ts => ts._id);
 
-        // Create filter for quizzes that are either:
-        // 1. Published and belong to a course, OR
-        // 2. Belong to a published test series
+        console.log('Found published test series:', publishedTestSeriesIds.length);
+
+        // Simple filter - just get quizzes from published test series
         const filter = {
-            $or: [
-                { isPublished: true, course: { $exists: true } },
-                { testSeries: { $in: publishedTestSeriesIds } }
-            ]
+            testSeries: { $in: publishedTestSeriesIds }
         };
 
         // Apply additional filters if provided
@@ -654,38 +652,27 @@ const getPublishedQuizzes = asyncHandler(async (req, res) => {
         if (type && type !== '') filter.quizType = type;
         if (difficulty && difficulty !== '') filter.difficulty = difficulty;
 
-        // Handle tags filter (can be comma-separated string or array)
-        if (tags && tags !== '') {
-            const tagArray = Array.isArray(tags) ? tags : tags.split(',').map(tag => tag.trim().toLowerCase());
-            if (tagArray.length > 0) {
-                filter.tags = { $in: tagArray };
-            }
+        if (search) {
+            filter.$or = [
+                { title: { $regex: search, $options: 'i' } },
+                { description: { $regex: search, $options: 'i' } }
+            ];
         }
 
-        if (search) {
-            filter.$and = filter.$and || [];
-            filter.$and.push({
-                $or: [
-                    { title: { $regex: search, $options: 'i' } },
-                    { description: { $regex: search, $options: 'i' } },
-                    { category: { $regex: search, $options: 'i' } },
-                    { tags: { $in: [new RegExp(search, 'i')] } }
-                ]
-            });
-        }
+        console.log('Using filter:', JSON.stringify(filter, null, 2));
 
         const skip = (parseInt(page) - 1) * parseInt(limit);
 
-        const [quizzes, total] = await Promise.all([
-            Quiz.find(filter)
-                .populate("course", "title slug")
-                .populate("testSeries", "title slug")
-                .populate("creator", "username fullName")
-                .sort({ createdAt: -1 })
-                .skip(skip)
-                .limit(parseInt(limit)),
-            Quiz.countDocuments(filter)
-        ]);
+        const quizzes = await Quiz.find(filter)
+            .populate("testSeries", "title slug")
+            .populate("creator", "username fullName")
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(parseInt(limit));
+
+        const total = await Quiz.countDocuments(filter);
+
+        console.log('Found quizzes:', quizzes.length, 'Total:', total);
 
         const pagination = {
             page: parseInt(page),
@@ -698,7 +685,12 @@ const getPublishedQuizzes = asyncHandler(async (req, res) => {
             new ApiResponse(200, { quizzes, pagination }, "Published quizzes fetched successfully")
         );
     } catch (error) {
-        throw new ApiError(500, "Failed to fetch published quizzes");
+        console.error('Error in getPublishedQuizzes:', error);
+        return res.status(500).json({
+            success: false,
+            message: "Failed to fetch published quizzes",
+            error: error.message
+        });
     }
 });
 

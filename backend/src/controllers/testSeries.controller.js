@@ -62,6 +62,7 @@ const createTestSeries = asyncHandler(async (req, res) => {
             validUntil: validUntil || null,
             thumbnail: thumbnail || '',
             creator: req.user._id,
+            course: req.body.course || null,
             isPublished: false
         });
 
@@ -83,7 +84,7 @@ const createTestSeries = asyncHandler(async (req, res) => {
  */
 const getAllTestSeries = asyncHandler(async (req, res) => {
     try {
-        const { category, published, difficulty, examType, subject, search } = req.query;
+        const { category, published, difficulty, examType, subject, search, course } = req.query;
 
         const filter = {};
 
@@ -93,6 +94,7 @@ const getAllTestSeries = asyncHandler(async (req, res) => {
         if (difficulty) filter.difficulty = difficulty;
         if (examType) filter.examType = examType;
         if (subject) filter.subject = subject;
+        if (course) filter.course = course;
         if (search) {
             filter.$or = [
                 { title: { $regex: search, $options: 'i' } },
@@ -102,6 +104,7 @@ const getAllTestSeries = asyncHandler(async (req, res) => {
 
         const testSeries = await TestSeries.find(filter)
             .populate("creator", "username fullName")
+            .populate("course", "title")
             .populate("quizzes", "title description timeLimit questions")
             .sort({ createdAt: -1 });
 

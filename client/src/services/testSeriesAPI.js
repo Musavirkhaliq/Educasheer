@@ -18,17 +18,30 @@ export const testSeriesAPI = {
 
   // Get published test series (public)
   getPublishedTestSeries: async (filters = {}) => {
-    const params = new URLSearchParams();
-    Object.keys(filters).forEach(key => {
-      if (filters[key]) {
-        params.append(key, filters[key]);
+    try {
+      const params = new URLSearchParams();
+      Object.keys(filters).forEach(key => {
+        if (filters[key]) {
+          params.append(key, filters[key]);
+        }
+      });
+
+      const queryString = params.toString();
+      const url = queryString ? `/api/public/test-series?${queryString}` : '/api/public/test-series';
+
+      // Use direct axios call instead of customFetch for public endpoints
+      const response = await fetch(url);
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to fetch test series');
       }
-    });
-
-    const queryString = params.toString();
-    const url = queryString ? `../public/test-series?${queryString}` : '../public/test-series';
-
-    return await customFetch.get(url);
+      
+      return { data };
+    } catch (error) {
+      console.error('Error fetching published test series:', error);
+      return { data: { data: [] } };
+    }
   },
 
   // Get test series by ID

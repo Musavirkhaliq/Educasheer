@@ -294,9 +294,9 @@ const submitQuizAttempt = asyncHandler(async (req, res) => {
             isPassed
         });
 
-        // Update course progress
+        // Update course progress (if quiz belongs to a course through test series)
         try {
-            await updateCourseProgressForQuiz(userId, quiz.course, quiz._id, percentage);
+            await updateCourseProgressForQuiz(userId, quiz._id, percentage);
         } catch (courseProgressError) {
             console.error("Error updating course progress:", courseProgressError);
             // Continue with quiz submission even if course progress fails

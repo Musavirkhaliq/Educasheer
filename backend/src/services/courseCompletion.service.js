@@ -1,6 +1,7 @@
 import { Course } from "../models/course.model.js";
 import { User } from "../models/user.model.js";
 import { Quiz } from "../models/quiz.model.js";
+import { TestSeries } from "../models/testSeries.model.js";
 import { awardPoints, awardBadge, updateChallengeProgress } from "./gamification.service.js";
 import mongoose from "mongoose";
 
@@ -97,8 +98,10 @@ export const updateCourseProgressForVideo = async (userId, courseId, videoId) =>
       courseProgress.lastActivity = new Date();
       
       // Calculate new progress percentage
-      // Get total quizzes for this course
-      const totalQuizzes = await Quiz.countDocuments({ course: courseId });
+      // Get total quizzes for this course (through test series)
+      const courseTestSeries = await TestSeries.find({ course: courseId });
+      const testSeriesIds = courseTestSeries.map(ts => ts._id);
+      const totalQuizzes = await Quiz.countDocuments({ testSeries: { $in: testSeriesIds } });
       const totalItems = course.videos.length + totalQuizzes;
       const completedItems = courseProgress.completedVideos.length + courseProgress.completedQuizzes.length;
       courseProgress.progress = Math.round((completedItems / totalItems) * 100);
@@ -188,24 +191,34 @@ export const updateCourseProgressForVideo = async (userId, courseId, videoId) =>
 /**
  * Update course progress when a quiz is completed
  * @param {string} userId - User ID
- * @param {string} courseId - Course ID
  * @param {string} quizId - Quiz ID
  * @param {number} score - Quiz score (percentage)
- * @returns {Promise<Object>} - Updated course progress
+ * @returns {Promise<Object>} - Updated course progress or null if no course associated
  */
-export const updateCourseProgressForQuiz = async (userId, courseId, quizId, score) => {
+export const updateCourseProgressForQuiz = async (userId, quizId, score) => {
   try {
-    // Find the course
-    const course = await Course.findById(courseId);
-    if (!course) {
-      throw new Error(`Course with ID ${courseId} not found`);
+    // Find the quiz and populate test series with course
+    const quiz = await Quiz.findById(quizId).populate({
+      path: 'testSeries',
+      populate: {
+        path: 'course',
+        model: 'Course'
+      }
+    });
+    
+    if (!quiz) {
+      throw new Error(`Quiz with ID ${quizId} not found`);
     }
 
-    // Check if quiz belongs to this course by finding the quiz and verifying its course field
-    const quiz = await Quiz.findById(quizId);
-    if (!quiz || quiz.course.toString() !== courseId) {
-      throw new Error(`Quiz with ID ${quizId} does not belong to course with ID ${courseId}`);
+    // Check if quiz belongs to a test series that has a course
+    if (!quiz.testSeries || !quiz.testSeries.course) {
+      // Quiz belongs to a standalone test series (no course), so no course progress to update
+      console.log(`Quiz ${quizId} belongs to standalone test series, no course progress to update`);
+      return null;
     }
+
+    const courseId = quiz.testSeries.course._id.toString();
+    const course = quiz.testSeries.course;
 
     // Find or create course progress
     let courseProgress = await CourseProgress.findOne({ user: userId, course: courseId });
@@ -232,8 +245,10 @@ export const updateCourseProgressForQuiz = async (userId, courseId, quizId, scor
       courseProgress.lastActivity = new Date();
       
       // Calculate new progress percentage
-      // Get total quizzes for this course
-      const totalQuizzes = await Quiz.countDocuments({ course: courseId });
+      // Get total quizzes for this course (through test series)
+      const courseTestSeries = await TestSeries.find({ course: courseId });
+      const testSeriesIds = courseTestSeries.map(ts => ts._id);
+      const totalQuizzes = await Quiz.countDocuments({ testSeries: { $in: testSeriesIds } });
       const totalItems = course.videos.length + totalQuizzes;
       const completedItems = courseProgress.completedVideos.length + courseProgress.completedQuizzes.length;
       courseProgress.progress = Math.round((completedItems / totalItems) * 100);

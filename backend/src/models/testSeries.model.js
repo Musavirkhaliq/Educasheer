@@ -34,6 +34,11 @@ const testSeriesSchema = new Schema({
         ref: "User",
         required: true
     },
+    course: {
+        type: Schema.Types.ObjectId,
+        ref: "Course",
+        required: false
+    },
     category: {
         type: String,
         required: false,

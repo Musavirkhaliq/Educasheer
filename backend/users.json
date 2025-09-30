@@ -1,28 +1,41 @@
 [
-  {
-    "username": "aamina",
-    "email": "aamina@educasheer.in",
-    "fullName": "Aamina",
-    "password": "Educasheer@123",
-    "role": "learner",
-    "tutorStatus": "none",
-    "authProvider": "local",
-    "isEmailVerified": false,
-    "avatar": "https://example.com/avatar.jpg",
-    "coverImage": "https://example.com/cover.jpg",
-    "currentLevel": 1
-  },
-  {
-    "username": "subeena",
-    "email": "Subeena@educasheer.in",
-    "fullName": "Subeena",
-    "password": "Educasheer@123",
-    "role": "learner",
-    "tutorStatus": "none",
-    "authProvider": "local",
-    "isEmailVerified": false,
-    "avatar": "https://example.com/avatar.jpg",
-    "coverImage": "https://example.com/cover.jpg",
-    "currentLevel": 1
-  }
+{
+"username": "talib_manzoor_ganaie",
+"email": "talib.manzoor.ganaie@educasheer.in",
+"fullName": "Talib Manzoor Ganaie",
+"password": "Educasheer@123",
+"role": "learner",
+"tutorStatus": "none",
+"authProvider": "local",
+"isEmailVerified": true,
+"avatar": "https://educasheer.in/avatar.jpg",
+"coverImage": "https://educasheer.in/cover.jpg",
+"currentLevel": 1
+},
+{
+"username": "suhaib_parvaiz_najar",
+"email": "suhaib.parvaiz.najar@educasheer.in",
+"fullName": "Suhaib Parvaiz Najar",
+"password": "Educasheer@123",
+"role": "learner",
+"tutorStatus": "none",
+"authProvider": "local",
+"isEmailVerified": true,
+"avatar": "https://educasheer.in/avatar.jpg",
+"coverImage": "https://educasheer.in/cover.jpg",
+"currentLevel": 1
+},
+{
+"username": "mohsin_parvez",
+"email": "mohsin.parvez@educasheer.in",
+"fullName": "Mohsin Parvez",
+"password": "Educasheer@123",
+"role": "learner",
+"tutorStatus": "none",
+"authProvider": "local",
+"isEmailVerified": true,
+"avatar": "https://educasheer.in/avatar.jpg",
+"coverImage": "https://educasheer.in/cover.jpg",
+"currentLevel": 1
+}
 ]
