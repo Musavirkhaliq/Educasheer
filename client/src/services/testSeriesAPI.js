@@ -49,6 +49,11 @@ export const testSeriesAPI = {
     return await customFetch.get(`/test-series/${testSeriesId}`);
   },
 
+  // Get test series by course ID
+  getTestSeriesByCourse: async (courseId) => {
+    return await customFetch.get(`/test-series?course=${courseId}`);
+  },
+
   // Create new test series
   createTestSeries: async (testSeriesData) => {
     return await customFetch.post('/test-series', testSeriesData);

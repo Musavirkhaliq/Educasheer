@@ -1,17 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { BiTime, BiCategory } from 'react-icons/bi';
-import { FiVideo } from 'react-icons/fi';
-import { FaEdit, FaPlay, FaChalkboardTeacher, FaSignal, FaLock, FaMapMarkerAlt, FaCalendarAlt, FaClock, FaBook, FaListUl, FaClipboardList } from 'react-icons/fa';
-import QRCodeGenerator from './QRCodeGenerator';
-import AttendanceRecords from './AttendanceRecords';
-import StudentAttendance from './StudentAttendance';
+import {
+  BiTime,
+  BiBook,
+  BiLock,
+  BiPlay,
+  BiEdit
+} from 'react-icons/bi';
+import {
+  HiOutlineAcademicCap,
+  HiOutlineUsers,
+  HiOutlineClock,
+  HiOutlineLocationMarker,
+  HiOutlineCalendar,
+  HiOutlineBookOpen,
+  HiOutlineVideoCamera,
+  HiOutlineCheckCircle
+} from 'react-icons/hi';
 import { useAuth } from '../context/AuthContext';
 import { CommentSection } from './comments';
-import DiscussionForum from './DiscussionForum';
 import CourseMaterials from './CourseMaterials';
-import CourseQuizzes from './CourseQuizzes';
+import CourseTestSeries from './CourseTestSeries';
 import customFetch from '../utils/customFetch';
 
 const CourseDetail = () => {
@@ -277,88 +286,186 @@ const CourseDetail = () => {
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 transition-all duration-300 hover:shadow-xl">
-      {/* Course Header with Background Image */}
-      <div className="relative h-48 md:h-64 w-full overflow-hidden">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{
-            backgroundImage: `url(${course.thumbnail})`,
-            filter: 'blur(2px)',
-            transform: 'scale(1.1)'
-          }}
-        ></div>
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black/30"></div>
-        <div className="absolute inset-0 flex items-center justify-between p-6 md:p-8">
-          <div className="max-w-3xl">
-            <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 drop-shadow-md">{course.title}</h1>
-            <div className="flex flex-wrap gap-3 items-center">
-              <span className="bg-[#00bcd4]/90 text-white px-3 py-1 rounded-full text-sm backdrop-blur-sm">
-                {course.level}
-              </span>
-              <span className="bg-white/20 text-white px-3 py-1 rounded-full text-sm backdrop-blur-sm">
-                {course.category}
-              </span>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      {/* Modern Hero Section */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700">
+        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
+            {/* Course Info */}
+            <div className="lg:col-span-2">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="bg-white/20 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-medium">
+                  {course.category}
+                </span>
+                <span className="bg-emerald-500/90 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-medium">
+                  {course.level}
+                </span>
+                {course.courseType === 'offline' && (
+                  <span className="bg-orange-500/90 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-medium">
+                    Offline
+                  </span>
+                )}
+              </div>
+
+              <h1 className="text-4xl lg:text-5xl font-bold text-white mb-4 leading-tight">
+                {course.title}
+              </h1>
+
+              <p className="text-xl text-blue-100 mb-6 leading-relaxed">
+                {course.description?.substring(0, 200)}...
+              </p>
+
+              {/* Instructor Info */}
+              <div className="flex items-center gap-4 bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                <img
+                  src={course.creator?.avatar}
+                  alt={course.creator?.fullName}
+                  className="w-12 h-12 rounded-full object-cover border-2 border-white/30"
+                />
+                <div>
+                  <p className="text-white font-medium">{course.creator?.fullName}</p>
+                  <p className="text-blue-200 text-sm">Course Instructor</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Course Stats Card */}
+            <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl">
+              <div className="text-center mb-6">
+                <div className="text-3xl font-bold text-gray-900 mb-1">
+                  ₹{course.price.toFixed(2)}
+                  {course.originalPrice > course.price && (
+                    <span className="text-lg text-gray-400 line-through ml-2">
+                      ₹{course.originalPrice.toFixed(2)}
+                    </span>
+                  )}
+                </div>
+                {course.price === 0 && (
+                  <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
+                    Free Course
+                  </span>
+                )}
+              </div>
+
+              {/* Quick Stats */}
+              <div className="space-y-3 mb-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <HiOutlineVideoCamera className="w-5 h-5" />
+                    <span className="text-sm">Videos</span>
+                  </div>
+                  <span className="font-medium">{course.videos?.length || 0}</span>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <HiOutlineClock className="w-5 h-5" />
+                    <span className="text-sm">Duration</span>
+                  </div>
+                  <span className="font-medium">{calculateTotalDuration()}</span>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <HiOutlineUsers className="w-5 h-5" />
+                    <span className="text-sm">Students</span>
+                  </div>
+                  <span className="font-medium">{course.enrolledStudents?.length || 0}</span>
+                </div>
+              </div>
+
+              {/* Enrollment Button */}
+              {isEnrolled() ? (
+                <div className="space-y-3">
+                  <button className="w-full bg-green-500 text-white py-3 px-4 rounded-xl font-medium flex items-center justify-center gap-2 cursor-default">
+                    <HiOutlineCheckCircle className="w-5 h-5" />
+                    Enrolled
+                  </button>
+                  {course.courseType !== 'offline' && course.videos?.length > 0 && (
+                    <Link
+                      to={`/courses/${course._id}/video/${course.videos[0]._id}`}
+                      className="w-full bg-blue-600 text-white py-3 px-4 rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors"
+                    >
+                      <BiPlay className="w-5 h-5" />
+                      Continue Learning
+                    </Link>
+                  )}
+                </div>
+              ) : (
+                <button
+                  onClick={handleEnroll}
+                  disabled={enrolling || !course.isPublished}
+                  className={`w-full py-3 px-4 rounded-xl font-medium flex items-center justify-center gap-2 transition-colors ${!course.isPublished
+                    ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                    }`}
+                >
+                  {enrolling ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      Enrolling...
+                    </>
+                  ) : (
+                    <>
+                      <HiOutlineAcademicCap className="w-5 h-5" />
+                      Enroll Now
+                    </>
+                  )}
+                </button>
+              )}
+
+              {canEdit() && (
+                <Link
+                  to={`/courses/edit/${course._id}`}
+                  className="w-full mt-3 bg-gray-100 text-gray-700 py-3 px-4 rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors"
+                >
+                  <BiEdit className="w-5 h-5" />
+                  Edit Course
+                </Link>
+              )}
             </div>
           </div>
-
-          {canEdit() && (
-            <Link
-              to={`/courses/edit/${course._id}`}
-              className="bg-white/20 text-white p-2 rounded-full hover:bg-white/30 backdrop-blur-sm transition-all duration-300"
-            >
-              <FaEdit className="w-5 h-5" />
-            </Link>
-          )}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-6">
-        {/* Course Info Section */}
-        <div className="lg:col-span-2">
-          {!course.isPublished && (
-            <div className="bg-yellow-50 text-yellow-800 px-4 py-3 rounded-lg mb-6 border border-yellow-200 flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-              </svg>
-              <span>This course is not published yet. Only you can see it.</span>
-            </div>
-          )}
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        {!course.isPublished && (
+          <div className="bg-amber-50 border border-amber-200 text-amber-800 px-6 py-4 rounded-2xl mb-12 flex items-center gap-3 shadow-sm">
+            <div className="w-5 h-5 text-amber-500">⚠️</div>
+            <span className="font-medium">This course is not published yet. Only you can see it.</span>
+          </div>
+        )}
 
-          <div className="flex items-center gap-4 mb-6 p-4 bg-gray-50 rounded-xl border border-gray-100">
-            <img
-              src={course.creator?.avatar}
-              alt={course.creator?.fullName}
-              className="w-14 h-14 rounded-full object-cover border-2 border-[#00bcd4]"
-            />
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="font-medium text-gray-900">{course.creator?.fullName}</h3>
-                <span className="bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full text-xs">Instructor</span>
+        <div className="space-y-12">
+          {/* Course Description */}
+          <div className="bg-white rounded-3xl p-10 shadow-lg border border-gray-100">
+            <div className="flex items-center gap-4 mb-8">
+              <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-3 rounded-2xl shadow-lg">
+                <HiOutlineBookOpen className="w-6 h-6 text-white" />
               </div>
-              <p className="text-sm text-gray-500">@{course.creator?.username}</p>
+              <h2 className="text-3xl font-bold text-gray-900">About This Course</h2>
+            </div>
+            <div className="prose prose-lg prose-gray max-w-none">
+              <p className="text-gray-700 leading-relaxed whitespace-pre-line text-lg">{course.description}</p>
             </div>
           </div>
 
-          <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4 inline-block relative">
-              About This Course
-              <span className="absolute bottom-0 left-0 w-1/3 h-1 bg-[#00bcd4] rounded-full"></span>
-            </h2>
-            <p className="text-gray-700 whitespace-pre-line leading-relaxed">{course.description}</p>
-          </div>
-
+          {/* Topics/Tags */}
           {course.tags?.length > 0 && (
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold mb-4 inline-block relative">
-                Topics Covered
-                <span className="absolute bottom-0 left-0 w-1/3 h-1 bg-[#00bcd4] rounded-full"></span>
-              </h2>
-              <div className="flex flex-wrap gap-2">
+            <div className="bg-white rounded-3xl p-10 shadow-lg border border-gray-100">
+              <div className="flex items-center gap-4 mb-8">
+                <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 p-3 rounded-2xl shadow-lg">
+                  <BiBook className="w-6 h-6 text-white" />
+                </div>
+                <h2 className="text-3xl font-bold text-gray-900">Topics Covered</h2>
+              </div>
+              <div className="flex flex-wrap gap-4">
                 {course.tags.map((tag, index) => (
                   <span
                     key={index}
-                    className="bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm border border-gray-200 hover:bg-[#00bcd4]/10 hover:border-[#00bcd4]/30 transition-colors duration-200"
+                    className="bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 px-6 py-3 rounded-2xl text-sm font-semibold border border-blue-100 hover:from-blue-100 hover:to-indigo-100 transition-all duration-300 shadow-sm hover:shadow-md"
                   >
                     {tag}
                   </span>
@@ -367,529 +474,440 @@ const CourseDetail = () => {
             </div>
           )}
 
-          {/* Offline Course Details Section */}
+          {/* Offline Course Details */}
           {course.courseType === 'offline' && (
-            <div className="mt-8">
-              <h2 className="text-xl font-semibold mb-6 inline-block relative">
-                Offline Course Details
-                <span className="absolute bottom-0 left-0 w-1/3 h-1 bg-[#00bcd4] rounded-full"></span>
-              </h2>
+            <div className="bg-white rounded-3xl p-10 shadow-lg border border-gray-100">
+              <div className="flex items-center gap-4 mb-8">
+                <div className="bg-gradient-to-br from-orange-500 to-orange-600 p-3 rounded-2xl shadow-lg">
+                  <HiOutlineLocationMarker className="w-6 h-6 text-white" />
+                </div>
+                <h2 className="text-3xl font-bold text-gray-900">Offline Course Details</h2>
+              </div>
 
-              <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow transition-all duration-300 mb-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                  <div className="flex items-start gap-3">
-                    <div className="bg-[#00bcd4]/10 p-2 rounded-lg flex-shrink-0">
-                      <FaMapMarkerAlt className="w-5 h-5 text-[#00bcd4]" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="flex items-start gap-4">
+                    <div className="bg-blue-100 p-3 rounded-xl">
+                      <HiOutlineLocationMarker className="w-6 h-6 text-blue-600" />
                     </div>
                     <div>
-                      <h3 className="font-medium text-gray-700">Location</h3>
-                      <p className="text-gray-600 mt-1">{course.location}</p>
+                      <h3 className="font-semibold text-gray-900 mb-1">Location</h3>
+                      <p className="text-gray-600">{course.location}</p>
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-3">
-                    <div className="bg-[#00bcd4]/10 p-2 rounded-lg flex-shrink-0">
-                      <FaClock className="w-5 h-5 text-[#00bcd4]" />
+                  <div className="flex items-start gap-4">
+                    <div className="bg-green-100 p-3 rounded-xl">
+                      <HiOutlineClock className="w-6 h-6 text-green-600" />
                     </div>
                     <div>
-                      <h3 className="font-medium text-gray-700">Schedule</h3>
-                      <p className="text-gray-600 mt-1">{course.schedule}</p>
+                      <h3 className="font-semibold text-gray-900 mb-1">Schedule</h3>
+                      <p className="text-gray-600">{course.schedule}</p>
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-3">
-                    <div className="bg-[#00bcd4]/10 p-2 rounded-lg flex-shrink-0">
-                      <FaCalendarAlt className="w-5 h-5 text-[#00bcd4]" />
+                  <div className="flex items-start gap-4">
+                    <div className="bg-purple-100 p-3 rounded-xl">
+                      <HiOutlineUsers className="w-6 h-6 text-purple-600" />
                     </div>
                     <div>
-                      <h3 className="font-medium text-gray-700">Start Date</h3>
-                      <p className="text-gray-600 mt-1">{new Date(course.startDate).toLocaleDateString()}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3">
-                    <div className="bg-[#00bcd4]/10 p-2 rounded-lg flex-shrink-0">
-                      <FaCalendarAlt className="w-5 h-5 text-[#00bcd4]" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-gray-700">End Date</h3>
-                      <p className="text-gray-600 mt-1">{new Date(course.endDate).toLocaleDateString()}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3 md:col-span-2">
-                    <div className="bg-[#00bcd4]/10 p-2 rounded-lg flex-shrink-0">
-                      <FaChalkboardTeacher className="w-5 h-5 text-[#00bcd4]" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-gray-700">Class Size</h3>
-                      <p className="text-gray-600 mt-1">
-                        {course.enrolledStudents?.length || 0} / {course.maxStudents || 20} students enrolled
+                      <h3 className="font-semibold text-gray-900 mb-1">Class Size</h3>
+                      <p className="text-gray-600">
+                        {course.enrolledStudents?.length || 0} / {course.maxStudents || 20} students
                       </p>
+                      <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                        <div
+                          className="bg-purple-600 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${((course.enrolledStudents?.length || 0) / (course.maxStudents || 20)) * 100}%` }}
+                        ></div>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Enrollment button for offline courses */}
-                {!isEnrolled() && !canEdit() && course.isPublished && (
-                  <div className="mt-4 mb-2">
-                    <button
-                      onClick={handleEnroll}
-                      disabled={enrolling}
-                      className="w-full bg-[#00bcd4] text-white py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-[#01427a] transition-all duration-300 shadow-sm hover:shadow"
-                    >
-                      {enrolling ? (
-                        <>
-                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                          Enrolling...
-                        </>
-                      ) : (
-                        <>
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
-                          </svg>
-                          Enroll in this Offline Course
-                        </>
-                      )}
-                    </button>
-                  </div>
-                )}
-
-                {/* Enrolled Student Information for Offline Courses */}
-                {isEnrolled() && (
-                  <div className="mt-4 mb-2 bg-green-50 border border-green-200 rounded-lg p-4">
-                    <div className="flex items-center gap-2 text-green-700 mb-3">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
-                      <span className="font-medium">You are enrolled in this course</span>
+                <div className="space-y-4">
+                  <div className="flex items-start gap-4">
+                    <div className="bg-orange-100 p-3 rounded-xl">
+                      <HiOutlineCalendar className="w-6 h-6 text-orange-600" />
                     </div>
-
-                    <div className="space-y-3">
-                      <div className="flex items-start gap-2">
-                        <div className="bg-green-100 p-1 rounded-full mt-0.5">
-                          <FaCalendarAlt className="w-3 h-3 text-green-700" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-gray-700">Next Class</p>
-                          <p className="text-sm text-gray-600">
-                            {new Date() < new Date(course.startDate)
-                              ? `Starting on ${new Date(course.startDate).toLocaleDateString()}`
-                              : `Next session according to schedule: ${course.schedule}`
-                            }
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start gap-2">
-                        <div className="bg-green-100 p-1 rounded-full mt-0.5">
-                          <FaMapMarkerAlt className="w-3 h-3 text-green-700" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-gray-700">Location</p>
-                          <p className="text-sm text-gray-600">{course.location}</p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start gap-2">
-                        <div className="bg-green-100 p-1 rounded-full mt-0.5">
-                          <FaChalkboardTeacher className="w-3 h-3 text-green-700" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-gray-700">Instructor Contact</p>
-                          <p className="text-sm text-gray-600">{course.creator?.fullName} (@{course.creator?.username})</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 pt-3 border-t border-green-200">
-                      <p className="text-sm text-gray-700 mb-2">Important Notes:</p>
-                      <ul className="text-sm text-gray-600 list-disc list-inside space-y-1">
-                        <li>Please arrive 10 minutes before the scheduled time</li>
-                        <li>Bring necessary materials as mentioned in the syllabus</li>
-                        <li>Contact the instructor if you need to miss a class</li>
-                      </ul>
+                    <div>
+                      <h3 className="font-semibold text-gray-900 mb-1">Start Date</h3>
+                      <p className="text-gray-600">{new Date(course.startDate).toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}</p>
                     </div>
                   </div>
-                )}
+
+                  <div className="flex items-start gap-4">
+                    <div className="bg-red-100 p-3 rounded-xl">
+                      <HiOutlineCalendar className="w-6 h-6 text-red-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900 mb-1">End Date</h3>
+                      <p className="text-gray-600">{new Date(course.endDate).toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}</p>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              {/* Course Syllabus/Modules Section */}
-              {course.modules && course.modules.length > 0 && (
-                <div className="mt-8">
-                  <h2 className="text-xl font-semibold mb-6 inline-block relative">
-                    Course Syllabus
-                    <span className="absolute bottom-0 left-0 w-1/3 h-1 bg-[#00bcd4] rounded-full"></span>
-                  </h2>
+              {/* Enrollment Status for Offline Courses */}
+              {isEnrolled() && (
+                <div className="mt-8 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="bg-green-100 p-2 rounded-full">
+                      <HiOutlineCheckCircle className="w-6 h-6 text-green-600" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-green-800">You're Enrolled!</h3>
+                  </div>
 
-                  <div className="space-y-4">
-                    {course.modules.map((module, moduleIndex) => (
-                      <div key={moduleIndex} className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm hover:shadow transition-all duration-300">
-                        <div className="flex items-start gap-3 mb-3">
-                          <div className="bg-[#00bcd4]/10 p-2 rounded-lg flex-shrink-0">
-                            <FaBook className="w-5 h-5 text-[#00bcd4]" />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div className="bg-white/60 rounded-xl p-4">
+                      <h4 className="font-medium text-gray-900 mb-2">Next Class</h4>
+                      <p className="text-gray-700 text-sm">
+                        {new Date() < new Date(course.startDate)
+                          ? `Starting ${new Date(course.startDate).toLocaleDateString()}`
+                          : `As per schedule: ${course.schedule}`
+                        }
+                      </p>
+                    </div>
+
+                    <div className="bg-white/60 rounded-xl p-4">
+                      <h4 className="font-medium text-gray-900 mb-2">Instructor</h4>
+                      <p className="text-gray-700 text-sm">{course.creator?.fullName}</p>
+                    </div>
+                  </div>
+
+                  <div className="bg-white/60 rounded-xl p-4">
+                    <h4 className="font-medium text-gray-900 mb-2">Important Reminders</h4>
+                    <ul className="text-sm text-gray-700 space-y-1">
+                      <li>• Arrive 10 minutes early</li>
+                      <li>• Bring required materials</li>
+                      <li>• Contact instructor for absences</li>
+                    </ul>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Course Syllabus/Modules */}
+          {course.modules && course.modules.length > 0 && (
+            <div className="bg-white rounded-3xl p-10 shadow-lg border border-gray-100">
+              <div className="flex items-center gap-4 mb-8">
+                <div className="bg-gradient-to-br from-green-500 to-green-600 p-3 rounded-2xl shadow-lg">
+                  <HiOutlineBookOpen className="w-6 h-6 text-white" />
+                </div>
+                <h2 className="text-3xl font-bold text-gray-900">Course Syllabus</h2>
+              </div>
+
+              <div className="space-y-6">
+                {course.modules.map((module, moduleIndex) => (
+                  <div key={moduleIndex} className="border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow">
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 border-b border-gray-200">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-start gap-4">
+                          <div className="bg-blue-100 p-3 rounded-xl">
+                            <span className="text-blue-600 font-bold text-lg">{moduleIndex + 1}</span>
                           </div>
-                          <div className="flex-grow">
-                            <h3 className="font-medium text-gray-800">Module {moduleIndex + 1}: {module.title}</h3>
+                          <div>
+                            <h3 className="text-xl font-semibold text-gray-900 mb-2">{module.title}</h3>
                             {module.duration && (
-                              <div className="flex items-center gap-1 text-sm text-gray-500 mt-1">
+                              <div className="flex items-center gap-2 text-gray-600">
                                 <BiTime className="w-4 h-4" />
-                                <span>{module.duration}</span>
+                                <span className="text-sm">{module.duration}</span>
                               </div>
                             )}
                           </div>
                         </div>
+                      </div>
+                    </div>
 
-                        <div className="ml-12">
-                          <p className="text-gray-600 mb-3">{module.description}</p>
+                    <div className="p-6">
+                      <p className="text-gray-700 mb-4 leading-relaxed">{module.description}</p>
 
-                          {module.topics && module.topics.length > 0 && (
-                            <div className="mt-3">
-                              <h4 className="font-medium text-gray-700 flex items-center gap-2 mb-2">
-                                <FaListUl className="w-4 h-4 text-[#00bcd4]" />
-                                Topics Covered:
-                              </h4>
-                              <ul className="list-disc list-inside space-y-1 text-gray-600 ml-2">
-                                {module.topics.map((topic, topicIndex) => (
-                                  <li key={topicIndex}>{topic}</li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
+                      {module.topics && module.topics.length > 0 && (
+                        <div>
+                          <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                            <BiBook className="w-4 h-4 text-blue-600" />
+                            Topics Covered
+                          </h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            {module.topics.map((topic, topicIndex) => (
+                              <div key={topicIndex} className="flex items-center gap-2 text-gray-600">
+                                <div className="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
+                                <span className="text-sm">{topic}</span>
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
-
-              {/* Course Materials Section for Enrolled Students */}
-              {isEnrolled() && (
-                <>
-                  <div className="mt-8">
-                    <h2 className="text-xl font-semibold mb-6 inline-block relative">
-                      Course Materials
-                      <span className="absolute bottom-0 left-0 w-1/3 h-1 bg-[#00bcd4] rounded-full"></span>
-                    </h2>
-
-                    <CourseMaterials
-                      courseId={course._id}
-                      isInstructor={canEdit()}
-                    />
-                  </div>
-
-                  {/* Class Discussion Section */}
-                  <div className="mt-8">
-                    <h2 className="text-xl font-semibold mb-6 inline-block relative">
-                      Class Discussion
-                      <span className="absolute bottom-0 left-0 w-1/3 h-1 bg-[#00bcd4] rounded-full"></span>
-                    </h2>
-
-                    <DiscussionForum courseId={course._id} />
-                  </div>
-
-                  {/* Quizzes & Exams Section */}
-                  <div className="mt-8">
-                    <h2 className="text-xl font-semibold mb-6 inline-block relative">
-                      Quizzes & Exams
-                      <span className="absolute bottom-0 left-0 w-1/3 h-1 bg-[#00bcd4] rounded-full"></span>
-                    </h2>
-
-                    <CourseQuizzes
-                      courseId={course._id}
-                      courseName={course.title}
-                      isInstructor={canEdit()}
-                    />
-                  </div>
-
-                  {/* Attendance Tracking Section */}
-                  <div className="mt-8">
-                    <h2 className="text-xl font-semibold mb-6 inline-block relative">
-                      Attendance
-                      <span className="absolute bottom-0 left-0 w-1/3 h-1 bg-[#00bcd4] rounded-full"></span>
-                    </h2>
-
-                    {/* Show different attendance components based on user role */}
-                    {canEdit() ? (
-                      <div className="space-y-8">
-                        {/* QR Code Generator for instructors */}
-                        <QRCodeGenerator courseId={course._id} courseName={course.title} />
-
-                        {/* Attendance Records for instructors */}
-                        <AttendanceRecords
-                          courseId={course._id}
-                          courseName={course.title}
-                          enrolledStudents={course.enrolledStudents}
-                        />
-                      </div>
-                    ) : (
-                      /* Student Attendance View */
-                      <StudentAttendance courseId={course._id} courseName={course.title} />
-                    )}
-                  </div>
-                </>
-              )}
+                ))}
+              </div>
             </div>
           )}
 
-          {/* Online Course Content Preview Section */}
-          {course.courseType !== 'offline' && course.videos?.length > 0 && (
-            <div className="mt-8">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-semibold inline-block relative">
-                  Course Content
-                  <span className="absolute bottom-0 left-0 w-1/3 h-1 bg-[#00bcd4] rounded-full"></span>
-                </h2>
-
-                {(isEnrolled() || canEdit()) && course.videos && course.videos.length > 0 && (
-                  <Link
-                    to={`/courses/${course._id}/video/${course.videos[0]._id}`}
-                    className="bg-[#00bcd4] text-white px-5 py-2.5 rounded-lg flex items-center gap-2 hover:bg-[#01427a] transition-all duration-300 shadow-sm hover:shadow"
-                  >
-                    <FaPlay className="w-4 h-4" />
-                    Start Learning
-                  </Link>
-                )}
+          {/* Course Content Sections */}
+          <div className="space-y-16">
+            {/* Course Content Section */}
+            <section className="border-b border-gray-200 pb-16">
+              <div className="flex items-center gap-4 mb-8">
+                <div className="bg-blue-600 p-3 rounded-xl">
+                  <HiOutlineVideoCamera className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-3xl font-bold text-gray-900">Course Content</h2>
+                  <p className="text-gray-600">Overview and learning structure</p>
+                </div>
               </div>
 
-              {/* Preview Video for Non-enrolled Users */}
-              {!isEnrolled() && !canEdit() && (
-                <div className="mb-8">
-                  <div className="aspect-w-16 aspect-h-9 bg-black rounded-xl overflow-hidden shadow-lg">
-                    <iframe
-                      src={`https://www.youtube.com/embed/${course.videos[0]?.videoId}`}
-                      title={course.videos[0]?.title}
-                      style={{ border: 'none' }}
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      className="w-full h-full"
-                    ></iframe>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Course Stats */}
+                <div className="lg:col-span-2 space-y-6">
+                  <div className="bg-blue-50 rounded-xl p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">What You'll Learn</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="flex items-center gap-3">
+                        <div className="bg-blue-600 p-2 rounded-lg">
+                          <HiOutlineVideoCamera className="w-4 h-4 text-white" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-900">{course.videos?.length || 0} Video Lessons</p>
+                          <p className="text-sm text-gray-600">Total duration: {calculateTotalDuration()}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <div className="bg-green-600 p-2 rounded-lg">
+                          <HiOutlineAcademicCap className="w-4 h-4 text-white" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-900">{course.level} Level</p>
+                          <p className="text-sm text-gray-600">Suitable for {course.level.toLowerCase()} learners</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <div className="bg-purple-600 p-2 rounded-lg">
+                          <HiOutlineUsers className="w-4 h-4 text-white" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-900">{course.enrolledStudents?.length || 0} Students</p>
+                          <p className="text-sm text-gray-600">Join the learning community</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <div className="bg-orange-600 p-2 rounded-lg">
+                          <HiOutlineBookOpen className="w-4 h-4 text-white" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-900">{course.category}</p>
+                          <p className="text-sm text-gray-600">Course category</p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <h3 className="text-lg font-medium mt-4">{course.videos[0]?.title}</h3>
-                  <p className="text-gray-600 text-sm mt-2">{course.videos[0]?.description}</p>
-                  <div className="mt-4 bg-yellow-50 border border-yellow-200 text-yellow-800 px-5 py-4 rounded-lg shadow-sm">
-                    <p className="font-medium flex items-center gap-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                        <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
-                      </svg>
-                      Preview Only
-                    </p>
-                    <p className="text-sm mt-1">Enroll in this course to access all {course.videos.length} videos.</p>
+
+                  {/* Course Features */}
+                  <div className="bg-white border border-gray-200 rounded-xl p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Course Features</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                        <span className="text-gray-700">
+                          {course.courseType === 'offline' ? 'In-person classes' : 'Online video lessons'}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+                        <span className="text-gray-700">Downloadable resources</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 bg-purple-600 rounded-full"></div>
+                        <span className="text-gray-700">Practice tests & quizzes</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 bg-orange-600 rounded-full"></div>
+                        <span className="text-gray-700">Community discussion</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 bg-red-600 rounded-full"></div>
+                        <span className="text-gray-700">Lifetime access</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 bg-indigo-600 rounded-full"></div>
+                        <span className="text-gray-700">Certificate of completion</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              )}
 
-              {/* Video List with Locked/Unlocked Status */}
-              <div className="bg-white rounded-xl p-5 mt-4 border border-gray-200 shadow-sm hover:shadow transition-all duration-300">
-                <h3 className="font-medium text-gray-800 mb-4 flex items-center gap-2">
-                  <FiVideo className="w-5 h-5 text-[#00bcd4]" />
-                  Course Videos ({course.videos.length})
-                </h3>
-                <ul className="divide-y divide-gray-100">
-                  {course.videos.map((video, index) => (
-                    <li key={video._id} className="group">
-                      {(isEnrolled() || canEdit()) ? (
-                        <Link
-                          to={`/courses/${course._id}/video/${video._id}`}
-                          className="flex items-start w-full text-left hover:bg-gray-50 p-3 rounded-lg transition-all duration-200 block"
-                        >
-                          <div className="flex-shrink-0 mt-1 text-[#00bcd4] group-hover:text-[#01427a] transition-colors duration-200">
-                            <FaPlay className="w-4 h-4" />
+                {/* Action Panel */}
+                <div className="space-y-6">
+                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Get Started</h3>
+
+                    {isEnrolled() ? (
+                      <div className="space-y-4">
+                        <div className="bg-green-100 border border-green-200 rounded-lg p-4">
+                          <div className="flex items-center gap-2 text-green-700 mb-2">
+                            <HiOutlineCheckCircle className="w-5 h-5" />
+                            <span className="font-semibold">Enrolled</span>
                           </div>
-                          <div className="ml-3 flex-grow">
-                            <p className="font-medium text-gray-800 group-hover:text-[#01427a] transition-colors duration-200">{video.title}</p>
-                            <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
-                              <span className="flex items-center gap-1">
-                                <BiTime className="w-4 h-4" />
-                                {video.duration}
+                          <p className="text-sm text-green-600">You have access to all course content</p>
+                        </div>
+
+                        {course.courseType !== 'offline' && course.videos?.length > 0 && (
+                          <Link
+                            to={`/courses/${course._id}/video/${course.videos[0]._id}`}
+                            className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 font-medium"
+                          >
+                            <BiPlay className="w-5 h-5" />
+                            Start Learning
+                          </Link>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-gray-900 mb-1">
+                            ₹{course.price.toFixed(2)}
+                            {course.originalPrice > course.price && (
+                              <span className="text-lg text-gray-400 line-through ml-2">
+                                ₹{course.originalPrice.toFixed(2)}
                               </span>
-                              <span className="text-xs bg-[#00bcd4]/10 text-[#00bcd4] px-2 py-0.5 rounded-full">Video {index + 1}</span>
-                            </div>
-                          </div>
-                        </Link>
-                      ) : (
-                        <div className="flex items-start w-full text-left p-3 rounded-lg">
-                          <div className="flex-shrink-0 mt-1 text-gray-400">
-                            {index === 0 ? (
-                              <FaPlay className="w-4 h-4 text-[#00bcd4]" />
-                            ) : (
-                              <FaLock className="w-4 h-4" />
                             )}
                           </div>
-                          <div className="ml-3 flex-grow">
-                            <p className={`font-medium ${index === 0 ? 'text-gray-800' : 'text-gray-500'}`}>
-                              {video.title}
-                            </p>
-                            <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
-                              <span className="flex items-center gap-1">
-                                <BiTime className="w-4 h-4" />
-                                {video.duration}
-                              </span>
-                              {index === 0 ? (
-                                <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Preview</span>
-                              ) : (
-                                <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">Locked</span>
-                              )}
-                            </div>
-                          </div>
+                          {course.price === 0 && (
+                            <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
+                              Free Course
+                            </span>
+                          )}
                         </div>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          )}
-        </div>
 
-        {/* Sidebar Section */}
-        <div className="lg:pl-6">
-          <div className="sticky top-20">
-            <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition-all duration-300">
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <span className="text-3xl font-bold text-[#01427a]">₹{course.price.toFixed(2)}</span>
-                    {course.originalPrice > course.price && (
-                      <span className="text-lg text-gray-400 line-through ml-2">₹{course.originalPrice.toFixed(2)}</span>
-                    )}
-                  </div>
-                  {course.price === 0 && (
-                    <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">Free</span>
-                  )}
-                </div>
-
-                {isEnrolled() ? (
-                  <div className="mb-6">
-                    <button
-                      className="w-full bg-green-500 text-white py-3.5 px-4 rounded-lg font-medium flex items-center justify-center gap-2 cursor-default shadow-sm"
-                      disabled
-                    >
-                      <FaPlay className="w-4 h-4" />
-                      Enrolled
-                    </button>
-                    {course.courseType !== 'offline' && course.videos && course.videos.length > 0 ? (
-                      <Link
-                        to={`/courses/${course._id}/video/${course.videos[0]._id}`}
-                        className="w-full mt-3 bg-[#00bcd4] text-white py-3.5 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-[#01427a] transition-all duration-300 shadow-sm hover:shadow"
-                      >
-                        <FaPlay className="w-4 h-4" />
-                        Continue Learning
-                      </Link>
-                    ) : (
-                      <button
-                        className="w-full mt-3 bg-[#00bcd4] text-white py-3.5 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-[#01427a] transition-all duration-300 shadow-sm hover:shadow"
-                        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                      >
-                        <FaChalkboardTeacher className="w-4 h-4" />
-                        View Course Details
-                      </button>
-                    )}
-                  </div>
-                ) : (
-                  <div className="mb-6">
-                    <button
-                      onClick={handleEnroll}
-                      disabled={enrolling || !course.isPublished}
-                      className={`w-full py-3.5 px-4 rounded-lg font-medium flex items-center justify-center gap-2 shadow-sm hover:shadow transition-all duration-300 ${
-                        !course.isPublished
-                          ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                          : 'bg-[#00bcd4] text-white hover:bg-[#01427a]'
-                      }`}
-                    >
-                      {enrolling ? (
-                        <>
-                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                          Enrolling...
-                        </>
-                      ) : (
-                        <>
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
-                          </svg>
-                          Enroll Now
-                        </>
-                      )}
-                    </button>
-                  </div>
-                )}
-
-                {!course.isPublished && (
-                  <div className="bg-yellow-50 text-yellow-800 px-4 py-3 rounded-lg mb-6 border border-yellow-200 flex items-center gap-2 text-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                    </svg>
-                    <span>This course is not published yet</span>
-                  </div>
-                )}
-
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-[#00bcd4]/10 p-2 rounded-lg">
-                      <FiVideo className="w-5 h-5 text-[#00bcd4]" />
-                    </div>
-                    <div>
-                      <p className="text-gray-500 text-sm">Total Videos</p>
-                      <p className="font-medium">{course.videos?.length || 0} lessons</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <div className="bg-[#00bcd4]/10 p-2 rounded-lg">
-                      <BiTime className="w-5 h-5 text-[#00bcd4]" />
-                    </div>
-                    <div>
-                      <p className="text-gray-500 text-sm">Total Duration</p>
-                      <p className="font-medium">{calculateTotalDuration()}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <div className="bg-[#00bcd4]/10 p-2 rounded-lg">
-                      <FaSignal className="w-5 h-5 text-[#00bcd4]" />
-                    </div>
-                    <div>
-                      <p className="text-gray-500 text-sm">Level</p>
-                      <p className="font-medium">{course.level}</p>
-                    </div>
-                  </div>
-
-                  {course.enrolledStudents?.length > 0 && (
-                    <div className="flex items-center gap-3">
-                      <div className="bg-[#00bcd4]/10 p-2 rounded-lg">
-                        <FaChalkboardTeacher className="w-5 h-5 text-[#00bcd4]" />
+                        <button
+                          onClick={handleEnroll}
+                          disabled={enrolling || !course.isPublished}
+                          className={`w-full py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors ${!course.isPublished
+                              ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                              : 'bg-blue-600 text-white hover:bg-blue-700'
+                            }`}
+                        >
+                          {enrolling ? (
+                            <>
+                              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                              Enrolling...
+                            </>
+                          ) : (
+                            <>
+                              <HiOutlineAcademicCap className="w-5 h-5" />
+                              Enroll Now
+                            </>
+                          )}
+                        </button>
                       </div>
+                    )}
+                  </div>
+
+                  {/* Instructor Info */}
+                  <div className="bg-white border border-gray-200 rounded-xl p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Instructor</h3>
+                    <div className="flex items-center gap-4">
+                      <img
+                        src={course.creator?.avatar}
+                        alt={course.creator?.fullName}
+                        className="w-12 h-12 rounded-full object-cover"
+                      />
                       <div>
-                        <p className="text-gray-500 text-sm">Students</p>
-                        <p className="font-medium">{course.enrolledStudents.length} enrolled</p>
+                        <p className="font-semibold text-gray-900">{course.creator?.fullName}</p>
+                        <p className="text-sm text-gray-500">@{course.creator?.username}</p>
                       </div>
                     </div>
-                  )}
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-      </div>
+            </section>
 
-      {/* Comment Section */}
-      <div className="mt-12 px-6 pb-8">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-xl font-semibold mb-6 inline-block relative">
-            Discussion
-            <span className="absolute bottom-0 left-0 w-1/3 h-1 bg-[#00bcd4] rounded-full"></span>
-          </h2>
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <CommentSection courseId={course._id} type="course" />
+            {/* Test Series Section */}
+            <section className="border-b border-gray-200 pb-16">
+              <div className="flex items-center gap-4 mb-8">
+                <div className="bg-purple-600 p-3 rounded-xl">
+                  <HiOutlineAcademicCap className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-3xl font-bold text-gray-900">Test Series</h2>
+                  <p className="text-gray-600">Practice tests and assessments</p>
+                </div>
+              </div>
+              <CourseTestSeries
+                courseId={course._id}
+                courseName={course.title}
+                isInstructor={canEdit()}
+              />
+            </section>
+
+            {/* Study Materials Section */}
+            <section className="border-b border-gray-200 pb-16">
+              <div className="flex items-center gap-4 mb-8">
+                <div className="bg-green-600 p-3 rounded-xl">
+                  <HiOutlineBookOpen className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-3xl font-bold text-gray-900">Study Materials</h2>
+                  <p className="text-gray-600">Notes, PDFs, and resources</p>
+                </div>
+              </div>
+              {isEnrolled() ? (
+                <CourseMaterials
+                  courseId={course._id}
+                  isInstructor={canEdit()}
+                />
+              ) : (
+                <div className="bg-gray-50 rounded-xl p-8 text-center">
+                  <div className="bg-gray-200 p-4 rounded-xl mb-4 inline-block">
+                    <BiLock className="w-8 h-8 text-gray-400 mx-auto" />
+                  </div>
+                  <h4 className="font-semibold text-gray-800 mb-2">Premium Materials</h4>
+                  <p className="text-gray-600 mb-6">Enroll to access study materials</p>
+                  <button
+                    onClick={handleEnroll}
+                    disabled={enrolling}
+                    className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors font-medium disabled:opacity-50"
+                  >
+                    {enrolling ? 'Enrolling...' : 'Enroll Now'}
+                  </button>
+                </div>
+              )}
+            </section>
+
+            {/* Discussion Section */}
+            <section>
+              <div className="flex items-center gap-4 mb-8">
+                <div className="bg-orange-600 p-3 rounded-xl">
+                  <HiOutlineUsers className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-3xl font-bold text-gray-900">Discussion</h2>
+                  <p className="text-gray-600">Ask questions and share insights</p>
+                </div>
+              </div>
+              <CommentSection courseId={course._id} type="course" />
+            </section>
           </div>
+
         </div>
+
+
       </div>
     </div>
   );

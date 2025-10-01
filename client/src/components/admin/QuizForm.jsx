@@ -14,7 +14,7 @@ import ImageUpload from './ImageUpload';
 const QuizForm = ({ isEditing = false }) => {
   const navigate = useNavigate();
   const { quizId } = useParams();
-  
+
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [courses, setCourses] = useState([]);
@@ -26,7 +26,7 @@ const QuizForm = ({ isEditing = false }) => {
     title: '',
     description: ''
   });
-  
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -47,13 +47,13 @@ const QuizForm = ({ isEditing = false }) => {
   });
 
   const [tagInput, setTagInput] = useState('');
-  
+
   // Fetch courses and quiz data if editing
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        
+
         // Fetch courses
         const coursesResponse = await courseAPI.getAllCourses();
         setCourses(coursesResponse.data.data);
@@ -62,7 +62,7 @@ const QuizForm = ({ isEditing = false }) => {
         const { testSeriesAPI } = await import('../../services/testSeriesAPI');
         const testSeriesResponse = await testSeriesAPI.getAllTestSeries();
         setTestSeries(testSeriesResponse.data.data);
-        
+
         // If editing, fetch quiz data
         if (isEditing && quizId) {
           const quizResponse = await quizAPI.getQuizById(quizId);
@@ -110,10 +110,10 @@ const QuizForm = ({ isEditing = false }) => {
         setLoading(false);
       }
     };
-    
+
     fetchData();
   }, [isEditing, quizId]);
-  
+
   // Load sections for selected test series
   const loadSections = async (testSeriesId) => {
     if (!testSeriesId) {
@@ -135,7 +135,7 @@ const QuizForm = ({ isEditing = false }) => {
   // Handle form input changes
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    
+
     // If test series changes, load its sections and reset section selection
     if (name === 'testSeries') {
       loadSections(value);
@@ -151,7 +151,7 @@ const QuizForm = ({ isEditing = false }) => {
       }));
     }
   };
-  
+
   // Handle question changes
   const handleQuestionChange = (index, field, value) => {
     const updatedQuestions = [...formData.questions];
@@ -164,25 +164,25 @@ const QuizForm = ({ isEditing = false }) => {
       questions: updatedQuestions
     }));
   };
-  
+
   // Handle option changes
   const handleOptionChange = (questionIndex, optionIndex, field, value) => {
     const updatedQuestions = [...formData.questions];
     const options = [...updatedQuestions[questionIndex].options];
-    
+
     options[optionIndex] = {
       ...options[optionIndex],
       [field]: field === 'isCorrect' ? value : value
     };
-    
+
     updatedQuestions[questionIndex].options = options;
-    
+
     setFormData(prev => ({
       ...prev,
       questions: updatedQuestions
     }));
   };
-  
+
   // Add a new question
   const addQuestion = () => {
     const newQuestion = {
@@ -203,18 +203,18 @@ const QuizForm = ({ isEditing = false }) => {
       questions: [...prev.questions, newQuestion]
     }));
   };
-  
+
   // Remove a question
   const removeQuestion = (index) => {
     const updatedQuestions = [...formData.questions];
     updatedQuestions.splice(index, 1);
-    
+
     setFormData(prev => ({
       ...prev,
       questions: updatedQuestions
     }));
   };
-  
+
   // Add an option to a question
   const addOption = (questionIndex) => {
     const updatedQuestions = [...formData.questions];
@@ -225,12 +225,12 @@ const QuizForm = ({ isEditing = false }) => {
       questions: updatedQuestions
     }));
   };
-  
+
   // Remove an option from a question
   const removeOption = (questionIndex, optionIndex) => {
     const updatedQuestions = [...formData.questions];
     updatedQuestions[questionIndex].options.splice(optionIndex, 1);
-    
+
     setFormData(prev => ({
       ...prev,
       questions: updatedQuestions
@@ -338,11 +338,11 @@ const QuizForm = ({ isEditing = false }) => {
 
       // Reload sections to get the updated list
       await loadSections(formData.testSeries);
-      
+
       // Find the newly created section and select it
       const updatedTestSeries = response.data.data;
       const newSection = updatedTestSeries.sections[updatedTestSeries.sections.length - 1];
-      
+
       setFormData(prev => ({
         ...prev,
         section: newSection._id
@@ -351,7 +351,7 @@ const QuizForm = ({ isEditing = false }) => {
       // Reset form and close modal
       setNewSectionData({ title: '', description: '' });
       setShowCreateSection(false);
-      
+
       toast.success('Section created successfully');
     } catch (err) {
       console.error('Error creating section:', err);
@@ -362,43 +362,43 @@ const QuizForm = ({ isEditing = false }) => {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Validate form
     if (!formData.title.trim()) {
       toast.error('Quiz title is required');
       return;
     }
-    
+
     if (!formData.testSeries) {
       toast.error('Please select a test series - all quizzes must belong to a test series');
       return;
     }
-    
+
     if (formData.questions.length === 0) {
       toast.error('At least one question is required');
       return;
     }
-    
+
     // Validate questions
     for (let i = 0; i < formData.questions.length; i++) {
       const question = formData.questions[i];
-      
+
       if (!question.text.trim()) {
         toast.error(`Question ${i + 1} text is required`);
         return;
       }
-      
+
       if (question.type === 'multiple_choice' || question.type === 'true_false') {
         if (question.options.length < 2) {
           toast.error(`Question ${i + 1} must have at least 2 options`);
           return;
         }
-        
+
         if (!question.options.some(opt => opt.isCorrect)) {
           toast.error(`Question ${i + 1} must have at least one correct option`);
           return;
         }
-        
+
         for (let j = 0; j < question.options.length; j++) {
           if (!question.options[j].text.trim()) {
             toast.error(`Option ${j + 1} for Question ${i + 1} text is required`);
@@ -410,7 +410,7 @@ const QuizForm = ({ isEditing = false }) => {
         return;
       }
     }
-    
+
     try {
       setSubmitting(true);
 
@@ -441,7 +441,7 @@ const QuizForm = ({ isEditing = false }) => {
           toast.error('Quiz saved but failed to assign to section');
         }
       }
-      
+
       navigate('/admin/quizzes');
     } catch (err) {
       console.error('Error saving quiz:', err);
@@ -450,7 +450,7 @@ const QuizForm = ({ isEditing = false }) => {
       setSubmitting(false);
     }
   };
-  
+
   if (loading) {
     return (
       <div className="p-4">
@@ -461,7 +461,7 @@ const QuizForm = ({ isEditing = false }) => {
       </div>
     );
   }
-  
+
   return (
     <div className="p-4">
       <div className="flex items-center mb-6">
@@ -473,12 +473,12 @@ const QuizForm = ({ isEditing = false }) => {
         </button>
         <h2 className="text-2xl font-bold">{isEditing ? 'Edit Quiz' : 'Create Quiz'}</h2>
       </div>
-      
+
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Basic Quiz Information */}
         <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-lg font-semibold mb-4">Quiz Information</h3>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -493,7 +493,7 @@ const QuizForm = ({ isEditing = false }) => {
                 required
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Test Series <span className="text-red-500">*</span>
@@ -557,7 +557,7 @@ const QuizForm = ({ isEditing = false }) => {
               </p>
             </div>
           )}
-          
+
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Description <span className="text-red-500">*</span>
@@ -664,7 +664,7 @@ const QuizForm = ({ isEditing = false }) => {
                 <option value="exam">Exam</option>
               </select>
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Time Limit (minutes)
@@ -678,7 +678,7 @@ const QuizForm = ({ isEditing = false }) => {
                 className="w-full border border-gray-300 rounded-md px-3 py-2"
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Passing Score (%)
@@ -694,7 +694,7 @@ const QuizForm = ({ isEditing = false }) => {
               />
             </div>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -709,7 +709,7 @@ const QuizForm = ({ isEditing = false }) => {
                 className="w-full border border-gray-300 rounded-md px-3 py-2"
               />
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
               <div className="space-y-3">
                 <div className="flex items-center">
@@ -725,7 +725,7 @@ const QuizForm = ({ isEditing = false }) => {
                     Allow Review
                   </label>
                 </div>
-                
+
                 <div className="flex items-center">
                   <input
                     type="checkbox"
@@ -776,7 +776,7 @@ const QuizForm = ({ isEditing = false }) => {
             </div>
           </div>
         </div>
-        
+
         {/* Questions Section */}
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex justify-between items-center mb-4">
@@ -824,7 +824,7 @@ const QuizForm = ({ isEditing = false }) => {
                       <FaTrash />
                     </button>
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -838,7 +838,7 @@ const QuizForm = ({ isEditing = false }) => {
                         required
                       ></textarea>
                     </div>
-                    
+
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -855,7 +855,7 @@ const QuizForm = ({ isEditing = false }) => {
                           <option value="essay">Essay</option>
                         </select>
                       </div>
-                      
+
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Points
@@ -902,7 +902,7 @@ const QuizForm = ({ isEditing = false }) => {
                           </button>
                         )}
                       </div>
-                      
+
                       <div className="space-y-4">
                         {(question.options || []).map((option, oIndex) => (
                           <div key={oIndex} className="border border-gray-200 rounded-lg p-3">
@@ -951,7 +951,7 @@ const QuizForm = ({ isEditing = false }) => {
                       </div>
                     </div>
                   )}
-                  
+
                   {/* Correct answer for short answer questions */}
                   {question.type === 'short_answer' && (
                     <div className="mb-4">
@@ -967,7 +967,7 @@ const QuizForm = ({ isEditing = false }) => {
                       />
                     </div>
                   )}
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Explanation (Optional)
@@ -985,7 +985,7 @@ const QuizForm = ({ isEditing = false }) => {
             </div>
           )}
         </div>
-        
+
         {/* Action Buttons */}
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -1006,7 +1006,7 @@ const QuizForm = ({ isEditing = false }) => {
                 </div>
               )}
             </div>
-            
+
             <div className="flex gap-3">
               <button
                 type="button"
@@ -1015,7 +1015,7 @@ const QuizForm = ({ isEditing = false }) => {
               >
                 Cancel
               </button>
-              
+
               <button
                 type="submit"
                 disabled={submitting}
