@@ -47,6 +47,7 @@ import TestSeriesPage from '../pages/TestSeriesPage';
 import TestSeriesDetail from '../components/TestSeriesDetail';
 import TestSeriesManagement from '../components/admin/TestSeriesManagement';
 import TestSeriesForm from '../components/admin/TestSeriesForm';
+import TestSeriesEditPage from '../components/admin/TestSeriesEditPage';
 import CategoryManagementPage from '../pages/CategoryManagementPage';
 import AdminBookingManagementPage from '../pages/AdminBookingManagementPage';
 
@@ -382,7 +383,7 @@ export const homeRoutes = [
     path: "admin/test-series/:testSeriesId/edit",
     element: (
       <Suspense fallback={<h1>Loading</h1>}>
-        <TestSeriesForm isEditing={true} />
+        <TestSeriesEditPage />
       </Suspense>
     ),
   },

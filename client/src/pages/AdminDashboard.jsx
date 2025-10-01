@@ -11,6 +11,7 @@ import TestSeriesManagement from "../components/admin/TestSeriesManagement";
 import QuizAttemptsOverview from "../components/admin/QuizAttemptsOverview";
 import SeatManagement from "../components/admin/SeatManagement";
 import QuizCleanupManager from "../components/admin/QuizCleanupManager";
+import TestSectionDebug from "../components/admin/TestSectionDebug";
 
 const AdminDashboard = () => {
   const { currentUser, isAuthenticated, logout } = useAuth();
@@ -279,6 +280,16 @@ const AdminDashboard = () => {
           onClick={() => setActiveTab("test-series")}
         >
           Test Series
+        </button>
+        <button
+          className={`py-2 px-4 font-medium ${
+            activeTab === "debug-sections"
+              ? "text-[#00bcd4] border-b-2 border-[#00bcd4]"
+              : "text-gray-500 hover:text-gray-700"
+          }`}
+          onClick={() => setActiveTab("debug-sections")}
+        >
+          Debug Sections
         </button>
         <button
           className={`py-2 px-4 font-medium ${
@@ -558,6 +569,11 @@ const AdminDashboard = () => {
           {/* Test Series Management Tab */}
           {activeTab === "test-series" && (
             <TestSeriesManagement />
+          )}
+
+          {/* Debug Sections Tab */}
+          {activeTab === "debug-sections" && (
+            <TestSectionDebug />
           )}
 
           {/* Quiz Attempts Overview Tab */}

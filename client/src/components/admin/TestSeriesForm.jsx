@@ -6,7 +6,7 @@ import { quizAPI } from '../../services/quizAPI';
 import { courseAPI } from '../../services/courseAPI';
 import { toast } from 'react-hot-toast';
 
-const TestSeriesForm = ({ isEditing = false }) => {
+const TestSeriesForm = ({ isEditing = false, onUpdate }) => {
   const navigate = useNavigate();
   const { testSeriesId } = useParams();
   
@@ -142,15 +142,46 @@ const TestSeriesForm = ({ isEditing = false }) => {
         validUntil: formData.validUntil || undefined
       };
 
+      // Clean up empty string values that should be null/undefined for ObjectId fields
+      if (submitData.course === '') {
+        submitData.course = undefined;
+      }
+
+      // Clean up other empty string fields
+      if (submitData.examType === '') {
+        submitData.examType = undefined;
+      }
+      if (submitData.subject === '') {
+        submitData.subject = undefined;
+      }
+      if (submitData.thumbnail === '') {
+        submitData.thumbnail = undefined;
+      }
+      if (submitData.instructions === '') {
+        submitData.instructions = undefined;
+      }
+
+      // Remove sections from form data as they are managed separately
+      delete submitData.sections;
+
+      console.log('Submitting test series data:', submitData);
+
       if (isEditing) {
+        console.log('Updating test series:', testSeriesId);
         await testSeriesAPI.updateTestSeries(testSeriesId, submitData);
         toast.success('Test series updated successfully');
+        if (onUpdate) {
+          onUpdate();
+        } else {
+          // If no onUpdate callback, navigate back to list
+          navigate('/admin/test-series');
+        }
       } else {
+        console.log('Creating new test series');
         await testSeriesAPI.createTestSeries(submitData);
         toast.success('Test series created successfully');
+        navigate('/admin/test-series');
       }
-      
-      navigate('/admin/test-series');
     } catch (error) {
       console.error('Error submitting form:', error);
       toast.error(error.response?.data?.message || 'Failed to save test series');
@@ -167,208 +198,244 @@ const TestSeriesForm = ({ isEditing = false }) => {
     );
   }
 
+  const isStandalone = !onUpdate; // If no onUpdate callback, it's a standalone form
+
+  if (isStandalone) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-2xl font-bold text-gray-800">
+              {isEditing ? 'Edit Test Series' : 'Create Test Series'}
+            </h1>
+            <button
+              onClick={() => navigate('/admin/test-series')}
+              className="text-gray-600 hover:text-gray-800 transition-colors"
+            >
+              <FaTimes size={20} />
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Form content will be rendered here */}
+            {renderFormContent()}
+            
+            {/* Submit Button */}
+            <div className="flex justify-end gap-4 pt-6 border-t border-gray-200">
+              <button
+                type="button"
+                onClick={() => navigate('/admin/test-series')}
+                className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={submitting}
+                className="bg-[#00bcd4] text-white px-6 py-2 rounded-lg hover:bg-[#0097a7] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                <FaSave />
+                {submitting ? 'Saving...' : (isEditing ? 'Update' : 'Create')} Test Series
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  // Embedded form (within edit page)
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">
-            {isEditing ? 'Edit Test Series' : 'Create Test Series'}
-          </h1>
+    <div>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {renderFormContent()}
+        
+        {/* Submit Button */}
+        <div className="flex justify-end gap-4 pt-6 border-t border-gray-200">
           <button
-            onClick={() => navigate('/admin/test-series')}
-            className="text-gray-600 hover:text-gray-800 transition-colors"
+            type="submit"
+            disabled={submitting}
+            className="bg-[#00bcd4] text-white px-6 py-2 rounded-lg hover:bg-[#0097a7] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
-            <FaTimes size={20} />
+            <FaSave />
+            {submitting ? 'Saving...' : 'Update Test Series'}
           </button>
         </div>
+      </form>
+    </div>
+  );
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Basic Information */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Title *
-              </label>
-              <input
-                type="text"
-                name="title"
-                value={formData.title}
-                onChange={handleInputChange}
-                required
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#00bcd4]"
-                placeholder="Enter test series title"
-              />
-            </div>
+  function renderFormContent() {
+    return (
+      <>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Course (Optional)
-              </label>
-              <select
-                name="course"
-                value={formData.course}
-                onChange={handleInputChange}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#00bcd4]"
-              >
-                <option value="">No Course (Standalone)</option>
-                {courses.map(course => (
-                  <option key={course._id} value={course._id}>
-                    {course.title}
-                  </option>
-                ))}
-              </select>
-              <p className="text-xs text-gray-500 mt-1">
-                Link this test series to a course to group related tests together
-              </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Category
-              </label>
-              <select
-                name="category"
-                value={formData.category}
-                onChange={handleInputChange}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#00bcd4]"
-              >
-                <option value="General">General</option>
-                <option value="Engineering">Engineering</option>
-                <option value="Medical">Medical</option>
-                <option value="Management">Management</option>
-                <option value="Government">Government</option>
-              </select>
-            </div>
-          </div>
-
+        {/* Basic Information */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Description *
+              Title *
             </label>
-            <textarea
-              name="description"
-              value={formData.description}
+            <input
+              type="text"
+              name="title"
+              value={formData.title}
               onChange={handleInputChange}
               required
-              rows={4}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#00bcd4]"
-              placeholder="Enter test series description"
+              placeholder="Enter test series title"
             />
           </div>
 
-          {/* Exam Details */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Exam Type
-              </label>
-              <input
-                type="text"
-                name="examType"
-                value={formData.examType}
-                onChange={handleInputChange}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#00bcd4]"
-                placeholder="e.g., JEE, NEET, CAT"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Subject
-              </label>
-              <input
-                type="text"
-                name="subject"
-                value={formData.subject}
-                onChange={handleInputChange}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#00bcd4]"
-                placeholder="e.g., Mathematics, Physics"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Difficulty
-              </label>
-              <select
-                name="difficulty"
-                value={formData.difficulty}
-                onChange={handleInputChange}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#00bcd4]"
-              >
-                <option value="easy">Easy</option>
-                <option value="medium">Medium</option>
-                <option value="hard">Hard</option>
-                <option value="mixed">Mixed</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Tags */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Tags
+              Course (Optional)
             </label>
-            <div className="flex gap-2 mb-2">
-              <input
-                type="text"
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
-                className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#00bcd4]"
-                placeholder="Add a tag and press Enter"
-              />
-              <button
-                type="button"
-                onClick={handleAddTag}
-                className="bg-[#00bcd4] text-white px-4 py-2 rounded-lg hover:bg-[#0097a7] transition-colors"
-              >
-                <FaPlus />
-              </button>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {formData.tags.map((tag, index) => (
-                <span
-                  key={index}
-                  className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center gap-2"
-                >
-                  {tag}
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveTag(tag)}
-                    className="text-blue-600 hover:text-blue-800"
-                  >
-                    <FaTimes size={12} />
-                  </button>
-                </span>
+            <select
+              name="course"
+              value={formData.course}
+              onChange={handleInputChange}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#00bcd4]"
+            >
+              <option value="">No Course (Standalone)</option>
+              {courses.map(course => (
+                <option key={course._id} value={course._id}>
+                  {course.title}
+                </option>
               ))}
-            </div>
+            </select>
+            <p className="text-xs text-gray-500 mt-1">
+              Link this test series to a course to group related tests together
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Category
+            </label>
+            <select
+              name="category"
+              value={formData.category}
+              onChange={handleInputChange}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#00bcd4]"
+            >
+              <option value="General">General</option>
+              <option value="Engineering">Engineering</option>
+              <option value="Medical">Medical</option>
+              <option value="Management">Management</option>
+              <option value="Government">Government</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Description *
+          </label>
+          <textarea
+            name="description"
+            value={formData.description}
+            onChange={handleInputChange}
+            required
+            rows={4}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#00bcd4]"
+            placeholder="Enter test series description"
+          />
+        </div>
+
+        {/* Exam Details */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Exam Type
+            </label>
+            <input
+              type="text"
+              name="examType"
+              value={formData.examType}
+              onChange={handleInputChange}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#00bcd4]"
+              placeholder="e.g., JEE, NEET, CAT"
+            />
           </div>
 
-          {/* Submit Button */}
-          <div className="flex justify-end gap-4 pt-6 border-t border-gray-200">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Subject
+            </label>
+            <input
+              type="text"
+              name="subject"
+              value={formData.subject}
+              onChange={handleInputChange}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#00bcd4]"
+              placeholder="e.g., Mathematics, Physics"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Difficulty
+            </label>
+            <select
+              name="difficulty"
+              value={formData.difficulty}
+              onChange={handleInputChange}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#00bcd4]"
+            >
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard">Hard</option>
+              <option value="mixed">Mixed</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Tags */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Tags
+          </label>
+          <div className="flex gap-2 mb-2">
+            <input
+              type="text"
+              value={tagInput}
+              onChange={(e) => setTagInput(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
+              className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#00bcd4]"
+              placeholder="Add a tag and press Enter"
+            />
             <button
               type="button"
-              onClick={() => navigate('/admin/test-series')}
-              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              onClick={handleAddTag}
+              className="bg-[#00bcd4] text-white px-4 py-2 rounded-lg hover:bg-[#0097a7] transition-colors"
             >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={submitting}
-              className="bg-[#00bcd4] text-white px-6 py-2 rounded-lg hover:bg-[#0097a7] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-            >
-              <FaSave />
-              {submitting ? 'Saving...' : (isEditing ? 'Update' : 'Create')} Test Series
+              <FaPlus />
             </button>
           </div>
-        </form>
-      </div>
-    </div>
-  );
+          <div className="flex flex-wrap gap-2">
+            {formData.tags.map((tag, index) => (
+              <span
+                key={index}
+                className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center gap-2"
+              >
+                {tag}
+                <button
+                  type="button"
+                  onClick={() => handleRemoveTag(tag)}
+                  className="text-blue-600 hover:text-blue-800"
+                >
+                  <FaTimes size={12} />
+                </button>
+              </span>
+            ))}
+          </div>
+        </div>
+
+      </>
+    );
+  }
 };
 
 export default TestSeriesForm;

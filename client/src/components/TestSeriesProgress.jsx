@@ -1,19 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import {
   FaCheck,
   FaTimes,
   FaClock,
-  FaPlay,
-  FaEye,
   FaChartLine,
-  FaTrophy,
-  FaBullseye,
-  FaCalendarAlt
+  FaTrophy
 } from 'react-icons/fa';
-import { testSeriesAPI } from '../services/testSeriesAPI';
 import { quizAPI } from '../services/quizAPI';
 import { useAuth } from '../context/AuthContext';
+import TestSeriesSections from './TestSeriesSections';
 
 const TestSeriesProgress = ({ testSeriesId, testSeries, onProgressUpdate }) => {
   const { currentUser } = useAuth();
@@ -37,7 +32,42 @@ const TestSeriesProgress = ({ testSeriesId, testSeries, onProgressUpdate }) => {
   }, [testSeries, currentUser]);
 
   const fetchUserProgress = async () => {
-    if (!testSeries?.quizzes) return;
+    // Collect all quizzes from both sections and legacy quizzes array
+    const allQuizzes = [];
+    const seenQuizIds = new Set();
+
+    // Add quizzes from sections
+    if (testSeries?.sections) {
+      testSeries.sections.forEach(section => {
+        if (section.quizzes) {
+          section.quizzes.forEach(quiz => {
+            if (!seenQuizIds.has(quiz._id)) {
+              allQuizzes.push(quiz);
+              seenQuizIds.add(quiz._id);
+            }
+          });
+        }
+      });
+    }
+
+    // Add legacy quizzes (not in sections)
+    if (testSeries?.quizzes) {
+      testSeries.quizzes.forEach(quiz => {
+        if (!seenQuizIds.has(quiz._id)) {
+          allQuizzes.push(quiz);
+          seenQuizIds.add(quiz._id);
+        }
+      });
+    }
+
+    console.log('Progress calculation:', {
+      sectionsCount: testSeries?.sections?.length || 0,
+      legacyQuizzesCount: testSeries?.quizzes?.length || 0,
+      totalUniqueQuizzes: allQuizzes.length,
+      quizIds: allQuizzes.map(q => q._id)
+    });
+
+    if (allQuizzes.length === 0) return;
     
     try {
       setLoading(true);
@@ -49,7 +79,7 @@ const TestSeriesProgress = ({ testSeriesId, testSeries, onProgressUpdate }) => {
       let totalTimeSpent = 0;
       let bestScore = 0;
 
-      for (const quiz of testSeries.quizzes) {
+      for (const quiz of allQuizzes) {
         try {
           const response = await quizAPI.getUserQuizAttempts(quiz._id);
           const quizAttempts = response.data.data;
@@ -83,11 +113,11 @@ const TestSeriesProgress = ({ testSeriesId, testSeries, onProgressUpdate }) => {
       }
 
       const averageScore = completedCount > 0 ? (totalScore / totalMaxScore) * 100 : 0;
-      const completionPercentage = (completedCount / testSeries.quizzes.length) * 100;
+      const completionPercentage = allQuizzes.length > 0 ? (completedCount / allQuizzes.length) * 100 : 0;
 
       setUserAttempts(attempts);
       setStats({
-        totalQuizzes: testSeries.quizzes.length,
+        totalQuizzes: allQuizzes.length,
         completedQuizzes: completedCount,
         passedQuizzes: passedCount,
         totalScore,
@@ -101,7 +131,7 @@ const TestSeriesProgress = ({ testSeriesId, testSeries, onProgressUpdate }) => {
         onProgressUpdate({
           completionPercentage,
           completedQuizzes: completedCount,
-          totalQuizzes: testSeries.quizzes.length
+          totalQuizzes: allQuizzes.length
         });
       }
     } catch (error) {
@@ -111,41 +141,7 @@ const TestSeriesProgress = ({ testSeriesId, testSeries, onProgressUpdate }) => {
     }
   };
 
-  const getBestAttempt = (quizId) => {
-    const attempts = userAttempts[quizId] || [];
-    if (attempts.length === 0) return null;
-    return attempts.reduce((best, current) => 
-      current.percentage > best.percentage ? current : best
-    );
-  };
 
-  const getQuizStatus = (quiz) => {
-    const bestAttempt = getBestAttempt(quiz._id);
-    if (!bestAttempt || !bestAttempt.isCompleted) return 'not-attempted';
-    return bestAttempt.isPassed ? 'passed' : 'failed';
-  };
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'passed':
-        return <FaCheck className="text-green-600" />;
-      case 'failed':
-        return <FaTimes className="text-red-600" />;
-      default:
-        return <FaClock className="text-gray-400" />;
-    }
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'passed':
-        return 'bg-green-100 text-green-800 border-green-200';
-      case 'failed':
-        return 'bg-red-100 text-red-800 border-red-200';
-      default:
-        return 'bg-gray-100 text-gray-600 border-gray-200';
-    }
-  };
 
   if (loading) {
     return (
@@ -159,10 +155,23 @@ const TestSeriesProgress = ({ testSeriesId, testSeries, onProgressUpdate }) => {
     <div className="space-y-6">
       {/* Progress Overview */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-          <FaChartLine className="text-[#00bcd4]" />
-          Progress Overview
-        </h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+            <FaChartLine className="text-[#00bcd4]" />
+            Progress Overview
+          </h3>
+          <div className="text-sm text-gray-500">
+            {testSeries?.sections?.length > 0 && (
+              <span>{testSeries.sections.length} sections</span>
+            )}
+            {testSeries?.sections?.length > 0 && testSeries?.quizzes?.length > 0 && (
+              <span> • </span>
+            )}
+            {testSeries?.quizzes?.length > 0 && (
+              <span>{testSeries.quizzes.length} additional tests</span>
+            )}
+          </div>
+        </div>
 
         {/* Progress Bar */}
         <div className="mb-6">
@@ -216,71 +225,13 @@ const TestSeriesProgress = ({ testSeriesId, testSeries, onProgressUpdate }) => {
         )}
       </div>
 
-      {/* Quiz Progress List */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-          <FaBullseye className="text-[#00bcd4]" />
-          Test Progress
-        </h3>
-
-        <div className="space-y-3">
-          {testSeries.quizzes?.map((quiz, index) => {
-            const status = getQuizStatus(quiz);
-            const bestAttempt = getBestAttempt(quiz._id);
-            const attemptCount = userAttempts[quiz._id]?.length || 0;
-
-            return (
-              <div
-                key={quiz._id}
-                className={`border rounded-lg p-4 transition-all duration-200 ${getStatusColor(status)}`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white border-2 border-current">
-                      {getStatusIcon(status)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-medium quiz-title-compact">{quiz.title}</h4>
-                      <div className="flex items-center gap-4 text-sm mt-1">
-                        <span>{quiz.questions?.length || 0} questions</span>
-                        <span>{quiz.timeLimit} min</span>
-                        {bestAttempt && (
-                          <span className="font-medium">
-                            Best: {bestAttempt.percentage}% ({bestAttempt.score}/{bestAttempt.maxScore})
-                          </span>
-                        )}
-                        {attemptCount > 0 && (
-                          <span className="text-xs">
-                            {attemptCount} attempt{attemptCount !== 1 ? 's' : ''}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    {bestAttempt && (
-                      <Link
-                        to={`/quiz-attempts/${bestAttempt._id}`}
-                        className="text-sm px-3 py-1 bg-white/50 rounded hover:bg-white/80 transition-colors flex items-center gap-1"
-                      >
-                        <FaEye size={12} />
-                        View Result
-                      </Link>
-                    )}
-                    <Link
-                      to={`/test-series/${testSeriesId}/quiz/${quiz._id}/take`}
-                      className="text-sm px-3 py-1 bg-white rounded hover:bg-gray-50 transition-colors flex items-center gap-1"
-                    >
-                      <FaPlay size={12} />
-                      {bestAttempt ? 'Retake' : 'Start'}
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+      {/* Test Series Sections */}
+      <div>
+        <TestSeriesSections
+          testSeries={testSeries}
+          testSeriesId={testSeriesId}
+          userAttempts={userAttempts}
+        />
       </div>
     </div>
   );

@@ -82,5 +82,30 @@ export const testSeriesAPI = {
   // Enroll in test series
   enrollInTestSeries: async (testSeriesId) => {
     return await customFetch.post(`/test-series/${testSeriesId}/enroll`);
+  },
+
+  // Section management
+  addSection: async (testSeriesId, sectionData) => {
+    return await customFetch.post(`/test-series/${testSeriesId}/sections`, sectionData);
+  },
+
+  updateSection: async (testSeriesId, sectionId, sectionData) => {
+    return await customFetch.put(`/test-series/${testSeriesId}/sections/${sectionId}`, sectionData);
+  },
+
+  deleteSection: async (testSeriesId, sectionId) => {
+    return await customFetch.delete(`/test-series/${testSeriesId}/sections/${sectionId}`);
+  },
+
+  addQuizToSection: async (testSeriesId, sectionId, quizId) => {
+    return await customFetch.post(`/test-series/${testSeriesId}/sections/${sectionId}/quizzes/${quizId}`);
+  },
+
+  removeQuizFromSection: async (testSeriesId, sectionId, quizId) => {
+    return await customFetch.delete(`/test-series/${testSeriesId}/sections/${sectionId}/quizzes/${quizId}`);
+  },
+
+  reorderSections: async (testSeriesId, sectionOrders) => {
+    return await customFetch.put(`/test-series/${testSeriesId}/sections/reorder`, { sectionOrders });
   }
 };

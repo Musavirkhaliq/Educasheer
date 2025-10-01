@@ -106,6 +106,10 @@ const getAllTestSeries = asyncHandler(async (req, res) => {
             .populate("creator", "username fullName")
             .populate("course", "title")
             .populate("quizzes", "title description timeLimit questions")
+            .populate({
+                path: "sections.quizzes",
+                select: "title description timeLimit questions passingScore quizType difficulty isPublished"
+            })
             .sort({ createdAt: -1 });
 
         return res.status(200).json(
@@ -180,6 +184,14 @@ const getTestSeriesById = asyncHandler(async (req, res) => {
                     path: "questions",
                     select: "text type points"
                 }
+            })
+            .populate({
+                path: "sections.quizzes",
+                select: "title description timeLimit questions passingScore quizType difficulty isPublished",
+                populate: {
+                    path: "questions",
+                    select: "text type points"
+                }
             });
 
         if (!testSeries) {
@@ -229,6 +241,8 @@ const updateTestSeries = asyncHandler(async (req, res) => {
         const { testSeriesId } = req.params;
         const updateData = req.body;
 
+        console.log('Update test series request:', { testSeriesId, updateData, userId: req.user._id });
+
         if (!testSeriesId) {
             throw new ApiError(400, "Test series ID is required");
         }
@@ -244,25 +258,42 @@ const updateTestSeries = asyncHandler(async (req, res) => {
             throw new ApiError(403, "You don't have permission to update this test series");
         }
 
+        console.log('Updating test series with data:', updateData);
+
         // Update test series
         const updatedTestSeries = await TestSeries.findByIdAndUpdate(
             testSeriesId,
             updateData,
             { new: true, runValidators: true }
         ).populate("creator", "username fullName")
-         .populate("quizzes", "title description timeLimit questions");
+         .populate("quizzes", "title description timeLimit questions")
+         .populate({
+             path: "sections.quizzes",
+             select: "title description timeLimit questions"
+         });
+
+        console.log('Test series updated successfully');
 
         return res.status(200).json(
             new ApiResponse(200, updatedTestSeries, "Test series updated successfully")
         );
     } catch (error) {
+        console.error('Error updating test series:', error);
+        
         if (error instanceof mongoose.Error.ValidationError) {
-            throw new ApiError(400, error.message);
+            console.error('Validation error details:', error.errors);
+            throw new ApiError(400, `Validation error: ${error.message}`);
+        }
+        if (error instanceof mongoose.Error.CastError) {
+            console.error('Cast error details:', error);
+            throw new ApiError(400, `Invalid data format: ${error.message}`);
         }
         if (error instanceof ApiError) {
             throw error;
         }
-        throw new ApiError(500, "Something went wrong while updating test series");
+        
+        console.error('Unexpected error:', error.stack);
+        throw new ApiError(500, `Something went wrong while updating test series: ${error.message}`);
     }
 });
 
@@ -497,6 +528,323 @@ const recalculateTestSeriesTotals = async (testSeriesId) => {
 };
 
 /**
+ * Add section to test series
+ * @route POST /api/v1/test-series/:testSeriesId/sections
+ * @access Admin and creator only
+ */
+const addSectionToTestSeries = asyncHandler(async (req, res) => {
+    try {
+        const { testSeriesId } = req.params;
+        const { title, description, order } = req.body;
+
+        console.log('Add section request:', { testSeriesId, title, description, order, userId: req.user._id, userRole: req.user.role });
+
+        if (!title) {
+            throw new ApiError(400, "Section title is required");
+        }
+
+        const testSeries = await TestSeries.findById(testSeriesId);
+        if (!testSeries) {
+            throw new ApiError(404, "Test series not found");
+        }
+
+        console.log('Test series found:', { id: testSeries._id, creator: testSeries.creator });
+
+        // Check if user is admin or test series creator
+        if (req.user.role !== "admin" && testSeries.creator.toString() !== req.user._id.toString()) {
+            console.log('Permission denied:', { userRole: req.user.role, userId: req.user._id, creator: testSeries.creator });
+            throw new ApiError(403, "You don't have permission to update this test series");
+        }
+
+        // Add new section
+        const newSection = {
+            title,
+            description: description || '',
+            order: order || testSeries.sections.length,
+            quizzes: []
+        };
+
+        console.log('Adding new section:', newSection);
+        testSeries.sections.push(newSection);
+        await testSeries.save();
+
+        console.log('Section added successfully, returning response');
+        return res.status(200).json(
+            new ApiResponse(200, testSeries, "Section added successfully")
+        );
+    } catch (error) {
+        if (error instanceof ApiError) {
+            throw error;
+        }
+        throw new ApiError(500, "Something went wrong while adding section");
+    }
+});
+
+/**
+ * Update section in test series
+ * @route PUT /api/v1/test-series/:testSeriesId/sections/:sectionId
+ * @access Admin and creator only
+ */
+const updateSectionInTestSeries = asyncHandler(async (req, res) => {
+    try {
+        const { testSeriesId, sectionId } = req.params;
+        const { title, description, order } = req.body;
+
+        const testSeries = await TestSeries.findById(testSeriesId);
+        if (!testSeries) {
+            throw new ApiError(404, "Test series not found");
+        }
+
+        // Check if user is admin or test series creator
+        if (req.user.role !== "admin" && testSeries.creator.toString() !== req.user._id.toString()) {
+            throw new ApiError(403, "You don't have permission to update this test series");
+        }
+
+        // Find and update section
+        const section = testSeries.sections.id(sectionId);
+        if (!section) {
+            throw new ApiError(404, "Section not found");
+        }
+
+        if (title) section.title = title;
+        if (description !== undefined) section.description = description;
+        if (order !== undefined) section.order = order;
+
+        await testSeries.save();
+
+        return res.status(200).json(
+            new ApiResponse(200, testSeries, "Section updated successfully")
+        );
+    } catch (error) {
+        if (error instanceof ApiError) {
+            throw error;
+        }
+        throw new ApiError(500, "Something went wrong while updating section");
+    }
+});
+
+/**
+ * Delete section from test series
+ * @route DELETE /api/v1/test-series/:testSeriesId/sections/:sectionId
+ * @access Admin and creator only
+ */
+const deleteSectionFromTestSeries = asyncHandler(async (req, res) => {
+    try {
+        const { testSeriesId, sectionId } = req.params;
+
+        const testSeries = await TestSeries.findById(testSeriesId);
+        if (!testSeries) {
+            throw new ApiError(404, "Test series not found");
+        }
+
+        // Check if user is admin or test series creator
+        if (req.user.role !== "admin" && testSeries.creator.toString() !== req.user._id.toString()) {
+            throw new ApiError(403, "You don't have permission to update this test series");
+        }
+
+        // Find section
+        const section = testSeries.sections.id(sectionId);
+        if (!section) {
+            throw new ApiError(404, "Section not found");
+        }
+
+        // Move quizzes from section back to main quizzes array
+        if (section.quizzes && section.quizzes.length > 0) {
+            section.quizzes.forEach(quizId => {
+                if (!testSeries.quizzes.includes(quizId)) {
+                    testSeries.quizzes.push(quizId);
+                }
+            });
+        }
+
+        // Remove section
+        testSeries.sections.pull(sectionId);
+        await testSeries.save();
+
+        return res.status(200).json(
+            new ApiResponse(200, testSeries, "Section deleted successfully")
+        );
+    } catch (error) {
+        if (error instanceof ApiError) {
+            throw error;
+        }
+        throw new ApiError(500, "Something went wrong while deleting section");
+    }
+});
+
+/**
+ * Add quiz to section
+ * @route POST /api/v1/test-series/:testSeriesId/sections/:sectionId/quizzes/:quizId
+ * @access Admin and creator only
+ */
+const addQuizToSection = asyncHandler(async (req, res) => {
+    try {
+        const { testSeriesId, sectionId, quizId } = req.params;
+
+        console.log('Add quiz to section request:', { testSeriesId, sectionId, quizId, userId: req.user._id, userRole: req.user.role });
+
+        const testSeries = await TestSeries.findById(testSeriesId);
+        if (!testSeries) {
+            throw new ApiError(404, "Test series not found");
+        }
+
+        const quiz = await Quiz.findById(quizId);
+        if (!quiz) {
+            throw new ApiError(404, "Quiz not found");
+        }
+
+        console.log('Found test series and quiz:', { testSeriesId: testSeries._id, quizId: quiz._id });
+
+        // Check if user is admin or test series creator
+        if (req.user.role !== "admin" && testSeries.creator.toString() !== req.user._id.toString()) {
+            console.log('Permission denied for quiz to section:', { userRole: req.user.role, userId: req.user._id, creator: testSeries.creator });
+            throw new ApiError(403, "You don't have permission to update this test series");
+        }
+
+        // Find section
+        const section = testSeries.sections.id(sectionId);
+        if (!section) {
+            console.log('Section not found:', { sectionId, availableSections: testSeries.sections.map(s => s._id) });
+            throw new ApiError(404, "Section not found");
+        }
+
+        console.log('Found section:', { sectionId: section._id, title: section.title });
+
+        // Check if quiz is already in this section
+        if (section.quizzes.includes(quizId)) {
+            throw new ApiError(400, "Quiz is already in this section");
+        }
+
+        // Add quiz to section
+        section.quizzes.push(quizId);
+        console.log('Added quiz to section, section now has:', section.quizzes.length, 'quizzes');
+
+        // Remove quiz from main quizzes array if it exists there
+        const originalQuizzesCount = testSeries.quizzes.length;
+        testSeries.quizzes = testSeries.quizzes.filter(id => id.toString() !== quizId);
+        console.log('Removed quiz from main array:', { originalCount: originalQuizzesCount, newCount: testSeries.quizzes.length });
+
+        // Update quiz to reference this test series
+        quiz.testSeries = testSeriesId;
+
+        await Promise.all([testSeries.save(), quiz.save()]);
+        console.log('Saved test series and quiz successfully');
+
+        const updatedTestSeries = await TestSeries.findById(testSeriesId)
+            .populate({
+                path: "sections.quizzes",
+                select: "title description timeLimit questions"
+            });
+
+        return res.status(200).json(
+            new ApiResponse(200, updatedTestSeries, "Quiz added to section successfully")
+        );
+    } catch (error) {
+        if (error instanceof ApiError) {
+            throw error;
+        }
+        throw new ApiError(500, "Something went wrong while adding quiz to section");
+    }
+});
+
+/**
+ * Remove quiz from section
+ * @route DELETE /api/v1/test-series/:testSeriesId/sections/:sectionId/quizzes/:quizId
+ * @access Admin and creator only
+ */
+const removeQuizFromSection = asyncHandler(async (req, res) => {
+    try {
+        const { testSeriesId, sectionId, quizId } = req.params;
+
+        const testSeries = await TestSeries.findById(testSeriesId);
+        if (!testSeries) {
+            throw new ApiError(404, "Test series not found");
+        }
+
+        // Check if user is admin or test series creator
+        if (req.user.role !== "admin" && testSeries.creator.toString() !== req.user._id.toString()) {
+            throw new ApiError(403, "You don't have permission to update this test series");
+        }
+
+        // Find section
+        const section = testSeries.sections.id(sectionId);
+        if (!section) {
+            throw new ApiError(404, "Section not found");
+        }
+
+        // Remove quiz from section
+        section.quizzes = section.quizzes.filter(id => id.toString() !== quizId);
+
+        // Add quiz back to main quizzes array
+        if (!testSeries.quizzes.includes(quizId)) {
+            testSeries.quizzes.push(quizId);
+        }
+
+        await testSeries.save();
+
+        const updatedTestSeries = await TestSeries.findById(testSeriesId)
+            .populate({
+                path: "sections.quizzes",
+                select: "title description timeLimit questions"
+            });
+
+        return res.status(200).json(
+            new ApiResponse(200, updatedTestSeries, "Quiz removed from section successfully")
+        );
+    } catch (error) {
+        if (error instanceof ApiError) {
+            throw error;
+        }
+        throw new ApiError(500, "Something went wrong while removing quiz from section");
+    }
+});
+
+/**
+ * Reorder sections
+ * @route PUT /api/v1/test-series/:testSeriesId/sections/reorder
+ * @access Admin and creator only
+ */
+const reorderSections = asyncHandler(async (req, res) => {
+    try {
+        const { testSeriesId } = req.params;
+        const { sectionOrders } = req.body; // Array of { sectionId, order }
+
+        if (!sectionOrders || !Array.isArray(sectionOrders)) {
+            throw new ApiError(400, "Section orders array is required");
+        }
+
+        const testSeries = await TestSeries.findById(testSeriesId);
+        if (!testSeries) {
+            throw new ApiError(404, "Test series not found");
+        }
+
+        // Check if user is admin or test series creator
+        if (req.user.role !== "admin" && testSeries.creator.toString() !== req.user._id.toString()) {
+            throw new ApiError(403, "You don't have permission to update this test series");
+        }
+
+        // Update section orders
+        sectionOrders.forEach(({ sectionId, order }) => {
+            const section = testSeries.sections.id(sectionId);
+            if (section) {
+                section.order = order;
+            }
+        });
+
+        await testSeries.save();
+
+        return res.status(200).json(
+            new ApiResponse(200, testSeries, "Sections reordered successfully")
+        );
+    } catch (error) {
+        if (error instanceof ApiError) {
+            throw error;
+        }
+        throw new ApiError(500, "Something went wrong while reordering sections");
+    }
+});
+
+/**
  * Fix test series quizzes array and recalculate totals (migration function)
  * @route POST /api/v1/test-series/fix-quizzes
  * @access Admin only
@@ -545,5 +893,11 @@ export {
     addQuizToTestSeries,
     removeQuizFromTestSeries,
     enrollInTestSeries,
+    addSectionToTestSeries,
+    updateSectionInTestSeries,
+    deleteSectionFromTestSeries,
+    addQuizToSection,
+    removeQuizFromSection,
+    reorderSections,
     fixTestSeriesQuizzes
 };
