@@ -71,6 +71,10 @@ const quizSchema = new Schema({
         ref: "TestSeries",
         required: true // Test Series is always required - quizzes can only belong to test series
     },
+    section: {
+        type: Schema.Types.ObjectId,
+        required: false // Optional - quiz can be directly under test series or in a section
+    },
     questions: [questionSchema],
     timeLimit: {
         type: Number, // in minutes

@@ -78,9 +78,9 @@ const createTestSeries = asyncHandler(async (req, res) => {
 });
 
 /**
- * Get all test series (admin)
+ * Get all test series (admin) or filtered test series (authenticated users)
  * @route GET /api/v1/test-series
- * @access Admin only
+ * @access Authenticated users (with restrictions for non-admins)
  */
 const getAllTestSeries = asyncHandler(async (req, res) => {
     try {
@@ -90,7 +90,6 @@ const getAllTestSeries = asyncHandler(async (req, res) => {
 
         // Apply filters if provided
         if (category) filter.category = category;
-        if (published !== undefined) filter.isPublished = published === 'true';
         if (difficulty) filter.difficulty = difficulty;
         if (examType) filter.examType = examType;
         if (subject) filter.subject = subject;
@@ -102,7 +101,15 @@ const getAllTestSeries = asyncHandler(async (req, res) => {
             ];
         }
 
-        const testSeries = await TestSeries.find(filter)
+        // For non-admin users, only show published test series
+        if (req.user.role !== "admin" && req.user.role !== "tutor") {
+            filter.isPublished = true;
+        } else {
+            // For admin/tutor, respect the published filter if provided
+            if (published !== undefined) filter.isPublished = published === 'true';
+        }
+
+        let query = TestSeries.find(filter)
             .populate("creator", "username fullName")
             .populate("course", "title")
             .populate("quizzes", "title description timeLimit questions")
@@ -112,8 +119,22 @@ const getAllTestSeries = asyncHandler(async (req, res) => {
             })
             .sort({ createdAt: -1 });
 
+        const testSeries = await query;
+
+        // For each test series, check if the current user is enrolled
+        const testSeriesWithEnrollment = testSeries.map(ts => {
+            const isEnrolled = ts.enrolledStudents.some(
+                studentId => studentId.toString() === req.user._id.toString()
+            );
+            
+            return {
+                ...ts.toObject(),
+                isEnrolled
+            };
+        });
+
         return res.status(200).json(
-            new ApiResponse(200, testSeries, "Test series fetched successfully")
+            new ApiResponse(200, testSeriesWithEnrollment, "Test series fetched successfully")
         );
     } catch (error) {
         throw new ApiError(500, "Something went wrong while fetching test series");

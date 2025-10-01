@@ -31,7 +31,7 @@ router.use(verifyJWT);
 // Test series management routes (admin and tutor only)
 router.route("/")
     .post(isAdmin, createTestSeries)
-    .get(isAdmin, getAllTestSeries);
+    .get(getAllTestSeries); // Allow authenticated users to get test series with filters
 
 router.route("/:testSeriesId")
     .get(getTestSeriesById)

@@ -40,23 +40,34 @@ const createQuiz = asyncHandler(async (req, res) => {
             title,
             description,
             testSeries,
+            section: req.body.section || undefined, // Add section support
             questions,
             timeLimit: timeLimit || 30,
             passingScore: passingScore || 70,
             quizType: quizType || "quiz",
             maxAttempts: maxAttempts || 0,
             creator: req.user._id,
-            isPublished: false
+            isPublished: false,
+            // Add other fields that might be in the request
+            category: req.body.category || '',
+            tags: req.body.tags || [],
+            difficulty: req.body.difficulty || 'medium',
+            allowReview: req.body.allowReview !== false,
+            showCorrectAnswers: req.body.showCorrectAnswers !== false,
+            randomizeQuestions: req.body.randomizeQuestions || false
         };
 
         const quiz = await Quiz.create(quizData);
 
-        // Add quiz to the test series' quizzes array and recalculate totals
+        // Add quiz to the test series' quizzes array (for backward compatibility)
         await TestSeries.findByIdAndUpdate(
             testSeries,
             { $addToSet: { quizzes: quiz._id } },
             { new: true }
         );
+
+        // Note: Section assignment is handled separately via the test series section endpoints
+        // This allows for better control and validation of section assignments
 
         // Recalculate test series totals
         const testSeriesDoc = await TestSeries.findById(testSeries);
@@ -129,7 +140,7 @@ const getAllQuizzes = asyncHandler(async (req, res) => {
         const quizzes = await Quiz.find(filter)
             .populate({
                 path: "testSeries",
-                select: "title slug course",
+                select: "title slug course sections",
                 populate: {
                     path: "course",
                     select: "title slug"
@@ -138,8 +149,20 @@ const getAllQuizzes = asyncHandler(async (req, res) => {
             .populate("creator", "username fullName")
             .sort({ createdAt: -1 });
 
+        // Add section title to quizzes that have a section assigned
+        const quizzesWithSectionInfo = quizzes.map(quiz => {
+            const quizObj = quiz.toObject();
+            if (quizObj.section && quizObj.testSeries?.sections) {
+                const section = quizObj.testSeries.sections.find(s => s._id.toString() === quizObj.section.toString());
+                if (section) {
+                    quizObj.sectionTitle = section.title;
+                }
+            }
+            return quizObj;
+        });
+
         return res.status(200).json(
-            new ApiResponse(200, quizzes, "Quizzes fetched successfully")
+            new ApiResponse(200, quizzesWithSectionInfo, "Quizzes fetched successfully")
         );
     } catch (error) {
         throw new ApiError(500, "Failed to fetch quizzes");
@@ -158,7 +181,7 @@ const getQuizById = asyncHandler(async (req, res) => {
         const quiz = await Quiz.findById(quizId)
             .populate({
                 path: "testSeries",
-                select: "title slug isPublished enrolledStudents course",
+                select: "title slug isPublished enrolledStudents course sections",
                 populate: {
                     path: "course",
                     select: "title slug"
@@ -189,8 +212,17 @@ const getQuizById = asyncHandler(async (req, res) => {
             throw new ApiError(403, "You don't have permission to access this quiz");
         }
 
+        // Add section title if quiz has a section assigned
+        const quizObj = quiz.toObject();
+        if (quizObj.section && quizObj.testSeries?.sections) {
+            const section = quizObj.testSeries.sections.find(s => s._id.toString() === quizObj.section.toString());
+            if (section) {
+                quizObj.sectionTitle = section.title;
+            }
+        }
+
         return res.status(200).json(
-            new ApiResponse(200, quiz, "Quiz fetched successfully")
+            new ApiResponse(200, quizObj, "Quiz fetched successfully")
         );
     } catch (error) {
         throw new ApiError(error.statusCode || 500, error.message || "Failed to fetch quiz");
