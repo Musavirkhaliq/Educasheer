@@ -460,6 +460,13 @@ const QuizManagement = () => {
                           </span>
                         </div>
                       )}
+                      {quiz.section && (
+                        <div className="flex items-center mb-1">
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-orange-100 text-orange-800 max-w-full">
+                            <span className="truncate">📂 Section: {quiz.sectionTitle || 'Unknown'}</span>
+                          </span>
+                        </div>
+                      )}
                       {quiz.testSeries?.course?.title && (
                         <div className="flex items-center mb-1">
                           <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800 max-w-full">

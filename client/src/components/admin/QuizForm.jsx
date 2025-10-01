@@ -19,12 +19,19 @@ const QuizForm = ({ isEditing = false }) => {
   const [submitting, setSubmitting] = useState(false);
   const [courses, setCourses] = useState([]);
   const [testSeries, setTestSeries] = useState([]);
+  const [sections, setSections] = useState([]);
   const [showJSONUpload, setShowJSONUpload] = useState(false);
+  const [showCreateSection, setShowCreateSection] = useState(false);
+  const [newSectionData, setNewSectionData] = useState({
+    title: '',
+    description: ''
+  });
   
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     testSeries: '',
+    section: '', // Add section field
     category: '',
     tags: [],
     difficulty: 'medium',
@@ -76,6 +83,7 @@ const QuizForm = ({ isEditing = false }) => {
             title: quizData.title || '',
             description: quizData.description || '',
             testSeries: quizData.testSeries?._id || '',
+            section: quizData.section || '',
             category: quizData.category || '',
             tags: quizData.tags || [],
             difficulty: quizData.difficulty || 'medium',
@@ -89,6 +97,11 @@ const QuizForm = ({ isEditing = false }) => {
             isPublished: quizData.isPublished || false,
             questions: processedQuestions
           });
+
+          // Load sections for the selected test series
+          if (quizData.testSeries?._id) {
+            loadSections(quizData.testSeries._id);
+          }
         }
       } catch (err) {
         console.error('Error fetching data:', err);
@@ -101,13 +114,42 @@ const QuizForm = ({ isEditing = false }) => {
     fetchData();
   }, [isEditing, quizId]);
   
+  // Load sections for selected test series
+  const loadSections = async (testSeriesId) => {
+    if (!testSeriesId) {
+      setSections([]);
+      return;
+    }
+
+    try {
+      const { testSeriesAPI } = await import('../../services/testSeriesAPI');
+      const response = await testSeriesAPI.getTestSeriesById(testSeriesId);
+      const testSeriesData = response.data.data;
+      setSections(testSeriesData.sections || []);
+    } catch (err) {
+      console.error('Error loading sections:', err);
+      setSections([]);
+    }
+  };
+
   // Handle form input changes
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
+    
+    // If test series changes, load its sections and reset section selection
+    if (name === 'testSeries') {
+      loadSections(value);
+      setFormData(prev => ({
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value,
+        section: '' // Reset section when test series changes
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value
+      }));
+    }
   };
   
   // Handle question changes
@@ -275,6 +317,48 @@ const QuizForm = ({ isEditing = false }) => {
     }));
   };
 
+  // Handle create new section
+  const handleCreateSection = async () => {
+    if (!formData.testSeries) {
+      toast.error('Please select a test series first');
+      return;
+    }
+
+    if (!newSectionData.title.trim()) {
+      toast.error('Section title is required');
+      return;
+    }
+
+    try {
+      const { testSeriesAPI } = await import('../../services/testSeriesAPI');
+      const response = await testSeriesAPI.addSection(formData.testSeries, {
+        title: newSectionData.title.trim(),
+        description: newSectionData.description.trim()
+      });
+
+      // Reload sections to get the updated list
+      await loadSections(formData.testSeries);
+      
+      // Find the newly created section and select it
+      const updatedTestSeries = response.data.data;
+      const newSection = updatedTestSeries.sections[updatedTestSeries.sections.length - 1];
+      
+      setFormData(prev => ({
+        ...prev,
+        section: newSection._id
+      }));
+
+      // Reset form and close modal
+      setNewSectionData({ title: '', description: '' });
+      setShowCreateSection(false);
+      
+      toast.success('Section created successfully');
+    } catch (err) {
+      console.error('Error creating section:', err);
+      toast.error(err.response?.data?.message || 'Failed to create section');
+    }
+  };
+
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -335,12 +419,27 @@ const QuizForm = ({ isEditing = false }) => {
         ...formData
       };
 
+      let savedQuiz;
       if (isEditing) {
-        await quizAPI.updateQuiz(quizId, submitData);
+        const response = await quizAPI.updateQuiz(quizId, submitData);
+        savedQuiz = response.data.data;
         toast.success('Quiz updated successfully');
       } else {
-        await quizAPI.createQuiz(submitData);
+        const response = await quizAPI.createQuiz(submitData);
+        savedQuiz = response.data.data;
         toast.success('Quiz created successfully');
+      }
+
+      // If a section is selected, assign the quiz to that section
+      if (formData.section && savedQuiz) {
+        try {
+          const { testSeriesAPI } = await import('../../services/testSeriesAPI');
+          await testSeriesAPI.addQuizToSection(formData.testSeries, formData.section, savedQuiz._id);
+          toast.success('Quiz assigned to section successfully');
+        } catch (err) {
+          console.error('Error assigning quiz to section:', err);
+          toast.error('Quiz saved but failed to assign to section');
+        }
       }
       
       navigate('/admin/quizzes');
@@ -421,6 +520,43 @@ const QuizForm = ({ isEditing = false }) => {
               </p>
             </div>
           </div>
+
+          {/* Section Selection */}
+          {formData.testSeries && (
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Section (Optional)
+              </label>
+              <div className="flex gap-2">
+                <select
+                  name="section"
+                  value={formData.section}
+                  onChange={handleInputChange}
+                  className="flex-1 border border-gray-300 rounded-md px-3 py-2"
+                >
+                  <option value="">No section (assign to test series directly)</option>
+                  {sections.map(section => (
+                    <option key={section._id} value={section._id}>
+                      {section.title}
+                      {section.description && ` - ${section.description.substring(0, 50)}${section.description.length > 50 ? '...' : ''}`}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={() => setShowCreateSection(true)}
+                  className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 flex items-center gap-1"
+                  title="Create new section"
+                >
+                  <FaPlus size={12} />
+                  New Section
+                </button>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Sections help organize quizzes within a test series. You can create a new section or leave unassigned.
+              </p>
+            </div>
+          )}
           
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -903,6 +1039,76 @@ const QuizForm = ({ isEditing = false }) => {
           </div>
         </div>
       </form>
+
+      {/* Create Section Modal */}
+      {showCreateSection && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Create New Section</h3>
+              <button
+                onClick={() => {
+                  setShowCreateSection(false);
+                  setNewSectionData({ title: '', description: '' });
+                }}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Section Title <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={newSectionData.title}
+                  onChange={(e) => setNewSectionData(prev => ({ ...prev, title: e.target.value }))}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  placeholder="e.g., Chapter 1: Introduction"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Description (Optional)
+                </label>
+                <textarea
+                  value={newSectionData.description}
+                  onChange={(e) => setNewSectionData(prev => ({ ...prev, description: e.target.value }))}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  rows="3"
+                  placeholder="Brief description of this section..."
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowCreateSection(false);
+                  setNewSectionData({ title: '', description: '' });
+                }}
+                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleCreateSection}
+                className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 flex items-center gap-1"
+              >
+                <FaPlus size={12} />
+                Create Section
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
