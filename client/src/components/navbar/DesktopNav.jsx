@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { FaAngleDown, FaUserCircle, FaGraduationCap, FaVideo, FaBook, FaHeadset, FaEdit, FaLayerGroup, FaMapMarkerAlt, FaTrophy } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
 import { motion } from "framer-motion";
+import CartIcon from "../cart/CartIcon";
 
 const DesktopNav = () => {
   const { currentUser, isAuthenticated, logout } = useAuth();
@@ -328,8 +329,9 @@ const DesktopNav = () => {
             </Link>
           </div>
 
-          {/* Auth Buttons */}
+          {/* Cart and Auth Buttons */}
           <div className="flex items-center space-x-4">
+            {isAuthenticated && <CartIcon />}
             {isAuthenticated ? (
               <div className="relative group">
                 <motion.button

@@ -18,6 +18,7 @@ import {
   FaCheckCircle,
   FaTag
 } from 'react-icons/fa';
+import AddToCartButton from '../cart/AddToCartButton';
 
 const TestSeriesCard = ({ testSeries, delay, onKnowMore }) => {
   // Check if we're on a mobile device
@@ -209,14 +210,21 @@ const TestSeriesCard = ({ testSeries, delay, onKnowMore }) => {
         </div>
 
         {/* Action Buttons - Fixed at bottom */}
-        <div className="flex gap-2 mt-auto">
+        <div className="flex gap-1 mt-auto">
           <button
             onClick={() => onKnowMore(testSeries)}
             className="flex-1 bg-gray-100 text-gray-700 py-1 px-2 rounded text-xs font-medium hover:bg-gray-200 transition-all duration-300 flex items-center justify-center"
           >
             <FaInfoCircle className="text-xs mr-1" />
-            <span>Know More</span>
+            <span>Info</span>
           </button>
+
+          <AddToCartButton
+            itemType="testSeries"
+            itemId={testSeries._id}
+            size="sm"
+            className="flex-1 text-xs"
+          />
 
           <Link
             to={`/test-series/${testSeries._id}`}

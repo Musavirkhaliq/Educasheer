@@ -19,6 +19,7 @@ import { quizAPI } from '../services/quizAPI';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
 import TestSeriesProgress from './TestSeriesProgress';
+import AddToCartButton from './cart/AddToCartButton';
 
 const TestSeriesDetail = () => {
   const { testSeriesId } = useParams();
@@ -237,17 +238,31 @@ const TestSeriesDetail = () => {
                     />
                   ) : (
                     <div className="bg-gray-50 rounded-lg p-6 text-center">
-                      <h3 className="text-lg font-medium text-gray-800 mb-2">Enroll to Access</h3>
+                      <h3 className="text-lg font-medium text-gray-800 mb-2">
+                        {testSeries.price > 0 ? 'Purchase Required' : 'Enrollment Required'}
+                      </h3>
                       <p className="text-gray-600 mb-4">
-                        Enroll in this test series to access all tests and track your progress.
+                        {testSeries.price > 0 
+                          ? 'Purchase this test series to access all tests and track your progress.'
+                          : 'Enroll in this free test series to access all tests and track your progress.'
+                        }
                       </p>
-                      <button
-                        onClick={handleEnroll}
-                        disabled={enrolling}
-                        className="bg-[#00bcd4] text-white px-6 py-2 rounded-lg hover:bg-[#0097a7] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {enrolling ? 'Enrolling...' : 'Enroll Now'}
-                      </button>
+                      {testSeries.price > 0 ? (
+                        <AddToCartButton
+                          itemType="testSeries"
+                          itemId={testSeriesId}
+                          className="mx-auto"
+                          size="md"
+                        />
+                      ) : (
+                        <button
+                          onClick={handleEnroll}
+                          disabled={enrolling}
+                          className="bg-[#00bcd4] text-white px-6 py-3 rounded-lg hover:bg-[#0097a7] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {enrolling ? 'Enrolling...' : 'Enroll Now'}
+                        </button>
+                      )}
                     </div>
                   )}
 
@@ -288,20 +303,31 @@ const TestSeriesDetail = () => {
                       <div className="text-center">
                         <div className="bg-green-100 text-green-800 px-4 py-2 rounded-lg mb-4 flex items-center justify-center gap-2">
                           <FaCheck />
-                          Enrolled
+                          {testSeries.price > 0 ? 'Purchased' : 'Enrolled'}
                         </div>
                         <p className="text-sm text-gray-600">
                           You have access to all tests in this series
                         </p>
                       </div>
                     ) : (
-                      <button
-                        onClick={handleEnroll}
-                        disabled={enrolling}
-                        className="w-full bg-[#00bcd4] text-white py-3 px-4 rounded-lg hover:bg-[#0097a7] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {enrolling ? 'Enrolling...' : 'Enroll Now'}
-                      </button>
+                      <div className="space-y-3">
+                        {testSeries.price > 0 ? (
+                          <AddToCartButton
+                            itemType="testSeries"
+                            itemId={testSeriesId}
+                            className="w-full"
+                            size="lg"
+                          />
+                        ) : (
+                          <button
+                            onClick={handleEnroll}
+                            disabled={enrolling}
+                            className="w-full bg-[#00bcd4] text-white px-6 py-3 rounded-lg hover:bg-[#0097a7] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-lg font-medium"
+                          >
+                            {enrolling ? 'Enrolling...' : 'Enroll Now'}
+                          </button>
+                        )}
+                      </div>
                     )}
                   </div>
 

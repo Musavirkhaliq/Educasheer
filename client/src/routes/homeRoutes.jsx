@@ -50,6 +50,10 @@ import TestSeriesForm from '../components/admin/TestSeriesForm';
 import TestSeriesEditPage from '../components/admin/TestSeriesEditPage';
 import CategoryManagementPage from '../pages/CategoryManagementPage';
 import AdminBookingManagementPage from '../pages/AdminBookingManagementPage';
+import CartPage from '../pages/CartPage';
+import CheckoutPage from '../pages/CheckoutPage';
+import PaymentSuccessPage from '../pages/PaymentSuccessPage';
+import PromoCodeManagement from '../components/admin/PromoCodeManagement';
 
 export const homeRoutes = [
   {
@@ -552,6 +556,40 @@ export const homeRoutes = [
     element: (
       <Suspense fallback={<h1>Loading</h1>}>
         <ExamsPage />
+      </Suspense>
+    ),
+  },
+  // Cart and Payment routes
+  {
+    path: "cart",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <CartPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: "checkout",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <CheckoutPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: "payment-success",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <PaymentSuccessPage />
+      </Suspense>
+    ),
+  },
+  // Admin promo code management
+  {
+    path: "admin/promocodes",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <PromoCodeManagement />
       </Suspense>
     ),
   },

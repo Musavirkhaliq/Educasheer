@@ -2,6 +2,7 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { routes } from "./routes";
 import React, { useMemo } from "react";
 import { AuthProvider } from "./context/AuthContext";
+import { CartProvider } from "./contexts/CartContext";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { Toaster } from "react-hot-toast";
 import QuizzesExamsPage from './pages/QuizzesExamsPage';
@@ -25,23 +26,25 @@ const App = () => {
   return (
     <GoogleOAuthProvider clientId={clientId}>
       <AuthProvider>
-        <RouterProvider router={router} />
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            duration: 4000,
-            style: {
-              background: '#363636',
-              color: '#fff',
-            },
-            success: {
-              duration: 3000,
-              theme: {
-                primary: '#4aed88',
+        <CartProvider>
+          <RouterProvider router={router} />
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              duration: 4000,
+              style: {
+                background: '#363636',
+                color: '#fff',
               },
-            },
-          }}
-        />
+              success: {
+                duration: 3000,
+                theme: {
+                  primary: '#4aed88',
+                },
+              },
+            }}
+          />
+        </CartProvider>
       </AuthProvider>
     </GoogleOAuthProvider>
   );

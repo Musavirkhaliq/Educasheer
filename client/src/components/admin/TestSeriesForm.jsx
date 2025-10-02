@@ -392,6 +392,47 @@ const TestSeriesForm = ({ isEditing = false, onUpdate }) => {
           </div>
         </div>
 
+        {/* Pricing */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Price (₹)
+            </label>
+            <input
+              type="number"
+              name="price"
+              value={formData.price}
+              onChange={handleInputChange}
+              min="0"
+              step="1"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#00bcd4]"
+              placeholder="0 for free"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Set to 0 to make this test series free
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Original Price (₹)
+            </label>
+            <input
+              type="number"
+              name="originalPrice"
+              value={formData.originalPrice}
+              onChange={handleInputChange}
+              min="0"
+              step="1"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#00bcd4]"
+              placeholder="Original price for discount display"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Optional: Show original price for discount display
+            </p>
+          </div>
+        </div>
+
         {/* Tags */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">

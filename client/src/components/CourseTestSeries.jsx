@@ -16,6 +16,7 @@ import { testSeriesAPI } from '../services/testSeriesAPI';
 import { quizAPI } from '../services/quizAPI';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
+import AddToCartButton from './cart/AddToCartButton';
 
 const CourseTestSeries = ({ courseId, courseName, isInstructor = false }) => {
   console.log('CourseTestSeries component rendered with:', { courseId, courseName, isInstructor });
@@ -331,22 +332,34 @@ const CourseTestSeries = ({ courseId, courseName, isInstructor = false }) => {
                     </div>
                   )}
 
-                  <Link
-                    to={`/test-series/${ts._id}`}
-                    className="bg-[#00bcd4] text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-[#0097a7] transition-colors text-sm whitespace-nowrap"
-                  >
-                    {isEnrolled ? (
-                      <>
-                        <FaPlay size={12} />
-                        {hasStarted ? 'Continue' : 'Start Tests'}
-                      </>
-                    ) : (
-                      <>
-                        <FaBook size={12} />
-                        View Details
-                      </>
+                  <div className="flex flex-col gap-2">
+                    {!isEnrolled && ts.price > 0 && (
+                      <div className="text-right">
+                        <AddToCartButton
+                          itemType="testSeries"
+                          itemId={ts._id}
+                          size="sm"
+                          className="text-xs"
+                        />
+                      </div>
                     )}
-                  </Link>
+                    <Link
+                      to={`/test-series/${ts._id}`}
+                      className="bg-[#00bcd4] text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-[#0097a7] transition-colors text-sm whitespace-nowrap"
+                    >
+                      {isEnrolled ? (
+                        <>
+                          <FaPlay size={12} />
+                          {hasStarted ? 'Continue' : 'Start Tests'}
+                        </>
+                      ) : (
+                        <>
+                          <FaBook size={12} />
+                          View Details
+                        </>
+                      )}
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>

@@ -16,8 +16,11 @@ const startQuizAttempt = asyncHandler(async (req, res) => {
         const { quizId } = req.params;
         const userId = req.user._id;
         
-        // Find the quiz
-        const quiz = await Quiz.findById(quizId);
+        // Find the quiz with test series information
+        const quiz = await Quiz.findById(quizId).populate({
+            path: 'testSeries',
+            select: 'title price enrolledStudents isPublished'
+        });
         if (!quiz) {
             throw new ApiError(404, "Quiz not found");
         }
@@ -25,6 +28,23 @@ const startQuizAttempt = asyncHandler(async (req, res) => {
         // Check if quiz is published
         if (!quiz.isPublished) {
             throw new ApiError(403, "This quiz is not available for attempts");
+        }
+
+        // Check test series access if quiz belongs to a test series
+        if (quiz.testSeries) {
+            // Check if test series is published
+            if (!quiz.testSeries.isPublished) {
+                throw new ApiError(403, "This test series is not available");
+            }
+
+            // Check if user is enrolled in the test series (required for both free and paid)
+            if (!quiz.testSeries.enrolledStudents.includes(userId)) {
+                if (quiz.testSeries.price > 0) {
+                    throw new ApiError(403, "You need to purchase this test series to access its quizzes. Please add it to your cart and complete the payment.");
+                } else {
+                    throw new ApiError(403, "You need to enroll in this test series to access its quizzes.");
+                }
+            }
         }
         
         // Check if user has reached maximum attempts

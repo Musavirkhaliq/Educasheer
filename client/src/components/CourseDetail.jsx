@@ -22,6 +22,7 @@ import { CommentSection } from './comments';
 import CourseMaterials from './CourseMaterials';
 import CourseTestSeries from './CourseTestSeries';
 import customFetch from '../utils/customFetch';
+import AddToCartButton from './cart/AddToCartButton';
 
 const CourseDetail = () => {
   const { courseId } = useParams();
@@ -402,26 +403,14 @@ const CourseDetail = () => {
                   )}
                 </div>
               ) : (
-                <button
-                  onClick={handleEnroll}
-                  disabled={enrolling || !course.isPublished}
-                  className={`w-full py-3 px-4 rounded-xl font-medium flex items-center justify-center gap-2 transition-colors ${!course.isPublished
-                    ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                    : 'bg-blue-600 text-white hover:bg-blue-700'
-                    }`}
-                >
-                  {enrolling ? (
-                    <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      Enrolling...
-                    </>
-                  ) : (
-                    <>
-                      <HiOutlineAcademicCap className="w-5 h-5" />
-                      Enroll Now
-                    </>
-                  )}
-                </button>
+                <div className="space-y-3">
+                  <AddToCartButton
+                    itemType="course"
+                    itemId={course._id}
+                    className="w-full"
+                    size="lg"
+                  />
+                </div>
               )}
 
               {canEdit() && (
@@ -810,26 +799,12 @@ const CourseDetail = () => {
                           )}
                         </div>
 
-                        <button
-                          onClick={handleEnroll}
-                          disabled={enrolling || !course.isPublished}
-                          className={`w-full py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors ${!course.isPublished
-                            ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                            : 'bg-blue-600 text-white hover:bg-blue-700'
-                            }`}
-                        >
-                          {enrolling ? (
-                            <>
-                              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                              Enrolling...
-                            </>
-                          ) : (
-                            <>
-                              <HiOutlineAcademicCap className="w-5 h-5" />
-                              Enroll Now
-                            </>
-                          )}
-                        </button>
+                        <AddToCartButton
+                          itemType="course"
+                          itemId={course._id}
+                          className="w-full"
+                          size="lg"
+                        />
                       </div>
                     )}
                   </div>
@@ -893,14 +868,13 @@ const CourseDetail = () => {
                     <BiLock className="w-8 h-8 text-gray-400 mx-auto" />
                   </div>
                   <h4 className="font-semibold text-gray-800 mb-2">Premium Materials</h4>
-                  <p className="text-gray-600 mb-6">Enroll to access study materials</p>
-                  <button
-                    onClick={handleEnroll}
-                    disabled={enrolling}
-                    className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors font-medium disabled:opacity-50"
-                  >
-                    {enrolling ? 'Enrolling...' : 'Enroll Now'}
-                  </button>
+                  <p className="text-gray-600 mb-6">Add to cart and purchase to access study materials</p>
+                  <AddToCartButton
+                    itemType="course"
+                    itemId={course._id}
+                    className="mx-auto"
+                    size="md"
+                  />
                 </div>
               )}
             </section>
@@ -1116,20 +1090,12 @@ const CourseDetail = () => {
                   )}
                 </div>
                 {!isEnrolled() ? (
-                  <button
-                    onClick={() => {
-                      setShowCourseModal(false);
-                      handleEnroll();
-                    }}
-                    disabled={enrolling || !course.isPublished}
-                    className={`px-8 py-3 rounded-xl font-semibold flex items-center gap-2 transition-colors ${!course.isPublished
-                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                      : 'bg-blue-600 text-white hover:bg-blue-700'
-                      }`}
-                  >
-                    <HiOutlineAcademicCap className="w-5 h-5" />
-                    Enroll Now
-                  </button>
+                  <AddToCartButton
+                    itemType="course"
+                    itemId={course._id}
+                    className=""
+                    size="lg"
+                  />
                 ) : (
                   <div className="flex items-center gap-2 text-green-600">
                     <HiOutlineCheckCircle className="w-5 h-5" />

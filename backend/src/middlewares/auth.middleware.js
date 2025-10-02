@@ -1,4 +1,4 @@
-import { User } from "../models/user.model.js";
+  import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import jwt from "jsonwebtoken";
@@ -31,6 +31,24 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
     next();
   } catch (error) {
     throw new ApiError(401, error.message || "Unauthorized user request");
+  }
+});
+
+export const verifyAdmin = asyncHandler(async (req, res, next) => {
+  try {
+    // Check if user exists (should be set by verifyJWT middleware)
+    if (!req.user) {
+      throw new ApiError(401, "Unauthorized: User not authenticated");
+    }
+
+    // Check if user is admin
+    if (req.user.role !== "admin") {
+      throw new ApiError(403, "Forbidden: Admin access required");
+    }
+
+    next();
+  } catch (error) {
+    throw new ApiError(403, error.message || "Admin access required");
   }
 });
 

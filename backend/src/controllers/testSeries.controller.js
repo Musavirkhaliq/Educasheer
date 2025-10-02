@@ -496,7 +496,7 @@ const removeQuizFromTestSeries = asyncHandler(async (req, res) => {
 });
 
 /**
- * Enroll in test series
+ * Enroll in test series (only for free test series)
  * @route POST /api/v1/test-series/:testSeriesId/enroll
  * @access Authenticated users
  */
@@ -513,12 +513,17 @@ const enrollInTestSeries = asyncHandler(async (req, res) => {
             throw new ApiError(400, "Cannot enroll in unpublished test series");
         }
 
+        // Check if test series is paid
+        if (testSeries.price > 0) {
+            throw new ApiError(400, "This test series requires purchase. Please add it to your cart and complete the payment.");
+        }
+
         // Check if user is already enrolled
         if (testSeries.enrolledStudents.includes(req.user._id)) {
             throw new ApiError(400, "You are already enrolled in this test series");
         }
 
-        // Add user to enrolled students
+        // Add user to enrolled students (only for free test series)
         testSeries.enrolledStudents.push(req.user._id);
         await testSeries.save();
 
