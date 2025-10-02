@@ -1123,8 +1123,8 @@ const CourseDetail = () => {
                     }}
                     disabled={enrolling || !course.isPublished}
                     className={`px-8 py-3 rounded-xl font-semibold flex items-center gap-2 transition-colors ${!course.isPublished
-                        ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                      : 'bg-blue-600 text-white hover:bg-blue-700'
                       }`}
                   >
                     <HiOutlineAcademicCap className="w-5 h-5" />
