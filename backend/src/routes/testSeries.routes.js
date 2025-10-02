@@ -3,6 +3,7 @@ import {
     createTestSeries,
     getAllTestSeries,
     getPublishedTestSeries,
+    getEnrolledTestSeries,
     getTestSeriesById,
     updateTestSeries,
     deleteTestSeries,
@@ -32,6 +33,10 @@ router.use(verifyJWT);
 router.route("/")
     .post(isAdmin, createTestSeries)
     .get(getAllTestSeries); // Allow authenticated users to get test series with filters
+
+// Get enrolled test series for authenticated user
+router.route("/enrolled")
+    .get(getEnrolledTestSeries);
 
 router.route("/:testSeriesId")
     .get(getTestSeriesById)

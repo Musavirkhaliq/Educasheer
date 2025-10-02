@@ -3,6 +3,7 @@ import {
     createQuiz,
     getAllQuizzes,
     getPublishedQuizzes,
+    getEnrolledQuizzes,
     getQuizCategories,
     getQuizById,
     updateQuiz,
@@ -35,6 +36,10 @@ router.use(verifyJWT);
 router.route("/")
     .post(isAdmin, createQuiz)
     .get(isAdmin, getAllQuizzes);
+
+// Get enrolled quizzes for authenticated user
+router.route("/enrolled")
+    .get(getEnrolledQuizzes);
 
 // JSON upload route for bulk question import (admin only)
 router.route("/upload-questions")

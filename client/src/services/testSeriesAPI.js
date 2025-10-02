@@ -44,6 +44,21 @@ export const testSeriesAPI = {
     }
   },
 
+  // Get enrolled test series for authenticated user
+  getEnrolledTestSeries: async (filters = {}) => {
+    const params = new URLSearchParams();
+    Object.keys(filters).forEach(key => {
+      if (filters[key]) {
+        params.append(key, filters[key]);
+      }
+    });
+    
+    const queryString = params.toString();
+    const url = queryString ? `/test-series/enrolled?${queryString}` : '/test-series/enrolled';
+    
+    return await customFetch.get(url);
+  },
+
   // Get test series by ID
   getTestSeriesById: async (testSeriesId) => {
     return await customFetch.get(`/test-series/${testSeriesId}`);

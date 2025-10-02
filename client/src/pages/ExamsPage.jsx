@@ -1,46 +1,37 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { quizAPI } from '../services/quizAPI';
 import { testSeriesAPI } from '../services/testSeriesAPI';
 import { useAuth } from '../context/AuthContext';
 import {
   FaSearch,
   FaFilter,
-  FaClock,
-  FaQuestionCircle,
-  FaGraduationCap,
   FaBook,
-  FaSpinner,
-  FaUser,
-  FaPlay,
-  FaTrophy,
   FaBookOpen,
-  FaUsers,
   FaListAlt,
-  FaTag,
-  FaFire,
-  FaChartLine,
-
+  FaUser,
+  FaTimes,
+  FaChevronDown,
+  FaChevronUp,
   FaRocket,
-  FaEye,
-  FaHeart
+  FaTrophy,
+  FaUsers,
+  FaGraduationCap
 } from 'react-icons/fa';
 import { motion } from 'framer-motion';
+import QuizCard from '../components/QuizCard';
+import TestSeriesCard from '../components/TestSeriesCard';
 
 const ExamsPage = () => {
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedType, setSelectedType] = useState('');
-  const [selectedTags, setSelectedTags] = useState([]);
   const [selectedDifficulty, setSelectedDifficulty] = useState('');
   const [quizzes, setQuizzes] = useState([]);
   const [testSeries, setTestSeries] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [tags, setTags] = useState([]);
   const [loading, setLoading] = useState(false);
   const [testSeriesLoading, setTestSeriesLoading] = useState(false);
-  const [categoriesLoading, setCategoriesLoading] = useState(true);
-  const [tagsLoading, setTagsLoading] = useState(true);
   const [error, setError] = useState('');
   const [testSeriesError, setTestSeriesError] = useState('');
   const [pagination, setPagination] = useState({
@@ -49,48 +40,28 @@ const ExamsPage = () => {
     total: 0,
     pages: 0
   });
-  const [showFilters, setShowFilters] = useState(false);
   const [currentView, setCurrentView] = useState('test-series'); // 'quizzes' or 'test-series'
+  const [currentCategory, setCurrentCategory] = useState('all'); // 'all' or 'enrolled'
+  const [showFilters, setShowFilters] = useState(false);
 
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     fetchCategories();
-    fetchTags();
-    fetchTestSeries();
-  }, []);
-
-  useEffect(() => {
     if (currentView === 'quizzes') {
       fetchQuizzes();
     } else {
       fetchTestSeries();
     }
-    // eslint-disable-next-line
-  }, [search, selectedCategory, selectedType, selectedTags, selectedDifficulty, pagination.page, currentView]);
+  }, [currentView, currentCategory, search, selectedCategory, selectedType, selectedDifficulty, pagination.page]);
 
   const fetchCategories = async () => {
-    setCategoriesLoading(true);
     try {
       const response = await quizAPI.getQuizCategories();
       setCategories(response.data.data || []);
     } catch (err) {
       console.error('Failed to load categories:', err);
-    } finally {
-      setCategoriesLoading(false);
-    }
-  };
-
-  const fetchTags = async () => {
-    setTagsLoading(true);
-    try {
-      const response = await quizAPI.getQuizTags();
-      setTags(response.data.data || []);
-    } catch (err) {
-      console.error('Failed to load tags:', err);
-    } finally {
-      setTagsLoading(false);
     }
   };
 
@@ -105,10 +76,15 @@ const ExamsPage = () => {
       if (search) params.search = search;
       if (selectedCategory) params.category = selectedCategory;
       if (selectedType) params.type = selectedType;
-      if (selectedTags.length > 0) params.tags = selectedTags.join(',');
       if (selectedDifficulty) params.difficulty = selectedDifficulty;
 
-      const response = await quizAPI.getPublishedQuizzes(params);
+      let response;
+      if (currentCategory === 'enrolled' && isAuthenticated) {
+        response = await quizAPI.getEnrolledQuizzes(params);
+      } else {
+        response = await quizAPI.getPublishedQuizzes(params);
+      }
+
       const data = response.data.data;
       setQuizzes(data.quizzes || []);
       setPagination(data.pagination || pagination);
@@ -129,7 +105,13 @@ const ExamsPage = () => {
       if (selectedCategory) params.category = selectedCategory;
       if (selectedDifficulty) params.difficulty = selectedDifficulty;
 
-      const response = await testSeriesAPI.getPublishedTestSeries(params);
+      let response;
+      if (currentCategory === 'enrolled' && isAuthenticated) {
+        response = await testSeriesAPI.getEnrolledTestSeries(params);
+      } else {
+        response = await testSeriesAPI.getPublishedTestSeries(params);
+      }
+
       setTestSeries(response.data.data || []);
     } catch (err) {
       setTestSeriesError('Failed to load test series.');
@@ -139,52 +121,30 @@ const ExamsPage = () => {
     }
   };
 
-  const handleCategorySelect = (categoryName) => {
-    setSelectedCategory(categoryName === selectedCategory ? '' : categoryName);
-    setPagination(prev => ({ ...prev, page: 1 }));
-  };
-
-  const handleTypeSelect = (type) => {
-    setSelectedType(type === selectedType ? '' : type);
-    setPagination(prev => ({ ...prev, page: 1 }));
-  };
-
-  const handleTagSelect = (tag) => {
-    setSelectedTags(prev => {
-      const isSelected = prev.includes(tag);
-      const newTags = isSelected
-        ? prev.filter(t => t !== tag)
-        : [...prev, tag];
-      return newTags;
-    });
-    setPagination(prev => ({ ...prev, page: 1 }));
-  };
-
-  const handleDifficultySelect = (difficulty) => {
-    setSelectedDifficulty(difficulty === selectedDifficulty ? '' : difficulty);
-    setPagination(prev => ({ ...prev, page: 1 }));
-  };
-
-  const handleSearchChange = (e) => {
-    setSearch(e.target.value);
-    setPagination(prev => ({ ...prev, page: 1 }));
-  };
-
   const handleQuizClick = (quiz) => {
     // Check if user is authenticated before allowing quiz access
     if (!isAuthenticated) {
-      // Redirect to login with appropriate return URL
-      const redirectUrl = quiz.course
-        ? `/courses/${quiz.course._id}/quizzes/${quiz._id}`
-        : `/test-series/${quiz.testSeries._id}/quiz/${quiz._id}`;
+      const redirectUrl = quiz.testSeries
+        ? `/test-series/${quiz.testSeries._id}/quiz/${quiz._id}`
+        : `/quiz/${quiz._id}`;
       navigate(`/login?redirect=${redirectUrl}`);
       return;
     }
 
-    // Navigate to quiz taking page based on context
-    if (quiz.course) {
-      navigate(`/courses/${quiz.course._id}/quizzes/${quiz._id}`);
-    } else if (quiz.testSeries) {
+    // For quizzes from test series, check enrollment status
+    if (quiz.testSeries && !quiz.isEnrolledInTestSeries && currentCategory === 'all') {
+      // Show quiz details but redirect to test series enrollment
+      navigate(`/test-series/${quiz.testSeries._id}`, {
+        state: {
+          message: `You need to enroll in "${quiz.testSeries.title}" test series to access this quiz.`,
+          highlightQuiz: quiz._id
+        }
+      });
+      return;
+    }
+
+    // Navigate to quiz taking page
+    if (quiz.testSeries) {
       navigate(`/test-series/${quiz.testSeries._id}/quiz/${quiz._id}`);
     }
   };
@@ -200,74 +160,86 @@ const ExamsPage = () => {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Modern Hero Section */}
-      <div className="relative bg-white border-b border-slate-200">
-        <div className="container mx-auto px-4 py-16">
+      {/* Hero Section */}
+      <div className="relative bg-gradient-to-br from-[#01427a] via-[#00bcd4] to-[#01427a] overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-0 left-0 w-96 h-96 bg-[#00bcd4] rounded-full mix-blend-multiply filter blur-xl -translate-x-48 -translate-y-48"></div>
+          <div className="absolute top-0 right-0 w-96 h-96 bg-[#01427a] rounded-full mix-blend-multiply filter blur-xl translate-x-48 -translate-y-48"></div>
+          <div className="absolute bottom-0 left-1/2 w-96 h-96 bg-[#00bcd4] rounded-full mix-blend-multiply filter blur-xl -translate-x-48 translate-y-48"></div>
+        </div>
+
+        <div className="relative container mx-auto px-4 py-20">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="text-center"
           >
-            {/* Main Title */}
-            <div className="mb-8">
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                className="inline-flex items-center gap-2 bg-slate-100 rounded-full px-4 py-2 mb-6 text-slate-600"
-              >
-                <FaRocket className="text-blue-500" />
-                <span className="font-medium text-sm">Boost Your Knowledge</span>
-              </motion.div>
+            {/* Badge */}
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-6 py-3 mb-8 text-white"
+            >
+              <FaRocket className="text-yellow-400" />
+              <span className="font-medium">Boost Your Knowledge</span>
+            </motion.div>
 
-              <h1 className="text-4xl md:text-6xl font-bold mb-4 text-slate-900 leading-tight">
-                Exams & Quizzes
-              </h1>
-              <p className="text-lg md:text-xl mb-8 text-slate-600 max-w-2xl mx-auto leading-relaxed">
-                Master your subjects with expertly crafted assessments. Track progress and achieve excellence.
-              </p>
-            </div>
+            <h1 className="text-5xl md:text-7xl font-bold mb-6 text-white leading-tight">
+              Exams & <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00bcd4] to-white">Quizzes</span>
+            </h1>
+            <p className="text-xl md:text-2xl mb-12 text-white/90 max-w-3xl mx-auto leading-relaxed">
+              Master your subjects with expertly crafted assessments. Track progress and achieve excellence.
+            </p>
 
-            {/* Modern Search Bar */}
+            {/* Search Bar */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
-              className="max-w-2xl mx-auto relative mb-8"
+              className="max-w-3xl mx-auto relative mb-12"
             >
-              <div className="relative">
-                <div className="relative bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-                  <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400" />
-                  <input
-                    type="text"
-                    placeholder="Search for exams, quizzes, topics..."
-                    value={search}
-                    onChange={handleSearchChange}
-                    className="w-full pl-12 pr-4 py-4 bg-transparent text-slate-800 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-2xl"
-                  />
-                </div>
+              <div className="relative bg-white/10 backdrop-blur-md rounded-3xl border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-300">
+                <FaSearch className="absolute left-6 top-1/2 transform -translate-y-1/2 text-white/70 text-xl" />
+                <input
+                  type="text"
+                  placeholder="Search for exams, quizzes, topics..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full pl-16 pr-6 py-6 bg-transparent text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white/30 rounded-3xl text-lg"
+                />
               </div>
             </motion.div>
 
-            {/* Stats */}
+            {/* Stats with Different Colors */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.6 }}
-              className="flex flex-wrap justify-center gap-8 text-slate-600"
+              className="flex flex-wrap justify-center gap-8 text-white/90"
             >
-              <div className="flex items-center gap-2">
-                <FaBookOpen className="text-blue-500" />
-                <span className="font-medium">{pagination.total}+ Quizzes</span>
+              <div className="flex items-center gap-3 bg-purple-500/20 backdrop-blur-sm rounded-2xl px-6 py-3 border-2 border-purple-400/30 shadow-lg">
+                <FaBookOpen className="text-purple-300 text-xl" />
+                <div>
+                  <div className="font-bold text-lg">{pagination.total}+</div>
+                  <div className="text-sm text-purple-200">Quizzes</div>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <FaTrophy className="text-amber-500" />
-                <span className="font-medium">{testSeries.length}+ Test Series</span>
+              <div className="flex items-center gap-3 bg-orange-500/20 backdrop-blur-sm rounded-2xl px-6 py-3 border-2 border-orange-400/30 shadow-lg">
+                <FaTrophy className="text-orange-300 text-xl" />
+                <div>
+                  <div className="font-bold text-lg">{testSeries.length}+</div>
+                  <div className="text-sm text-orange-200">Test Series</div>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <FaUsers className="text-emerald-500" />
-                <span className="font-medium">10k+ Students</span>
+              <div className="flex items-center gap-3 bg-emerald-500/20 backdrop-blur-sm rounded-2xl px-6 py-3 border-2 border-emerald-400/30 shadow-lg">
+                <FaUsers className="text-emerald-300 text-xl" />
+                <div>
+                  <div className="font-bold text-lg">10k+</div>
+                  <div className="text-sm text-emerald-200">Students</div>
+                </div>
               </div>
             </motion.div>
           </motion.div>
@@ -275,989 +247,459 @@ const ExamsPage = () => {
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        {/* Modern View Toggle */}
+        {/* View Toggle */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           className="mb-8"
         >
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-            <div className="flex flex-col items-center justify-center gap-6">
-              {/* View Toggle Buttons - Centered */}
-              <div className="flex items-center justify-center">
-                <div className="bg-slate-100 rounded-xl p-1 flex">
-                  <button
-                    onClick={() => setCurrentView('test-series')}
-                    className={`px-6 py-3 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 relative ${currentView === 'test-series'
-                      ? 'bg-white text-slate-900 shadow-sm'
-                      : 'text-slate-600 hover:text-slate-800'
-                      }`}
-                  >
-                    <FaListAlt className="text-sm" />
-                    <span>Test Series</span>
-                    {currentView === 'test-series' && (
-                      <span className="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded-full ml-1">
-                        {testSeries.length}
-                      </span>
-                    )}
-                  </button>
-                  <button
-                    onClick={() => setCurrentView('quizzes')}
-                    className={`px-6 py-3 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 relative ${currentView === 'quizzes'
-                      ? 'bg-white text-slate-900 shadow-sm'
-                      : 'text-slate-600 hover:text-slate-800'
-                      }`}
-                  >
-                    <FaBookOpen className="text-sm" />
-                    <span>Individual Quizzes</span>
-                    {currentView === 'quizzes' && (
-                      <span className="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded-full ml-1">
-                        {pagination.total}
-                      </span>
-                    )}
-                  </button>
-                </div>
+          <div className="bg-white rounded-3xl shadow-xl border border-slate-200 p-8 backdrop-blur-sm">
+            <div className="flex flex-col items-center justify-center gap-8">
+              {/* Content Type Toggle */}
+              <div className="bg-gradient-to-r from-slate-100 to-gray-100 rounded-2xl p-2 flex shadow-inner">
+                <button
+                  onClick={() => setCurrentView('test-series')}
+                  className={`px-8 py-4 rounded-xl font-bold transition-all duration-500 flex items-center gap-3 relative transform ${currentView === 'test-series'
+                    ? 'bg-white text-slate-900 shadow-lg scale-105'
+                    : 'text-slate-600 hover:text-slate-800 hover:scale-102'
+                    }`}
+                >
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${currentView === 'test-series'
+                    ? 'bg-gradient-to-br from-[#00bcd4] to-[#01427a] text-white'
+                    : 'bg-slate-200 text-slate-600'
+                    }`}>
+                    <FaGraduationCap className="text-lg" />
+                  </div>
+                  <div className="text-left">
+                    <div className="text-lg">Test Series</div>
+                    <div className="text-xs opacity-70">Complete test packages</div>
+                  </div>
+                  {currentView === 'test-series' && (
+                    <span className="bg-gradient-to-r from-[#00bcd4] to-[#01427a] text-white text-xs px-3 py-1 rounded-full ml-2 font-bold">
+                      {testSeries.length}
+                    </span>
+                  )}
+                </button>
+                <button
+                  onClick={() => setCurrentView('quizzes')}
+                  className={`px-8 py-4 rounded-xl font-bold transition-all duration-500 flex items-center gap-3 relative transform ${currentView === 'quizzes'
+                    ? 'bg-white text-slate-900 shadow-lg scale-105'
+                    : 'text-slate-600 hover:text-slate-800 hover:scale-102'
+                    }`}
+                >
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${currentView === 'quizzes'
+                    ? 'bg-gradient-to-br from-[#00bcd4] to-[#01427a] text-white'
+                    : 'bg-slate-200 text-slate-600'
+                    }`}>
+                    <FaBookOpen className="text-lg" />
+                  </div>
+                  <div className="text-left">
+                    <div className="text-lg">Individual Quizzes</div>
+                    <div className="text-xs opacity-70">Single quiz sessions</div>
+                  </div>
+                  {currentView === 'quizzes' && (
+                    <span className="bg-gradient-to-r from-[#00bcd4] to-[#01427a] text-white text-xs px-3 py-1 rounded-full ml-2 font-bold">
+                      {pagination.total}
+                    </span>
+                  )}
+                </button>
               </div>
 
-              {/* Quick Actions - Centered below */}
-              {/* <div className="flex items-center gap-6">
-                <div className="flex items-center gap-2 text-slate-600">
-                  <FaFire className="text-orange-500" />
-                  <span className="text-sm font-medium">Popular Today</span>
+              {/* Enrollment Category Toggle */}
+              {isAuthenticated && (
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-2 flex border-2 border-blue-200 shadow-inner">
+                  <button
+                    onClick={() => setCurrentCategory('all')}
+                    className={`px-6 py-3 rounded-xl font-bold transition-all duration-300 flex items-center gap-3 text-sm transform ${currentCategory === 'all'
+                      ? 'bg-white text-blue-900 shadow-lg scale-105'
+                      : 'text-blue-600 hover:text-blue-800 hover:scale-102'
+                      }`}
+                  >
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${currentCategory === 'all'
+                      ? 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white'
+                      : 'bg-blue-200 text-blue-600'
+                      }`}>
+                      <FaBook className="text-sm" />
+                    </div>
+                    <span>All {currentView === 'test-series' ? 'Test Series' : 'Quizzes'}</span>
+                  </button>
+                  <button
+                    onClick={() => setCurrentCategory('enrolled')}
+                    className={`px-6 py-3 rounded-xl font-bold transition-all duration-300 flex items-center gap-3 text-sm transform ${currentCategory === 'enrolled'
+                      ? 'bg-white text-blue-900 shadow-lg scale-105'
+                      : 'text-blue-600 hover:text-blue-800 hover:scale-102'
+                      }`}
+                  >
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${currentCategory === 'enrolled'
+                      ? 'bg-gradient-to-br from-emerald-500 to-teal-600 text-white'
+                      : 'bg-blue-200 text-blue-600'
+                      }`}>
+                      <FaUser className="text-sm" />
+                    </div>
+                    <span>Enrolled {currentView === 'test-series' ? 'Test Series' : 'Quizzes'}</span>
+                  </button>
                 </div>
-                <div className="flex items-center gap-2 text-slate-600">
-                  <FaChartLine className="text-emerald-500" />
-                  <span className="text-sm font-medium">Trending</span>
-                </div>
-              </div> */}
+              )}
             </div>
           </div>
         </motion.div>
 
-        {/* Top Filters Bar */}
+        {/* Filters */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           className="mb-8"
         >
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-            {/* Filter Toggle Button */}
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
-                  <FaFilter className="text-white text-sm" />
-                </div>
-                <h3 className="text-xl font-bold text-slate-800">Filters & Search</h3>
-              </div>
+          <div className="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
+            {/* Filter Header */}
+            <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-6">
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 ${showFilters
-                  ? 'bg-indigo-100 text-indigo-700 border border-indigo-200'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                  }`}
+                className="w-full flex items-center justify-between text-white group"
               >
-                <FaFilter className="text-sm" />
-                {showFilters ? 'Hide Filters' : 'Show Filters'}
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+                    <FaFilter className="text-xl" />
+                  </div>
+                  <div className="text-left">
+                    <h3 className="text-2xl font-bold">Filters & Search</h3>
+                    <p className="text-white/80 text-sm">Refine your search results</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  {(selectedCategory || selectedType || selectedDifficulty) && (
+                    <span className="bg-white/20 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-medium">
+                      Active
+                    </span>
+                  )}
+                  <div className={`w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center transition-transform duration-300 ${showFilters ? 'rotate-180' : ''}`}>
+                    <FaChevronDown className="text-lg" />
+                  </div>
+                </div>
               </button>
             </div>
 
-            {/* Collapsible Filters */}
+            {/* Collapsible Filter Content */}
             <motion.div
               initial={false}
-              animate={{ height: showFilters ? 'auto' : 0, opacity: showFilters ? 1 : 0 }}
-              transition={{ duration: 0.3 }}
+              animate={{
+                height: showFilters ? 'auto' : 0,
+                opacity: showFilters ? 1 : 0
+              }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
               className="overflow-hidden"
             >
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pt-4 border-t border-slate-200">
-                {/* Categories Filter */}
-                <div>
-                  <h4 className="text-sm font-semibold text-slate-800 mb-3 flex items-center gap-2">
-                    <FaTag className="text-indigo-500" />
-                    Categories
-                  </h4>
-                  {categoriesLoading ? (
-                    <div className="flex items-center justify-center py-4">
-                      <FaSpinner className="animate-spin text-slate-400" />
-                    </div>
-                  ) : (
-                    <div className="space-y-2 max-h-48 overflow-y-auto">
-                      <button
-                        onClick={() => handleCategorySelect('')}
-                        className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${selectedCategory === ''
-                          ? 'bg-indigo-50 text-indigo-700 border border-indigo-200'
-                          : 'hover:bg-slate-50 text-slate-700'
-                          }`}
-                      >
-                        All Categories ({categories.reduce((sum, cat) => sum + cat.count, 0)})
-                      </button>
-                      {categories.map((category) => (
-                        <button
-                          key={category._id || 'uncategorized'}
-                          onClick={() => handleCategorySelect(category.name)}
-                          className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${selectedCategory === category.name
-                            ? 'bg-indigo-50 text-indigo-700 border border-indigo-200'
-                            : 'hover:bg-slate-50 text-slate-700'
-                            }`}
-                        >
-                          {category.name} ({category.count})
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Type Filter */}
-                <div>
-                  <h4 className="text-sm font-semibold text-slate-800 mb-3">Type</h4>
-                  <div className="space-y-2">
-                    {[
-                      { value: '', label: 'All Types', icon: FaBook },
-                      { value: 'exam', label: 'Exams', icon: FaGraduationCap },
-                      { value: 'quiz', label: 'Quizzes', icon: FaQuestionCircle }
-                    ].map((type) => (
-                      <button
-                        key={type.value}
-                        onClick={() => handleTypeSelect(type.value)}
-                        className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center gap-2 ${selectedType === type.value
-                          ? 'bg-indigo-50 text-indigo-700 border border-indigo-200'
-                          : 'hover:bg-slate-50 text-slate-700'
-                          }`}
-                      >
-                        <type.icon className="text-xs" />
-                        {type.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Difficulty Filter */}
-                <div>
-                  <h4 className="text-sm font-semibold text-slate-800 mb-3">Difficulty</h4>
-                  <div className="space-y-2">
-                    <button
-                      onClick={() => handleDifficultySelect('')}
-                      className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${selectedDifficulty === ''
-                        ? 'bg-indigo-50 text-indigo-700 border border-indigo-200'
-                        : 'hover:bg-slate-50 text-slate-700'
-                        }`}
+              <div className="p-8 bg-gradient-to-br from-slate-50 to-white">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Category Filter */}
+                  <div className="space-y-3">
+                    <label className="block text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
+                      <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                        <FaBook className="text-white text-xs" />
+                      </div>
+                      Category
+                    </label>
+                    <select
+                      value={selectedCategory}
+                      onChange={(e) => setSelectedCategory(e.target.value)}
+                      className="w-full px-4 py-3 border-2 border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white shadow-sm hover:shadow-md transition-all duration-300"
                     >
-                      All Levels
-                    </button>
-                    {['easy', 'medium', 'hard'].map((difficulty) => (
-                      <button
-                        key={difficulty}
-                        onClick={() => handleDifficultySelect(difficulty)}
-                        className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center justify-between ${selectedDifficulty === difficulty
-                          ? 'bg-indigo-50 text-indigo-700 border border-indigo-200'
-                          : 'hover:bg-slate-50 text-slate-700'
-                          }`}
-                      >
-                        <span className="capitalize">{difficulty}</span>
-                        <span className={`text-xs px-2 py-1 rounded-full ${difficulty === 'easy' ? 'bg-emerald-100 text-emerald-700' :
-                          difficulty === 'medium' ? 'bg-amber-100 text-amber-700' :
-                            'bg-rose-100 text-rose-700'
-                          }`}>
-                          {difficulty === 'easy' ? '⭐' : difficulty === 'medium' ? '⭐⭐' : '⭐⭐⭐'}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Tags Filter */}
-                <div>
-                  <h4 className="text-sm font-semibold text-slate-800 mb-3">Popular Tags</h4>
-                  {tagsLoading ? (
-                    <div className="flex items-center justify-center py-4">
-                      <FaSpinner className="animate-spin text-slate-400" />
-                    </div>
-                  ) : (
-                    <div className="space-y-2 max-h-48 overflow-y-auto">
-                      {tags.slice(0, 10).map((tag) => (
-                        <button
-                          key={tag.name}
-                          onClick={() => handleTagSelect(tag.name)}
-                          className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${selectedTags.includes(tag.name)
-                            ? 'bg-indigo-50 text-indigo-700 border border-indigo-200'
-                            : 'hover:bg-slate-50 text-slate-700'
-                            }`}
-                        >
-                          #{tag.name} ({tag.count})
-                        </button>
+                      <option value="">All Categories</option>
+                      {categories.map((category) => (
+                        <option key={category._id || 'uncategorized'} value={category.name}>
+                          {category.name} ({category.count})
+                        </option>
                       ))}
+                    </select>
+                  </div>
+
+                  {/* Type Filter (only for quizzes) */}
+                  {currentView === 'quizzes' && (
+                    <div className="space-y-3">
+                      <label className="block text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
+                        <div className="w-6 h-6 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
+                          <FaTrophy className="text-white text-xs" />
+                        </div>
+                        Type
+                      </label>
+                      <select
+                        value={selectedType}
+                        onChange={(e) => setSelectedType(e.target.value)}
+                        className="w-full px-4 py-3 border-2 border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white shadow-sm hover:shadow-md transition-all duration-300"
+                      >
+                        <option value="">All Types</option>
+                        <option value="exam">Exams</option>
+                        <option value="quiz">Quizzes</option>
+                      </select>
                     </div>
                   )}
-                </div>
-              </div>
 
-              {/* Active Filters */}
-              {(selectedTags.length > 0 || selectedDifficulty || selectedCategory || selectedType) && (
-                <div className="mt-6 pt-4 border-t border-slate-200">
-                  <h4 className="text-sm font-semibold text-slate-800 mb-3">Active Filters</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedCategory && (
-                      <span className="inline-flex items-center gap-2 bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-medium">
-                        📂 {selectedCategory}
-                        <button onClick={() => handleCategorySelect('')} className="text-indigo-600 hover:text-indigo-800 ml-1">×</button>
-                      </span>
-                    )}
-                    {selectedType && (
-                      <span className="inline-flex items-center gap-2 bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
-                        {selectedType === 'exam' ? '🏆' : '📚'} {selectedType}
-                        <button onClick={() => handleTypeSelect('')} className="text-purple-600 hover:text-purple-800 ml-1">×</button>
-                      </span>
-                    )}
-                    {selectedDifficulty && (
-                      <span className="inline-flex items-center gap-2 bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-sm font-medium">
-                        ⚡ {selectedDifficulty}
-                        <button onClick={() => handleDifficultySelect('')} className="text-amber-600 hover:text-amber-800 ml-1">×</button>
-                      </span>
-                    )}
-                    {selectedTags.map((tag) => (
-                      <span key={tag} className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full text-sm font-medium">
-                        #{tag}
-                        <button onClick={() => handleTagSelect(tag)} className="text-emerald-600 hover:text-emerald-800 ml-1">×</button>
-                      </span>
-                    ))}
+                  {/* Difficulty Filter */}
+                  <div className="space-y-3">
+                    <label className="block text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
+                      <div className="w-6 h-6 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center">
+                        <FaGraduationCap className="text-white text-xs" />
+                      </div>
+                      Difficulty
+                    </label>
+                    <select
+                      value={selectedDifficulty}
+                      onChange={(e) => setSelectedDifficulty(e.target.value)}
+                      className="w-full px-4 py-3 border-2 border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white shadow-sm hover:shadow-md transition-all duration-300"
+                    >
+                      <option value="">All Levels</option>
+                      <option value="easy">Easy ⭐</option>
+                      <option value="medium">Medium ⭐⭐</option>
+                      <option value="hard">Hard ⭐⭐⭐</option>
+                    </select>
                   </div>
                 </div>
-              )}
+
+                {/* Active Filters Display */}
+                {(selectedCategory || selectedType || selectedDifficulty) && (
+                  <div className="mt-8 pt-6 border-t border-slate-200">
+                    <h4 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
+                      <div className="w-5 h-5 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
+                        <FaFilter className="text-white text-xs" />
+                      </div>
+                      Active Filters
+                    </h4>
+                    <div className="flex flex-wrap gap-3">
+                      {selectedCategory && (
+                        <span className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 px-4 py-2 rounded-xl text-sm font-bold border-2 border-blue-200">
+                          📂 {selectedCategory}
+                          <button
+                            onClick={() => setSelectedCategory('')}
+                            className="text-blue-600 hover:text-blue-800 ml-1 w-5 h-5 bg-blue-200 rounded-full flex items-center justify-center text-xs font-bold"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      )}
+                      {selectedType && (
+                        <span className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-800 px-4 py-2 rounded-xl text-sm font-bold border-2 border-emerald-200">
+                          {selectedType === 'exam' ? '🏆' : '📚'} {selectedType}
+                          <button
+                            onClick={() => setSelectedType('')}
+                            className="text-emerald-600 hover:text-emerald-800 ml-1 w-5 h-5 bg-emerald-200 rounded-full flex items-center justify-center text-xs font-bold"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      )}
+                      {selectedDifficulty && (
+                        <span className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 px-4 py-2 rounded-xl text-sm font-bold border-2 border-amber-200">
+                          ⚡ {selectedDifficulty}
+                          <button
+                            onClick={() => setSelectedDifficulty('')}
+                            className="text-amber-600 hover:text-amber-800 ml-1 w-5 h-5 bg-amber-200 rounded-full flex items-center justify-center text-xs font-bold"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
             </motion.div>
           </div>
         </motion.div>
 
-        {/* Main Content - Full Width */}
-        <div className="w-full">
-          {/* Modern Results Header */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 bg-white rounded-2xl p-6 border border-slate-200 shadow-sm"
-          >
-            <div className="flex-1">
-              <motion.h2
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.2 }}
-                className="text-2xl font-bold text-slate-800 mb-2"
-              >
+        {/* Results Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col md:flex-row items-start md:items-center justify-between mb-12 bg-white rounded-3xl p-8 border border-slate-200 shadow-xl backdrop-blur-sm"
+        >
+          <div className="flex-1">
+            <div className="flex items-center gap-4 mb-4">
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${currentView === 'test-series'
+                ? 'bg-gradient-to-br from-blue-500 to-indigo-600'
+                : 'bg-gradient-to-br from-emerald-500 to-teal-600'
+                }`}>
                 {currentView === 'test-series' ? (
-                  selectedCategory ? `${selectedCategory} Test Series` : 'Available Test Series'
+                  <FaGraduationCap className="text-white text-xl" />
                 ) : (
-                  selectedCategory ? `${selectedCategory} ` : '' +
-                    (selectedType ? (selectedType === 'exam' ? 'Exams' : 'Quizzes') : 'Exams & Quizzes')
+                  <FaBookOpen className="text-white text-xl" />
                 )}
-              </motion.h2>
-
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.3 }}
-                className="flex items-center gap-4 text-slate-600"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                  <span className="font-medium">
-                    {currentView === 'test-series' ? (
-                      testSeriesLoading ? 'Loading...' : `${testSeries.length} test series found`
-                    ) : (
-                      loading ? 'Loading...' : `${pagination.total} results found`
-                    )}
-                  </span>
-                </div>
-
-                {(selectedCategory || selectedType || selectedDifficulty || selectedTags.length > 0) && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <FaFilter className="text-blue-500" />
-                    <span>Filtered results</span>
+              </div>
+              <div>
+                <h2 className="text-3xl font-bold text-slate-800 leading-tight">
+                  {currentView === 'test-series' ? (
+                    currentCategory === 'enrolled' && isAuthenticated ?
+                      (selectedCategory ? `Enrolled ${selectedCategory} Test Series` : 'Enrolled Test Series') :
+                      (selectedCategory ? `${selectedCategory} Test Series` : 'Available Test Series')
+                  ) : (
+                    currentCategory === 'enrolled' && isAuthenticated ?
+                      (selectedCategory ? `Enrolled ${selectedCategory} ` : 'Enrolled ') +
+                      (selectedType ? (selectedType === 'exam' ? 'Exams' : 'Quizzes') : 'Quizzes') :
+                      (selectedCategory ? `${selectedCategory} ` : '') +
+                      (selectedType ? (selectedType === 'exam' ? 'Exams' : 'Quizzes') : 'Exams & Quizzes')
+                  )}
+                </h2>
+                <div className="flex items-center gap-4 text-slate-600 mt-2">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-3 h-3 rounded-full ${currentView === 'test-series' ? 'bg-blue-500' : 'bg-emerald-500'
+                      }`}></div>
+                    <span className="font-medium text-lg">
+                      {currentView === 'test-series' ? (
+                        testSeriesLoading ? 'Loading...' : `${testSeries.length} test series found`
+                      ) : (
+                        loading ? 'Loading...' : `${pagination.total} results found`
+                      )}
+                    </span>
                   </div>
-                )}
-              </motion.div>
+                  {(selectedCategory || selectedType || selectedDifficulty) && (
+                    <div className="flex items-center gap-2 text-sm bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 px-3 py-1 rounded-full border border-purple-200">
+                      <FaFilter className="text-xs" />
+                      <span className="font-medium">Filtered results</span>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
+          </div>
+        </motion.div>
 
-            {/* Sort Options */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 }}
-              className="flex items-center gap-3 mt-4 md:mt-0"
-            >
-              <span className="text-sm font-medium text-slate-600">Sort by:</span>
-              <select className="bg-white border border-slate-200 rounded-lg px-4 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                <option>Most Popular</option>
-                <option>Newest First</option>
-                <option>Difficulty: Easy to Hard</option>
-                <option>Difficulty: Hard to Easy</option>
-                <option>Duration: Short to Long</option>
-                <option>Duration: Long to Short</option>
-              </select>
-            </motion.div>
+        {/* Loading State */}
+        {((currentView === 'quizzes' && loading) || (currentView === 'test-series' && testSeriesLoading)) && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex flex-col items-center justify-center py-20"
+          >
+            <div className="w-16 h-16 relative mb-8">
+              <div className="absolute inset-0 border-4 border-slate-200 rounded-full"></div>
+              <div className="absolute inset-0 border-4 border-transparent border-t-blue-500 rounded-full animate-spin"></div>
+            </div>
+            <h3 className="text-xl font-semibold text-slate-800 mb-2">Loading Content</h3>
+            <p className="text-slate-600">Preparing {currentView === 'test-series' ? 'test series' : 'quizzes'} for you...</p>
           </motion.div>
+        )}
 
-          {/* Modern Loading State */}
-          {((currentView === 'quizzes' && loading) || (currentView === 'test-series' && testSeriesLoading)) && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="flex flex-col items-center justify-center py-20"
+        {/* Error State */}
+        {((currentView === 'quizzes' && error) || (currentView === 'test-series' && testSeriesError)) && (
+          <div className="bg-rose-50 border border-rose-200 rounded-2xl p-8 text-center">
+            <FaTimes className="text-rose-600 text-4xl mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-rose-800 mb-2">Something went wrong</h3>
+            <p className="text-rose-600 mb-6">{currentView === 'test-series' ? testSeriesError : error}</p>
+            <button
+              onClick={currentView === 'test-series' ? fetchTestSeries : fetchQuizzes}
+              className="bg-rose-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-rose-700 transition-colors"
             >
-              <div className="relative mb-8">
-                <div className="w-16 h-16 relative">
-                  <div className="absolute inset-0 border-4 border-slate-200 rounded-full"></div>
-                  <div className="absolute inset-0 border-4 border-transparent border-t-blue-500 rounded-full animate-spin"></div>
-                </div>
-              </div>
+              Try Again
+            </button>
+          </div>
+        )}
 
+        {/* Content Grid */}
+        {currentView === 'quizzes' && !loading && !error && (
+          <>
+            {quizzes.length === 0 ? (
               <motion.div
-                initial={{ y: 10, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.2 }}
-                className="text-center"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-center py-20"
               >
-                <h3 className="text-xl font-semibold text-slate-800 mb-2">
-                  Loading Content
+                <div className="relative mx-auto mb-8">
+                  <div className="w-40 h-40 bg-gradient-to-br from-blue-100 via-indigo-50 to-purple-100 rounded-full flex items-center justify-center mx-auto shadow-2xl border-4 border-white">
+                    <FaBookOpen className="text-6xl text-blue-400" />
+                  </div>
+                  {/* Floating elements */}
+                  <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg">
+                    <span className="text-white text-xs font-bold">?</span>
+                  </div>
+                  <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full shadow-lg"></div>
+                </div>
+                <h3 className="text-3xl font-bold text-slate-800 mb-4">
+                  {currentCategory === 'enrolled' ? 'No Enrolled Quizzes Yet' : 'No Quizzes Found'}
                 </h3>
-                <p className="text-slate-600 mb-4">
-                  Preparing {currentView === 'test-series' ? 'test series' : 'quizzes'} for you...
+                <p className="text-lg text-slate-600 mb-8 max-w-lg mx-auto leading-relaxed">
+                  {currentCategory === 'enrolled'
+                    ? 'You haven\'t enrolled in any test series yet. Browse available test series to get started on your learning journey.'
+                    : 'No quizzes match your current filters. Try adjusting your search criteria or browse all available content.'
+                  }
                 </p>
-
-                {/* Loading Progress Dots */}
-                <div className="flex items-center justify-center space-x-1">
-                  {[0, 1, 2].map((i) => (
-                    <motion.div
-                      key={i}
-                      className="w-2 h-2 bg-blue-500 rounded-full"
-                      animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
-                      transition={{
-                        duration: 1.5,
-                        repeat: Infinity,
-                        delay: i * 0.2
-                      }}
-                    />
-                  ))}
-                </div>
+                {currentCategory === 'enrolled' && (
+                  <button
+                    onClick={() => setCurrentCategory('all')}
+                    className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-8 py-4 rounded-2xl font-bold hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
+                  >
+                    Browse All Quizzes
+                  </button>
+                )}
               </motion.div>
-            </motion.div>
-          )}
-
-          {/* Error State */}
-          {((currentView === 'quizzes' && error) || (currentView === 'test-series' && testSeriesError)) && (
-            <div className="bg-rose-50 border border-rose-200 rounded-2xl p-8 text-center">
-              <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4 border border-rose-200">
-                <FaBook className="text-rose-600 text-2xl" />
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-8">
+                {quizzes.map((quiz, index) => (
+                  <QuizCard
+                    key={quiz._id}
+                    quiz={quiz}
+                    index={index}
+                    onQuizClick={handleQuizClick}
+                    getDifficultyColor={getDifficultyColor}
+                    isAuthenticated={isAuthenticated}
+                    currentCategory={currentCategory}
+                  />
+                ))}
               </div>
-              <h3 className="text-xl font-semibold text-rose-800 mb-2">Something went wrong</h3>
-              <p className="text-rose-600 mb-6">{currentView === 'test-series' ? testSeriesError : error}</p>
-              <button
-                onClick={currentView === 'test-series' ? fetchTestSeries : fetchQuizzes}
-                className="bg-rose-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-rose-700 transition-colors"
+            )}
+          </>
+        )}
+
+        {currentView === 'test-series' && !testSeriesLoading && !testSeriesError && (
+          <>
+            {testSeries.length === 0 ? (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-center py-20"
               >
-                Try Again
-              </button>
-            </div>
-          )}
-
-          {/* Content Grid */}
-          {currentView === 'quizzes' && !loading && !error && (
-            <>
-              {quizzes.length === 0 ? (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-center py-20"
-                >
-                  <motion.div
-                    initial={{ scale: 0.8 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", bounce: 0.4 }}
-                    className="relative mx-auto mb-8"
-                  >
-                    <div className="w-32 h-32 bg-gradient-to-br from-gray-100 via-blue-50 to-primary-50 rounded-full flex items-center justify-center mx-auto shadow-lg">
-                      <FaBook className="text-5xl text-gray-400" />
-                    </div>
-
-                    {/* Floating Elements */}
-                    <motion.div
-                      animate={{ y: [-5, 5, -5] }}
-                      transition={{ duration: 3, repeat: Infinity }}
-                      className="absolute -top-2 -right-2 w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center"
-                    >
-                      <FaSearch className="text-white text-sm" />
-                    </motion.div>
-
-                    <motion.div
-                      animate={{ y: [5, -5, 5] }}
-                      transition={{ duration: 3, repeat: Infinity, delay: 1.5 }}
-                      className="absolute -bottom-2 -left-2 w-6 h-6 bg-secondary-500 rounded-full flex items-center justify-center"
-                    >
-                      <FaFilter className="text-white text-xs" />
-                    </motion.div>
-                  </motion.div>
-
-                  <motion.div
-                    initial={{ y: 10, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.3 }}
-                  >
-                    <h3 className="text-2xl font-semibold text-slate-800 mb-4">No Content Found</h3>
-                    <p className="text-slate-600 mb-8 max-w-lg mx-auto leading-relaxed">
-                      We couldn't find any {currentView === 'test-series' ? 'test series' : 'quizzes'} matching your criteria.
-                      Try adjusting your filters or search terms.
-                    </p>
-
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                      <button
-                        onClick={() => {
-                          setSearch('');
-                          setSelectedCategory('');
-                          setSelectedType('');
-                          setSelectedTags([]);
-                          setSelectedDifficulty('');
-                        }}
-                        className="bg-blue-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-600 transition-colors flex items-center gap-2"
-                      >
-                        <FaRocket className="text-sm" />
-                        Clear All Filters
-                      </button>
-
-                      <button
-                        onClick={() => setCurrentView(currentView === 'quizzes' ? 'test-series' : 'quizzes')}
-                        className="bg-white border border-slate-200 text-slate-700 px-6 py-3 rounded-lg font-medium hover:border-slate-300 hover:bg-slate-50 transition-colors flex items-center gap-2"
-                      >
-                        <FaEye className="text-sm" />
-                        Browse {currentView === 'quizzes' ? 'Test Series' : 'Quizzes'}
-                      </button>
-                    </div>
-                  </motion.div>
-                </motion.div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-                  {quizzes.map((quiz, index) => (
-                    <motion.div
-                      key={quiz._id}
-                      initial={{ opacity: 0, y: 30, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      transition={{
-                        duration: 0.5,
-                        delay: index * 0.1,
-                        type: "spring",
-                        stiffness: 100
-                      }}
-                      whileHover={{
-                        y: -4,
-                        transition: { duration: 0.2 }
-                      }}
-                      className="group relative bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden border border-slate-200 hover:border-indigo-300 h-full flex flex-col hover:scale-[1.02]"
-                      onClick={() => handleQuizClick(quiz)}
-                    >
-                      {/* Header with beautiful gradient */}
-                      <div className={`relative p-6 ${quiz.quizType === 'exam'
-                        ? 'bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 border-l-4 border-l-amber-400'
-                        : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border-l-4 border-l-blue-400'
-                        }`}>
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="flex-1">
-                            {/* Quiz Type Badge */}
-                            <div className={`inline-flex items-center gap-2 rounded-full px-3 py-1 mb-3 ${quiz.quizType === 'exam'
-                              ? 'bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border border-amber-200'
-                              : 'bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 border border-blue-200'
-                              }`}>
-                              {quiz.quizType === 'exam' ? (
-                                <>
-                                  <FaTrophy className="text-amber-600 text-sm" />
-                                  <span className="text-xs font-bold">EXAM</span>
-                                </>
-                              ) : (
-                                <>
-                                  <FaBookOpen className="text-blue-600 text-sm" />
-                                  <span className="text-xs font-bold">QUIZ</span>
-                                </>
-                              )}
-                            </div>
-
-                            <h3 className={`font-bold mb-3 leading-tight ${quiz.title.length > 50
-                              ? 'text-base line-clamp-3 min-h-[4.5rem]'
-                              : quiz.title.length > 30
-                                ? 'text-lg line-clamp-2 min-h-[3.5rem]'
-                                : 'text-xl min-h-[2.5rem]'
-                              } ${quiz.quizType === 'exam' ? 'text-amber-900' : 'text-indigo-900'}`}>
-                              {quiz.title}
-                            </h3>
-
-                            {/* Quick Stats */}
-                            <div className="flex items-center space-x-4 text-slate-600">
-                              <div className="flex items-center gap-1.5">
-                                <FaQuestionCircle className="text-sm" />
-                                <span className="text-sm font-medium">{quiz.questions?.length || 0}</span>
-                              </div>
-                              <div className="flex items-center gap-1.5">
-                                <FaClock className="text-sm" />
-                                <span className="text-sm font-medium">{quiz.timeLimit}m</span>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Type Icon */}
-                          <div className="ml-4">
-                            <div className={`p-3 rounded-xl border ${quiz.quizType === 'exam'
-                              ? 'bg-gradient-to-br from-amber-100 to-orange-100 text-amber-700 border-amber-200'
-                              : 'bg-gradient-to-br from-blue-100 to-indigo-100 text-blue-700 border-blue-200'
-                              }`}>
-                              {quiz.quizType === 'exam' ? (
-                                <FaTrophy className="text-xl" />
-                              ) : (
-                                <FaBookOpen className="text-xl" />
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Content - Flexible grow area */}
-                      <div className="relative p-6 flex-grow flex flex-col">
-                        <p className="text-slate-600 text-sm mb-4 leading-relaxed line-clamp-3 flex-grow">
-                          {quiz.description && quiz.description.length > 120
-                            ? `${quiz.description.substring(0, 120)}...`
-                            : quiz.description || "Master key concepts with this expertly designed assessment. Test your knowledge and improve your skills."}
-                        </p>
-
-                        {/* Detailed Stats Grid */}
-                        <div className="grid grid-cols-3 gap-3 mb-4">
-                          <div className="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-lg p-3 text-center border border-indigo-200">
-                            <div className="text-lg font-bold text-indigo-800">{quiz.questions?.length || 0}</div>
-                            <div className="text-xs text-indigo-600 font-medium">Questions</div>
-                          </div>
-                          <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-lg p-3 text-center border border-emerald-200">
-                            <div className="text-lg font-bold text-emerald-800">{quiz.timeLimit || 0}</div>
-                            <div className="text-xs text-emerald-600 font-medium">Minutes</div>
-                          </div>
-                          <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-3 text-center border border-purple-200">
-                            <div className="text-lg font-bold text-purple-800">
-                              {quiz.difficulty === 'easy' ? '⭐' : quiz.difficulty === 'medium' ? '⭐⭐' : quiz.difficulty === 'hard' ? '⭐⭐⭐' : '⭐'}
-                            </div>
-                            <div className="text-xs text-purple-600 font-medium">Level</div>
-                          </div>
-                        </div>
-
-                        {/* Tags */}
-                        <div className="flex flex-wrap gap-2 mb-4 min-h-[2rem]">
-                          {quiz.category && (
-                            <span className="bg-gradient-to-r from-indigo-100 to-blue-100 text-indigo-800 px-3 py-1 rounded-full text-xs font-semibold border border-indigo-200 flex items-center gap-1">
-                              <FaTag className="text-xs" />
-                              {quiz.category}
-                            </span>
-                          )}
-                          {quiz.difficulty && (
-                            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getDifficultyColor(quiz.difficulty)}`}>
-                              {quiz.difficulty}
-                            </span>
-                          )}
-                          {quiz.tags && quiz.tags.slice(0, 1).map((tag, tagIndex) => (
-                            <span
-                              key={tagIndex}
-                              className="bg-gradient-to-r from-slate-100 to-gray-100 text-slate-700 px-3 py-1 rounded-full text-xs font-medium border border-slate-200"
-                            >
-                              #{tag}
-                            </span>
-                          ))}
-                          {quiz.tags && quiz.tags.length > 1 && (
-                            <span className="bg-gradient-to-r from-slate-100 to-gray-100 text-slate-600 px-3 py-1 rounded-full text-xs font-medium border border-slate-200">
-                              +{quiz.tags.length - 1}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Additional Details */}
-                        <div className="mb-4 space-y-2">
-                          {quiz.course && (
-                            <div className="flex items-center gap-2 text-sm text-slate-600">
-                              <FaBook className="text-xs" />
-                              <span>Course: {quiz.course.title || 'Course Material'}</span>
-                            </div>
-                          )}
-                          {quiz.testSeries && (
-                            <div className="flex items-center gap-2 text-sm text-slate-600">
-                              <FaListAlt className="text-xs" />
-                              <span>Series: {quiz.testSeries.title || 'Test Series'}</span>
-                            </div>
-                          )}
-                          <div className="flex items-center gap-2 text-sm text-slate-600">
-                            <FaUsers className="text-xs" />
-                            <span>{Math.floor(Math.random() * 500) + 50} students attempted</span>
-                          </div>
-                        </div>
-
-                        {/* Footer - Fixed at bottom */}
-                        <div className="flex items-center justify-between pt-4 border-t border-slate-100 mt-auto">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center border border-slate-200">
-                              <FaUser className="text-slate-600 text-sm" />
-                            </div>
-                            <div>
-                              <div className="text-sm font-medium text-slate-800 truncate max-w-[120px]">
-                                {quiz.creator?.fullName || quiz.creator?.username || 'Expert Instructor'}
-                              </div>
-                              <div className="text-xs text-slate-500">Course Creator</div>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center space-x-2">
-                            {!isAuthenticated && (
-                              <span className="text-xs text-amber-700 bg-gradient-to-r from-amber-100 to-orange-100 px-3 py-1 rounded-full font-semibold border border-amber-200">
-                                🔐 Login
-                              </span>
-                            )}
-
-                            {/* Action Buttons */}
-                            <div className="flex items-center gap-2">
-                              <button
-                                className="w-8 h-8 bg-gradient-to-br from-rose-100 to-pink-100 hover:from-rose-200 hover:to-pink-200 rounded-full flex items-center justify-center transition-all duration-200 border border-rose-200"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  // Add to favorites logic
-                                }}
-                              >
-                                <FaHeart className="text-rose-600 text-xs" />
-                              </button>
-
-                              <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 ${quiz.quizType === 'exam'
-                                ? 'bg-gradient-to-br from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600'
-                                : 'bg-gradient-to-br from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600'
-                                } shadow-lg hover:shadow-xl`}>
-                                <FaPlay className="text-white text-sm ml-0.5" />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              )}
-
-              {/* Modern Pagination */}
-              {pagination.pages > 1 && (
-                <div className="flex flex-col items-center mt-12 space-y-4">
-                  {/* Pagination Info */}
-                  <div className="text-center">
-                    <p className="text-slate-600 font-medium">
-                      Showing page <span className="font-semibold text-blue-600">{pagination.page}</span> of{' '}
-                      <span className="font-semibold text-blue-600">{pagination.pages}</span>
-                    </p>
-                    <p className="text-sm text-slate-500 mt-1">
-                      {pagination.total} total results
-                    </p>
+                <div className="relative mx-auto mb-8">
+                  <div className="w-40 h-40 bg-gradient-to-br from-emerald-100 via-teal-50 to-blue-100 rounded-full flex items-center justify-center mx-auto shadow-2xl border-4 border-white">
+                    <FaGraduationCap className="text-6xl text-emerald-400" />
                   </div>
-
-                  {/* Pagination Controls */}
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={() => setPagination(prev => ({ ...prev, page: Math.max(1, prev.page - 1) }))}
-                      disabled={pagination.page === 1}
-                      className="px-4 py-2 bg-white border border-slate-200 rounded-lg font-medium text-slate-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 hover:border-slate-300 transition-colors disabled:hover:bg-white flex items-center gap-2"
-                    >
-                      ← Previous
-                    </button>
-
-                    <div className="flex space-x-1">
-                      {[...Array(Math.min(pagination.pages, 7))].map((_, i) => {
-                        let pageNum;
-                        if (pagination.pages <= 7) {
-                          pageNum = i + 1;
-                        } else if (pagination.page <= 4) {
-                          pageNum = i + 1;
-                        } else if (pagination.page >= pagination.pages - 3) {
-                          pageNum = pagination.pages - 6 + i;
-                        } else {
-                          pageNum = pagination.page - 3 + i;
-                        }
-
-                        return (
-                          <button
-                            key={pageNum}
-                            onClick={() => setPagination(prev => ({ ...prev, page: pageNum }))}
-                            className={`w-10 h-10 rounded-lg font-medium transition-colors ${pagination.page === pageNum
-                              ? 'bg-blue-500 text-white'
-                              : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300'
-                              }`}
-                          >
-                            {pageNum}
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    <button
-                      onClick={() => setPagination(prev => ({ ...prev, page: Math.min(pagination.pages, prev.page + 1) }))}
-                      disabled={pagination.page === pagination.pages}
-                      className="px-4 py-2 bg-white border border-slate-200 rounded-lg font-medium text-slate-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 hover:border-slate-300 transition-colors disabled:hover:bg-white flex items-center gap-2"
-                    >
-                      Next →
-                    </button>
+                  {/* Floating elements */}
+                  <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center shadow-lg">
+                    <FaTrophy className="text-white text-xs" />
                   </div>
+                  <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full shadow-lg"></div>
                 </div>
-              )}
-            </>
-          )}
-
-          {/* Enhanced Test Series Grid */}
-          {currentView === 'test-series' && !testSeriesLoading && !testSeriesError && (
-            <>
-              {testSeries.length === 0 ? (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-center py-20"
-                >
-                  <motion.div
-                    initial={{ scale: 0.8 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", bounce: 0.4 }}
-                    className="relative mx-auto mb-8"
+                <h3 className="text-3xl font-bold text-slate-800 mb-4">
+                  {currentCategory === 'enrolled' ? 'No Enrolled Test Series Yet' : 'No Test Series Found'}
+                </h3>
+                <p className="text-lg text-slate-600 mb-8 max-w-lg mx-auto leading-relaxed">
+                  {currentCategory === 'enrolled'
+                    ? 'You haven\'t enrolled in any test series yet. Browse available test series to start your comprehensive learning journey.'
+                    : 'No test series match your current filters. Try adjusting your search criteria or browse all available content.'
+                  }
+                </p>
+                {currentCategory === 'enrolled' && (
+                  <button
+                    onClick={() => setCurrentCategory('all')}
+                    className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-8 py-4 rounded-2xl font-bold hover:from-emerald-600 hover:to-teal-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
                   >
-                    <div className="w-32 h-32 bg-gradient-to-br from-gray-100 via-purple-50 to-primary-50 rounded-full flex items-center justify-center mx-auto shadow-lg">
-                      <FaListAlt className="text-5xl text-gray-400" />
-                    </div>
-
-                    {/* Floating Elements */}
-                    <motion.div
-                      animate={{ y: [-5, 5, -5] }}
-                      transition={{ duration: 3, repeat: Infinity }}
-                      className="absolute -top-2 -right-2 w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center"
-                    >
-                      <FaTrophy className="text-white text-sm" />
-                    </motion.div>
-
-                    <motion.div
-                      animate={{ y: [5, -5, 5] }}
-                      transition={{ duration: 3, repeat: Infinity, delay: 1.5 }}
-                      className="absolute -bottom-2 -left-2 w-6 h-6 bg-secondary-500 rounded-full flex items-center justify-center"
-                    >
-                      <FaUsers className="text-white text-xs" />
-                    </motion.div>
-                  </motion.div>
-
-                  <motion.div
-                    initial={{ y: 10, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.3 }}
-                  >
-                    <h3 className="text-2xl font-semibold text-slate-800 mb-4">No Test Series Found</h3>
-                    <p className="text-slate-600 mb-8 max-w-lg mx-auto leading-relaxed">
-                      We couldn't find any test series matching your criteria.
-                      Try adjusting your filters or search terms to discover comprehensive test series.
-                    </p>
-
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                      <button
-                        onClick={() => {
-                          setSearch('');
-                          setSelectedCategory('');
-                          setSelectedDifficulty('');
-                        }}
-                        className="bg-blue-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-600 transition-colors flex items-center gap-2"
-                      >
-                        <FaRocket className="text-sm" />
-                        Clear All Filters
-                      </button>
-
-                      <button
-                        onClick={() => setCurrentView('quizzes')}
-                        className="bg-white border border-slate-200 text-slate-700 px-6 py-3 rounded-lg font-medium hover:border-slate-300 hover:bg-slate-50 transition-colors flex items-center gap-2"
-                      >
-                        <FaEye className="text-sm" />
-                        Browse Individual Quizzes
-                      </button>
-                    </div>
-                  </motion.div>
-                </motion.div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-                  {testSeries.map((series, index) => (
-                    <motion.div
-                      key={series._id}
-                      initial={{ opacity: 0, y: 30, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      transition={{
-                        duration: 0.5,
-                        delay: index * 0.1,
-                        type: "spring",
-                        stiffness: 100
-                      }}
-                      whileHover={{
-                        y: -4,
-                        transition: { duration: 0.2 }
-                      }}
-                      className="group relative bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden border border-slate-200 hover:border-purple-300 h-full hover:scale-[1.02]"
-                    >
-                      <Link to={`/test-series/${series._id}`} className="block h-full flex flex-col">
-                        {/* Header with beautiful gradient */}
-                        <div className="relative p-6 bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50 border-l-4 border-l-purple-400">
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="flex-1">
-                              {/* Series Type Badge */}
-                              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-100 to-indigo-100 text-purple-800 rounded-full px-3 py-1 mb-3 border border-purple-200">
-                                <FaListAlt className="text-purple-600 text-sm" />
-                                <span className="text-xs font-bold">TEST SERIES</span>
-                                {series.examType && (
-                                  <>
-                                    <span className="text-purple-400">•</span>
-                                    <span className="text-xs font-bold">{series.examType.toUpperCase()}</span>
-                                  </>
-                                )}
-                              </div>
-
-                              <h3 className={`font-bold mb-3 leading-tight text-purple-900 ${series.title.length > 50
-                                ? 'text-base line-clamp-3 min-h-[4.5rem]'
-                                : series.title.length > 30
-                                  ? 'text-lg line-clamp-2 min-h-[3.5rem]'
-                                  : 'text-xl min-h-[2.5rem]'
-                                }`}>
-                                {series.title}
-                              </h3>
-
-                              {/* Quick Stats */}
-                              <div className="flex items-center space-x-4 text-slate-600">
-                                <div className="flex items-center gap-1.5">
-                                  <FaQuestionCircle className="text-sm" />
-                                  <span className="text-sm font-medium">{series.totalQuizzes || 0}</span>
-                                </div>
-                                <div className="flex items-center gap-1.5">
-                                  <FaUsers className="text-sm" />
-                                  <span className="text-sm font-medium">{series.enrolledStudentsCount || 0}</span>
-                                </div>
-                              </div>
-                            </div>
-                      
-                            {/* Series Icon */}
-                            <div className="ml-4">
-                              <div className="p-3 bg-gradient-to-br from-purple-100 to-indigo-100 text-purple-700 rounded-xl border border-purple-200">
-                                <FaListAlt className="text-xl" />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Content - Flexible grow area */}
-                        <div className="relative p-6 flex-grow flex flex-col">
-                          <p className="text-slate-600 text-sm mb-4 leading-relaxed line-clamp-3 flex-grow">
-                            {series.description && series.description.length > 120
-                              ? `${series.description.substring(0, 120)}...`
-                              : series.description || "Comprehensive test series designed to evaluate and improve your knowledge across multiple topics with detailed analytics."}
-                          </p>
-
-                          {/* Detailed Stats Grid */}
-                          <div className="grid grid-cols-3 gap-3 mb-4">
-                            <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-lg p-3 text-center border border-purple-200">
-                              <div className="text-lg font-bold text-purple-800">{series.totalQuizzes || 0}</div>
-                              <div className="text-xs text-purple-600 font-medium">Tests</div>
-                            </div>
-                            <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-lg p-3 text-center border border-emerald-200">
-                              <div className="text-lg font-bold text-emerald-800">{series.totalQuestions || Math.floor(Math.random() * 200) + 50}</div>
-                              <div className="text-xs text-emerald-600 font-medium">Questions</div>
-                            </div>
-                            <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-lg p-3 text-center border border-amber-200">
-                              <div className="text-lg font-bold text-amber-800">{series.estimatedDuration || Math.floor(Math.random() * 300) + 120}</div>
-                              <div className="text-xs text-amber-600 font-medium">Minutes</div>
-                            </div>
-                          </div>
-
-                          {/* Tags */}
-                          <div className="flex flex-wrap gap-2 mb-4 min-h-[2rem]">
-                            {series.category && (
-                              <span className="bg-gradient-to-r from-indigo-100 to-blue-100 text-indigo-800 px-3 py-1 rounded-full text-xs font-semibold border border-indigo-200 flex items-center gap-1">
-                                <FaTag className="text-xs" />
-                                {series.category}
-                              </span>
-                            )}
-                            {series.subject && (
-                              <span className="bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-800 px-3 py-1 rounded-full text-xs font-semibold border border-emerald-200 flex items-center gap-1">
-                                <FaBook className="text-xs" />
-                                {series.subject}
-                              </span>
-                            )}
-                            {series.tags && series.tags.slice(0, 1).map((tag, tagIndex) => (
-                              <span
-                                key={tagIndex}
-                                className="bg-gradient-to-r from-slate-100 to-gray-100 text-slate-700 px-3 py-1 rounded-full text-xs font-medium border border-slate-200"
-                              >
-                                #{tag}
-                              </span>
-                            ))}
-                            {series.tags && series.tags.length > 1 && (
-                              <span className="bg-gradient-to-r from-slate-100 to-gray-100 text-slate-600 px-3 py-1 rounded-full text-xs font-medium border border-slate-200">
-                                +{series.tags.length - 1}
-                              </span>
-                            )}
-                          </div>
-
-                          {/* Additional Details */}
-                          <div className="mb-4 space-y-2">
-                            <div className="flex items-center gap-2 text-sm text-slate-600">
-                              <FaTrophy className="text-xs" />
-                              <span>Difficulty: {series.difficulty || 'Mixed Levels'}</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-sm text-slate-600">
-                              <FaUsers className="text-xs" />
-                              <span>{series.enrolledStudentsCount || 0} students enrolled</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-sm text-slate-600">
-                              <FaChartLine className="text-xs" />
-                              <span>Avg. Score: {Math.floor(Math.random() * 30) + 70}%</span>
-                            </div>
-                          </div>
-
-                          {/* Footer - Fixed at bottom */}
-                          <div className="flex items-center justify-between pt-4 border-t border-slate-100 mt-auto">
-                            <div className="flex items-center space-x-3">
-                              <div className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center border border-slate-200">
-                                <FaUser className="text-slate-600 text-sm" />
-                              </div>
-                              <div>
-                                <div className="text-sm font-medium text-slate-800 truncate max-w-[120px]">
-                                  {series.creator?.fullName || series.creator?.username || 'Expert Team'}
-                                </div>
-                                <div className="text-xs text-slate-500">Series Creator</div>
-                              </div>
-                            </div>
-
-                            <div className="flex items-center space-x-2">
-                              {!isAuthenticated && (
-                                <span className="text-xs text-amber-700 bg-gradient-to-r from-amber-100 to-orange-100 px-3 py-1 rounded-full font-semibold border border-amber-200">
-                                  🔐 Login
-                                </span>
-                              )}
-
-                              {/* Action Buttons */}
-                              <div className="flex items-center gap-2">
-                                <button
-                                  className="w-8 h-8 bg-gradient-to-br from-rose-100 to-pink-100 hover:from-rose-200 hover:to-pink-200 rounded-full flex items-center justify-center transition-all duration-200 border border-rose-200"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    // Add to favorites logic
-                                  }}
-                                >
-                                  <FaHeart className="text-rose-600 text-xs" />
-                                </button>
-
-                                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 rounded-full flex items-center justify-center transition-all duration-200 shadow-lg hover:shadow-xl">
-                                  <FaPlay className="text-white text-sm ml-0.5" />
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </Link>
-                    </motion.div>
-                  ))}
-                </div>
-              )}
-            </>
-          )}
-        </div>
+                    Browse All Test Series
+                  </button>
+                )}
+              </motion.div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-8">
+                {testSeries.map((ts, index) => (
+                  <TestSeriesCard
+                    key={ts._id}
+                    testSeries={ts}
+                    index={index}
+                    getDifficultyColor={getDifficultyColor}
+                  />
+                ))}
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );

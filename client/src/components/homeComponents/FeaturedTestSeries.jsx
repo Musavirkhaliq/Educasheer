@@ -18,7 +18,7 @@ import {
   FaCheckCircle,
   FaTag
 } from 'react-icons/fa';
-import AddToCartButton from '../cart/AddToCartButton';
+
 
 const TestSeriesCard = ({ testSeries, delay, onKnowMore }) => {
   // Check if we're on a mobile device
@@ -100,7 +100,7 @@ const TestSeriesCard = ({ testSeries, delay, onKnowMore }) => {
         bgColor: 'bg-emerald-200',
         icon: 'text-blue-700',
         gradient: 'from-emerald-700 to-blue-800'
-}
+      }
     };
 
     return colorMap[categoryLower] || colorMap['general'];
@@ -216,15 +216,8 @@ const TestSeriesCard = ({ testSeries, delay, onKnowMore }) => {
             className="flex-1 bg-gray-100 text-gray-700 py-1 px-2 rounded text-xs font-medium hover:bg-gray-200 transition-all duration-300 flex items-center justify-center"
           >
             <FaInfoCircle className="text-xs mr-1" />
-            <span>Info</span>
+            <span>Know More</span>
           </button>
-
-          <AddToCartButton
-            itemType="testSeries"
-            itemId={testSeries._id}
-            size="sm"
-            className="flex-1 text-xs"
-          />
 
           <Link
             to={`/test-series/${testSeries._id}`}

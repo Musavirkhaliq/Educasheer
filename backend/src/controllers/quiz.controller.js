@@ -195,6 +195,7 @@ const getQuizById = asyncHandler(async (req, res) => {
 
         // Check access permissions
         let hasAccess = false;
+        let accessMessage = "";
 
         // Admin and creator always have access
         if (req.user.role === "admin" || quiz.creator.toString() === req.user._id.toString()) {
@@ -203,13 +204,16 @@ const getQuizById = asyncHandler(async (req, res) => {
         // For test series quizzes, check if test series is published and user is enrolled
         else if (quiz.testSeries) {
             const testSeries = quiz.testSeries;
-            if (testSeries.isPublished && testSeries.enrolledStudents.includes(req.user._id)) {
-                hasAccess = true;
+            if (testSeries.isPublished) {
+                if (testSeries.enrolledStudents.includes(req.user._id)) {
+                    hasAccess = true;
+                } else {
+                    // User can see quiz details but needs to enroll in test series first
+                    accessMessage = `You need to enroll in the test series "${testSeries.title}" to access this quiz.`;
+                }
+            } else {
+                accessMessage = "This quiz is not published yet.";
             }
-        }
-
-        if (!hasAccess) {
-            throw new ApiError(403, "You don't have permission to access this quiz");
         }
 
         // Add section title if quiz has a section assigned
@@ -220,6 +224,11 @@ const getQuizById = asyncHandler(async (req, res) => {
                 quizObj.sectionTitle = section.title;
             }
         }
+
+        // Add access information
+        quizObj.hasAccess = hasAccess;
+        quizObj.accessMessage = accessMessage;
+        quizObj.requiresEnrollment = !hasAccess && quiz.testSeries && !quiz.testSeries.enrolledStudents.includes(req.user._id);
 
         return res.status(200).json(
             new ApiResponse(200, quizObj, "Quiz fetched successfully")
@@ -727,6 +736,84 @@ const getPublishedQuizzes = asyncHandler(async (req, res) => {
 });
 
 /**
+ * Get enrolled quizzes for authenticated user
+ * @route GET /api/v1/quizzes/enrolled
+ * @access Authenticated users
+ */
+const getEnrolledQuizzes = asyncHandler(async (req, res) => {
+    try {
+        const { category, type, search, tags, difficulty, page = 1, limit = 12 } = req.query;
+        const userId = req.user._id;
+
+        // Get test series where user is enrolled
+        const enrolledTestSeries = await TestSeries.find({ 
+            isPublished: true,
+            enrolledStudents: userId 
+        }).select('_id');
+        
+        const enrolledTestSeriesIds = enrolledTestSeries.map(ts => ts._id);
+
+        if (enrolledTestSeriesIds.length === 0) {
+            return res.status(200).json(
+                new ApiResponse(200, { quizzes: [], pagination: { page: 1, limit: parseInt(limit), total: 0, pages: 0 } }, "No enrolled quizzes found")
+            );
+        }
+
+        // Filter quizzes from enrolled test series
+        const filter = {
+            testSeries: { $in: enrolledTestSeriesIds }
+        };
+
+        // Apply additional filters if provided
+        if (category && category !== '') filter.category = category;
+        if (type && type !== '') filter.quizType = type;
+        if (difficulty && difficulty !== '') filter.difficulty = difficulty;
+
+        if (search) {
+            filter.$or = [
+                { title: { $regex: search, $options: 'i' } },
+                { description: { $regex: search, $options: 'i' } }
+            ];
+        }
+
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+
+        const quizzes = await Quiz.find(filter)
+            .populate({
+                path: "testSeries",
+                select: "title slug enrolledStudents"
+            })
+            .populate("creator", "username fullName")
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(parseInt(limit));
+
+        const total = await Quiz.countDocuments(filter);
+
+        // Add enrollment status to each quiz
+        const quizzesWithEnrollment = quizzes.map(quiz => {
+            const quizObj = quiz.toObject();
+            quizObj.isEnrolledInTestSeries = true;
+            return quizObj;
+        });
+
+        const pagination = {
+            page: parseInt(page),
+            limit: parseInt(limit),
+            total,
+            pages: Math.ceil(total / parseInt(limit))
+        };
+
+        return res.status(200).json(
+            new ApiResponse(200, { quizzes: quizzesWithEnrollment, pagination }, "Enrolled quizzes fetched successfully")
+        );
+    } catch (error) {
+        console.error('Error in getEnrolledQuizzes:', error);
+        throw new ApiError(500, "Failed to fetch enrolled quizzes");
+    }
+});
+
+/**
  * Get quiz categories with counts
  * @route GET /api/v1/quizzes/categories
  * @access Public
@@ -838,6 +925,7 @@ export {
     createQuiz,
     getAllQuizzes,
     getPublishedQuizzes,
+    getEnrolledQuizzes,
     getQuizCategories,
     getQuizTags,
     getQuizById,

@@ -193,6 +193,63 @@ const getPublishedTestSeries = asyncHandler(async (req, res) => {
 });
 
 /**
+ * Get enrolled test series for authenticated user
+ * @route GET /api/v1/test-series/enrolled
+ * @access Authenticated users
+ */
+const getEnrolledTestSeries = asyncHandler(async (req, res) => {
+    try {
+        const { category, difficulty, examType, subject, search } = req.query;
+        const userId = req.user._id;
+
+        const filter = { 
+            isPublished: true,
+            enrolledStudents: userId
+        };
+
+        // Apply filters if provided
+        if (category) filter.category = category;
+        if (difficulty) filter.difficulty = difficulty;
+        if (examType) filter.examType = examType;
+        if (subject) filter.subject = subject;
+        if (search) {
+            filter.$or = [
+                { title: { $regex: search, $options: 'i' } },
+                { description: { $regex: search, $options: 'i' } }
+            ];
+        }
+
+        const testSeries = await TestSeries.find(filter)
+            .populate("creator", "username fullName")
+            .populate({
+                path: "quizzes",
+                select: "title description timeLimit questions passingScore quizType difficulty isPublished"
+            })
+            .populate({
+                path: "sections.quizzes",
+                select: "title description timeLimit questions passingScore quizType difficulty isPublished"
+            })
+            .sort({ createdAt: -1 });
+
+        // Add enrollment status and count
+        const testSeriesWithEnrollment = testSeries.map(ts => {
+            const tsObj = ts.toObject();
+            tsObj.isEnrolled = true;
+            tsObj.enrolledStudentsCount = ts.enrolledStudents?.length || 0;
+            // Remove actual student IDs for privacy
+            delete tsObj.enrolledStudents;
+            return tsObj;
+        });
+
+        return res.status(200).json(
+            new ApiResponse(200, testSeriesWithEnrollment, "Enrolled test series fetched successfully")
+        );
+    } catch (error) {
+        throw new ApiError(500, "Something went wrong while fetching enrolled test series");
+    }
+});
+
+/**
  * Get test series by ID
  * @route GET /api/v1/test-series/:testSeriesId
  * @access Public (published) / Admin (all)
@@ -921,6 +978,7 @@ export {
     createTestSeries,
     getAllTestSeries,
     getPublishedTestSeries,
+    getEnrolledTestSeries,
     getTestSeriesById,
     updateTestSeries,
     deleteTestSeries,

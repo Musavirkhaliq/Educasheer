@@ -131,9 +131,9 @@ import promocodeRouter from "./routes/promocode.routes.js";
 import paymentRouter from "./routes/payment.routes.js";
 
 // Import public quiz routes
-import { getPublishedQuizzes, getQuizCategories, getQuizTags } from "./controllers/quiz.controller.js";
+import { getPublishedQuizzes, getEnrolledQuizzes, getQuizCategories, getQuizTags } from "./controllers/quiz.controller.js";
 // Import public test series routes
-import { getPublishedTestSeries } from "./controllers/testSeries.controller.js";
+import { getPublishedTestSeries, getEnrolledTestSeries } from "./controllers/testSeries.controller.js";
 // Import public testimonial routes
 import { getApprovedTestimonials } from "./controllers/testimonial.controller.js";
 

@@ -36,6 +36,20 @@ export const quizAPI = {
     }
   },
 
+  // Get enrolled quizzes for authenticated user
+  getEnrolledQuizzes: async (params) => {
+    try {
+      const response = await api.get('/quizzes/enrolled', { params });
+      return response;
+    } catch (error) {
+      console.error('Error fetching enrolled quizzes:', error);
+      if (error.response && error.response.status === 404) {
+        return { data: { data: { quizzes: [], pagination: { page: 1, limit: 12, total: 0, pages: 0 } } } };
+      }
+      throw error;
+    }
+  },
+
   // Public: Get quiz categories with counts
   getQuizCategories: async (params) => {
     try {

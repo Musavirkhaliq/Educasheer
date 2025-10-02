@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { 
-  FaArrowLeft, 
-  FaBook, 
-  FaClock, 
-  FaQuestionCircle, 
-  FaUsers, 
-  FaPlay, 
-  FaCheck, 
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
+import {
+  FaArrowLeft,
+  FaBook,
+  FaClock,
+  FaQuestionCircle,
+  FaUsers,
+  FaPlay,
+  FaCheck,
   FaTimes,
   FaInfoCircle,
   FaTag,
@@ -17,15 +17,16 @@ import {
 import { testSeriesAPI } from '../services/testSeriesAPI';
 import { quizAPI } from '../services/quizAPI';
 import { useAuth } from '../context/AuthContext';
-import { toast } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 import TestSeriesProgress from './TestSeriesProgress';
 import AddToCartButton from './cart/AddToCartButton';
 
 const TestSeriesDetail = () => {
   const { testSeriesId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { currentUser } = useAuth();
-  
+
   const [testSeries, setTestSeries] = useState(null);
   const [userAttempts, setUserAttempts] = useState({});
   const [loading, setLoading] = useState(true);
@@ -37,7 +38,12 @@ const TestSeriesDetail = () => {
     if (currentUser) {
       fetchUserAttempts();
     }
-  }, [testSeriesId, currentUser]);
+
+    // Show enrollment message if redirected from quiz access
+    if (location.state?.message) {
+      toast.info(location.state.message);
+    }
+  }, [testSeriesId, currentUser, location.state]);
 
   const fetchTestSeriesDetails = async () => {
     try {
@@ -55,7 +61,7 @@ const TestSeriesDetail = () => {
 
   const fetchUserAttempts = async () => {
     if (!testSeries?.quizzes) return;
-    
+
     try {
       const attempts = {};
       for (const quiz of testSeries.quizzes) {
@@ -95,7 +101,7 @@ const TestSeriesDetail = () => {
   const getBestAttempt = (quizId) => {
     const attempts = userAttempts[quizId] || [];
     if (attempts.length === 0) return null;
-    return attempts.reduce((best, current) => 
+    return attempts.reduce((best, current) =>
       current.percentage > best.percentage ? current : best
     );
   };
@@ -116,12 +122,12 @@ const TestSeriesDetail = () => {
 
   const calculateProgress = () => {
     if (!testSeries?.quizzes || testSeries.quizzes.length === 0) return 0;
-    
+
     const completedQuizzes = testSeries.quizzes.filter(quiz => {
       const attempts = userAttempts[quiz._id] || [];
       return attempts.some(attempt => attempt.isCompleted);
     }).length;
-    
+
     return Math.round((completedQuizzes / testSeries.quizzes.length) * 100);
   };
 
@@ -201,7 +207,7 @@ const TestSeriesDetail = () => {
                   </div>
                   <h1 className="text-3xl font-bold mb-2">{testSeries.title}</h1>
                   <p className="text-white/90 text-lg mb-4">{testSeries.description}</p>
-                  
+
                   {/* Stats */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="text-center">
@@ -242,7 +248,7 @@ const TestSeriesDetail = () => {
                         {testSeries.price > 0 ? 'Purchase Required' : 'Enrollment Required'}
                       </h3>
                       <p className="text-gray-600 mb-4">
-                        {testSeries.price > 0 
+                        {testSeries.price > 0
                           ? 'Purchase this test series to access all tests and track your progress.'
                           : 'Enroll in this free test series to access all tests and track your progress.'
                         }
