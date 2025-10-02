@@ -33,6 +33,7 @@ const CourseDetail = () => {
   const [error, setError] = useState('');
   const [enrolling, setEnrolling] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
+  const [showCourseModal, setShowCourseModal] = useState(false);
 
   // Effect to track when authentication is complete
   useEffect(() => {
@@ -316,6 +317,14 @@ const CourseDetail = () => {
                 {course.description?.substring(0, 200)}...
               </p>
 
+              <button
+                onClick={() => setShowCourseModal(true)}
+                className="bg-white/20 backdrop-blur-sm text-white px-6 py-3 rounded-xl hover:bg-white/30 transition-all duration-300 flex items-center gap-2 font-medium border border-white/20 hover:border-white/40"
+              >
+                <HiOutlineBookOpen className="w-5 h-5" />
+                Know More
+              </button>
+
               {/* Instructor Info */}
               <div className="flex items-center gap-4 bg-white/10 backdrop-blur-sm rounded-xl p-4">
                 <img
@@ -439,37 +448,43 @@ const CourseDetail = () => {
         )}
 
         <div className="space-y-12">
-          {/* Course Description */}
-          <div className="bg-white rounded-3xl p-10 shadow-lg border border-gray-100">
-            <div className="flex items-center gap-4 mb-8">
-              <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-3 rounded-2xl shadow-lg">
-                <HiOutlineBookOpen className="w-6 h-6 text-white" />
-              </div>
-              <h2 className="text-3xl font-bold text-gray-900">About This Course</h2>
-            </div>
-            <div className="prose prose-lg prose-gray max-w-none">
-              <p className="text-gray-700 leading-relaxed whitespace-pre-line text-lg">{course.description}</p>
-            </div>
-          </div>
+
 
           {/* Topics/Tags */}
           {course.tags?.length > 0 && (
-            <div className="bg-white rounded-3xl p-10 shadow-lg border border-gray-100">
-              <div className="flex items-center gap-4 mb-8">
-                <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 p-3 rounded-2xl shadow-lg">
-                  <BiBook className="w-6 h-6 text-white" />
+            <div className="bg-gradient-to-br from-indigo-50 via-white to-purple-50 rounded-3xl p-10 shadow-lg border border-gray-100 relative overflow-hidden">
+              {/* Background decoration */}
+              <div className="absolute top-0 left-0 w-40 h-40 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full -translate-y-20 -translate-x-20 opacity-40"></div>
+              <div className="absolute bottom-0 right-0 w-32 h-32 bg-gradient-to-tl from-blue-100 to-indigo-100 rounded-full translate-y-16 translate-x-16 opacity-40"></div>
+
+              <div className="relative z-10">
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-3 rounded-2xl shadow-lg">
+                    <BiBook className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-3xl font-bold text-gray-900">Topics Covered</h2>
+                    <p className="text-gray-600 mt-1">Key areas you'll master in this course</p>
+                  </div>
                 </div>
-                <h2 className="text-3xl font-bold text-gray-900">Topics Covered</h2>
-              </div>
-              <div className="flex flex-wrap gap-4">
-                {course.tags.map((tag, index) => (
-                  <span
-                    key={index}
-                    className="bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 px-6 py-3 rounded-2xl text-sm font-semibold border border-blue-100 hover:from-blue-100 hover:to-indigo-100 transition-all duration-300 shadow-sm hover:shadow-md"
-                  >
-                    {tag}
-                  </span>
-                ))}
+
+                <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 shadow-sm">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {course.tags.map((tag, index) => (
+                      <div
+                        key={index}
+                        className="group bg-gradient-to-r from-white to-gray-50 border border-gray-200 rounded-xl p-4 hover:from-indigo-50 hover:to-purple-50 hover:border-indigo-200 transition-all duration-300 shadow-sm hover:shadow-md"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-2 h-2 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full group-hover:scale-125 transition-transform"></div>
+                          <span className="text-gray-700 font-medium text-sm group-hover:text-indigo-700 transition-colors">
+                            {tag}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -799,8 +814,8 @@ const CourseDetail = () => {
                           onClick={handleEnroll}
                           disabled={enrolling || !course.isPublished}
                           className={`w-full py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors ${!course.isPublished
-                              ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                              : 'bg-blue-600 text-white hover:bg-blue-700'
+                            ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                            : 'bg-blue-600 text-white hover:bg-blue-700'
                             }`}
                         >
                           {enrolling ? (
@@ -909,6 +924,223 @@ const CourseDetail = () => {
 
 
       </div>
+
+      {/* Course Details Modal */}
+      {showCourseModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+            {/* Modal Header */}
+            <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-t-3xl">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="bg-white/20 p-3 rounded-2xl">
+                    <HiOutlineBookOpen className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold">{course.title}</h2>
+                    <p className="text-blue-100">Complete Course Details</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowCourseModal(false)}
+                  className="bg-white/20 hover:bg-white/30 p-2 rounded-xl transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-8 space-y-8">
+              {/* Course Description */}
+              <div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">About This Course</h3>
+                <div className="prose prose-lg max-w-none">
+                  <p className="text-gray-700 leading-relaxed whitespace-pre-line">{course.description}</p>
+                </div>
+              </div>
+
+              {/* Course Stats Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div className="bg-blue-50 rounded-2xl p-6 text-center">
+                  <div className="bg-blue-600 p-3 rounded-xl mb-3 inline-block">
+                    <HiOutlineVideoCamera className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="text-2xl font-bold text-gray-900">{course.videos?.length || 0}</div>
+                  <div className="text-sm text-gray-600">Video Lessons</div>
+                </div>
+
+                <div className="bg-green-50 rounded-2xl p-6 text-center">
+                  <div className="bg-green-600 p-3 rounded-xl mb-3 inline-block">
+                    <HiOutlineClock className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="text-2xl font-bold text-gray-900">{calculateTotalDuration()}</div>
+                  <div className="text-sm text-gray-600">Total Duration</div>
+                </div>
+
+                <div className="bg-purple-50 rounded-2xl p-6 text-center">
+                  <div className="bg-purple-600 p-3 rounded-xl mb-3 inline-block">
+                    <HiOutlineUsers className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="text-2xl font-bold text-gray-900">{course.enrolledStudents?.length || 0}</div>
+                  <div className="text-sm text-gray-600">Students</div>
+                </div>
+
+                <div className="bg-orange-50 rounded-2xl p-6 text-center">
+                  <div className="bg-orange-600 p-3 rounded-xl mb-3 inline-block">
+                    <HiOutlineAcademicCap className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="text-2xl font-bold text-gray-900">{course.level}</div>
+                  <div className="text-sm text-gray-600">Difficulty</div>
+                </div>
+              </div>
+
+              {/* Course Features */}
+              <div>
+                <h3 className="text-xl font-bold text-gray-900 mb-4">What's Included</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+                    <HiOutlineCheckCircle className="w-5 h-5 text-green-500" />
+                    <span className="text-gray-700">
+                      {course.courseType === 'offline' ? 'In-person classes' : 'Online video lessons'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+                    <HiOutlineCheckCircle className="w-5 h-5 text-green-500" />
+                    <span className="text-gray-700">Downloadable resources</span>
+                  </div>
+                  <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+                    <HiOutlineCheckCircle className="w-5 h-5 text-green-500" />
+                    <span className="text-gray-700">Practice tests & quizzes</span>
+                  </div>
+                  <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+                    <HiOutlineCheckCircle className="w-5 h-5 text-green-500" />
+                    <span className="text-gray-700">Community discussion</span>
+                  </div>
+                  <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+                    <HiOutlineCheckCircle className="w-5 h-5 text-green-500" />
+                    <span className="text-gray-700">Lifetime access</span>
+                  </div>
+                  <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+                    <HiOutlineCheckCircle className="w-5 h-5 text-green-500" />
+                    <span className="text-gray-700">Certificate of completion</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Topics Covered */}
+              {course.tags?.length > 0 && (
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-4">Topics Covered</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    {course.tags.map((tag, index) => (
+                      <div
+                        key={index}
+                        className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-3 text-center"
+                      >
+                        <span className="text-blue-700 font-medium text-sm">{tag}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Instructor Info */}
+              <div>
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Your Instructor</h3>
+                <div className="bg-gray-50 rounded-2xl p-6">
+                  <div className="flex items-center gap-4">
+                    <img
+                      src={course.creator?.avatar}
+                      alt={course.creator?.fullName}
+                      className="w-16 h-16 rounded-full object-cover"
+                    />
+                    <div>
+                      <h4 className="text-lg font-semibold text-gray-900">{course.creator?.fullName}</h4>
+                      <p className="text-gray-600">@{course.creator?.username}</p>
+                      <p className="text-sm text-gray-500 mt-1">Course Instructor</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Offline Course Details */}
+              {course.courseType === 'offline' && (
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-4">Class Information</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="bg-gray-50 rounded-2xl p-6">
+                      <div className="flex items-center gap-3 mb-3">
+                        <HiOutlineLocationMarker className="w-5 h-5 text-blue-600" />
+                        <h4 className="font-semibold text-gray-900">Location</h4>
+                      </div>
+                      <p className="text-gray-700">{course.location}</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-2xl p-6">
+                      <div className="flex items-center gap-3 mb-3">
+                        <HiOutlineClock className="w-5 h-5 text-green-600" />
+                        <h4 className="font-semibold text-gray-900">Schedule</h4>
+                      </div>
+                      <p className="text-gray-700">{course.schedule}</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-2xl p-6">
+                      <div className="flex items-center gap-3 mb-3">
+                        <HiOutlineCalendar className="w-5 h-5 text-purple-600" />
+                        <h4 className="font-semibold text-gray-900">Start Date</h4>
+                      </div>
+                      <p className="text-gray-700">{new Date(course.startDate).toLocaleDateString()}</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-2xl p-6">
+                      <div className="flex items-center gap-3 mb-3">
+                        <HiOutlineCalendar className="w-5 h-5 text-red-600" />
+                        <h4 className="font-semibold text-gray-900">End Date</h4>
+                      </div>
+                      <p className="text-gray-700">{new Date(course.endDate).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="sticky bottom-0 bg-gray-50 p-6 rounded-b-3xl border-t border-gray-200">
+              <div className="flex items-center justify-between">
+                <div className="text-2xl font-bold text-gray-900">
+                  ₹{course.price.toFixed(2)}
+                  {course.originalPrice > course.price && (
+                    <span className="text-lg text-gray-400 line-through ml-2">
+                      ₹{course.originalPrice.toFixed(2)}
+                    </span>
+                  )}
+                </div>
+                {!isEnrolled() ? (
+                  <button
+                    onClick={() => {
+                      setShowCourseModal(false);
+                      handleEnroll();
+                    }}
+                    disabled={enrolling || !course.isPublished}
+                    className={`px-8 py-3 rounded-xl font-semibold flex items-center gap-2 transition-colors ${!course.isPublished
+                        ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                      }`}
+                  >
+                    <HiOutlineAcademicCap className="w-5 h-5" />
+                    Enroll Now
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-2 text-green-600">
+                    <HiOutlineCheckCircle className="w-5 h-5" />
+                    <span className="font-semibold">Already Enrolled</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
