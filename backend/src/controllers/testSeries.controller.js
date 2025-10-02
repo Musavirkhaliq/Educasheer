@@ -166,7 +166,7 @@ const getPublishedTestSeries = asyncHandler(async (req, res) => {
 
         let query = TestSeries.find(filter)
             .populate("creator", "username fullName")
-            .select("-enrolledStudents")
+            .populate("enrolledStudents", "_id") // Populate to ensure count is accurate
             .sort({ createdAt: -1 });
 
         if (limit) {
@@ -175,8 +175,17 @@ const getPublishedTestSeries = asyncHandler(async (req, res) => {
 
         const testSeries = await query;
 
+        // Transform the data to include enrollment count but not the actual student IDs
+        const transformedTestSeries = testSeries.map(series => {
+            const seriesObj = series.toObject();
+            // Replace enrolledStudents array with just the count for privacy
+            seriesObj.enrolledStudentsCount = seriesObj.enrolledStudents?.length || 0;
+            delete seriesObj.enrolledStudents;
+            return seriesObj;
+        });
+
         return res.status(200).json(
-            new ApiResponse(200, testSeries, "Published test series fetched successfully")
+            new ApiResponse(200, transformedTestSeries, "Published test series fetched successfully")
         );
     } catch (error) {
         throw new ApiError(500, "Something went wrong while fetching published test series");

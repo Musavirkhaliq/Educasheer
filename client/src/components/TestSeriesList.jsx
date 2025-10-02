@@ -89,7 +89,7 @@ const TestSeriesCard = ({ testSeries, onEnroll }) => {
           </div>
           <div className="flex items-center gap-2">
             <FaUsers className="text-[#00bcd4]" />
-            <span>{testSeries.enrolledStudents?.length || 0} enrolled</span>
+            <span>{testSeries.enrolledStudentsCount || 0} enrolled</span>
           </div>
           <div className="flex items-center gap-2">
             <FaTag className="text-[#00bcd4]" />

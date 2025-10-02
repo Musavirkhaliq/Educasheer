@@ -1126,11 +1126,11 @@ const ExamsPage = () => {
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                   <FaUsers className="text-sm" />
-                                  <span className="text-sm font-medium">{series.enrolledStudents?.length || 0}</span>
+                                  <span className="text-sm font-medium">{series.enrolledStudentsCount || 0}</span>
                                 </div>
                               </div>
                             </div>
-
+                      
                             {/* Series Icon */}
                             <div className="ml-4">
                               <div className="p-3 bg-gradient-to-br from-purple-100 to-indigo-100 text-purple-700 rounded-xl border border-purple-200">
@@ -1201,7 +1201,7 @@ const ExamsPage = () => {
                             </div>
                             <div className="flex items-center gap-2 text-sm text-slate-600">
                               <FaUsers className="text-xs" />
-                              <span>{series.enrolledStudents?.length || Math.floor(Math.random() * 1000) + 100} students enrolled</span>
+                              <span>{series.enrolledStudentsCount || 0} students enrolled</span>
                             </div>
                             <div className="flex items-center gap-2 text-sm text-slate-600">
                               <FaChartLine className="text-xs" />

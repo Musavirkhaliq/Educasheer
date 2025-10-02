@@ -216,7 +216,7 @@ const TestSeriesDetail = () => {
                       <div className="text-white/80 text-sm">Minutes</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl font-bold">{testSeries.enrolledStudents?.length || 0}</div>
+                      <div className="text-2xl font-bold">{testSeries.enrolledStudentsCount || 0}</div>
                       <div className="text-white/80 text-sm">Enrolled</div>
                     </div>
                   </div>

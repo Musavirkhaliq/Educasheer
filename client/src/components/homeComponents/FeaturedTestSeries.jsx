@@ -85,7 +85,21 @@ const TestSeriesCard = ({ testSeries, delay, onKnowMore }) => {
         bgColor: 'bg-slate-200',
         icon: 'text-slate-600',
         gradient: 'from-slate-600 to-gray-700'
-      }
+      },
+      'government': {
+        bg: 'from-blue-100/20 to-green-100/20',
+        text: 'text-blue-900',
+        bgColor: 'bg-blue-200',
+        icon: 'text-green-700',
+        gradient: 'from-blue-800 to-green-700'
+      },
+      'jkssb': {
+        bg: 'from-emerald-100/20 to-blue-100/20',
+        text: 'text-emerald-900',
+        bgColor: 'bg-emerald-200',
+        icon: 'text-blue-700',
+        gradient: 'from-emerald-700 to-blue-800'
+}
     };
 
     return colorMap[categoryLower] || colorMap['general'];
@@ -173,7 +187,7 @@ const TestSeriesCard = ({ testSeries, delay, onKnowMore }) => {
           </div>
           <div className="flex items-center min-w-0">
             <FaUsers className={`mr-1 ${colors.icon} flex-shrink-0`} />
-            <span className="truncate">{testSeries.enrolledStudentsCount || testSeries.enrolledStudents?.length || 0}</span>
+            <span className="truncate">{testSeries.enrolledStudentsCount || 0}</span>
           </div>
         </div>
 
@@ -310,7 +324,7 @@ const TestSeriesModal = ({ testSeries, isOpen, onClose }) => {
                 <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-lg">
                   <FaUsers className="text-purple-600" />
                   <div>
-                    <div className="font-semibold text-gray-900">{testSeries.enrolledStudentsCount || testSeries.enrolledStudents?.length || 0} Students</div>
+                    <div className="font-semibold text-gray-900">{testSeries.enrolledStudentsCount || 0} Students</div>
                     <div className="text-sm text-gray-600">Already enrolled</div>
                   </div>
                 </div>
@@ -416,17 +430,19 @@ const FeaturedTestSeries = () => {
   const fetchFeaturedTestSeries = async () => {
     try {
       // Try to fetch from API first
-      const response = await fetch('/api/public/test-series?limit=8&featured=true');
+      const response = await fetch('/api/public/test-series?limit=8');
 
       if (response.ok) {
         const data = await response.json();
+        console.log('API Response:', data); // Debug log
         if (data.success && data.data && data.data.length > 0) {
+          // Use the API data - enrolledStudentsCount should be included
           setTestSeries(data.data);
           return;
         }
       }
 
-      // Fallback to mock data if API fails or returns no data
+      // Fallback to mock data only if API completely fails
       const mockTestSeries = [
         {
           _id: '1',
@@ -438,7 +454,7 @@ const FeaturedTestSeries = () => {
           examType: 'JEE Main',
           totalQuizzes: 25,
           estimatedDuration: 180,
-          enrolledStudentsCount: 1247,
+          enrolledStudents: Array(1247).fill().map((_, i) => ({ _id: `user_${i}` })),
           price: 999,
           originalPrice: 1499,
           thumbnail: ''
@@ -453,7 +469,7 @@ const FeaturedTestSeries = () => {
           examType: 'NEET',
           totalQuizzes: 15,
           estimatedDuration: 120,
-          enrolledStudentsCount: 892,
+          enrolledStudents: Array(892).fill().map((_, i) => ({ _id: `user_${i}` })),
           price: 0,
           originalPrice: 0,
           thumbnail: ''
@@ -468,7 +484,7 @@ const FeaturedTestSeries = () => {
           examType: 'CAT',
           totalQuizzes: 20,
           estimatedDuration: 150,
-          enrolledStudentsCount: 634,
+          enrolledStudents: Array(634).fill().map((_, i) => ({ _id: `user_${i}` })),
           price: 799,
           originalPrice: 1199,
           thumbnail: ''
@@ -483,7 +499,7 @@ const FeaturedTestSeries = () => {
           examType: 'CBSE',
           totalQuizzes: 12,
           estimatedDuration: 90,
-          enrolledStudentsCount: 2156,
+          enrolledStudents: Array(2156).fill().map((_, i) => ({ _id: `user_${i}` })),
           price: 0,
           originalPrice: 0,
           thumbnail: ''
@@ -498,7 +514,7 @@ const FeaturedTestSeries = () => {
           examType: 'SBI PO',
           totalQuizzes: 18,
           estimatedDuration: 135,
-          enrolledStudentsCount: 478,
+          enrolledStudents: Array(478).fill().map((_, i) => ({ _id: `user_${i}` })),
           price: 599,
           originalPrice: 899,
           thumbnail: ''
@@ -513,7 +529,7 @@ const FeaturedTestSeries = () => {
           examType: 'SSC CGL',
           totalQuizzes: 22,
           estimatedDuration: 110,
-          enrolledStudentsCount: 1823,
+          enrolledStudents: Array(1823).fill().map((_, i) => ({ _id: `user_${i}` })),
           price: 0,
           originalPrice: 0,
           thumbnail: ''
