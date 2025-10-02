@@ -42,11 +42,10 @@ const CoursesPage = () => {
             <nav className="flex flex-nowrap min-w-max sm:flex-wrap">
               <button
                 onClick={() => setActiveTab('all')}
-                className={`flex items-center gap-1 sm:gap-2 py-2 sm:py-3 px-3 sm:px-5 rounded-lg font-medium text-xs sm:text-sm whitespace-nowrap transition-all duration-200 ${
-                  activeTab === 'all'
-                    ? 'bg-[#00bcd4]/10 text-[#00bcd4]'
-                    : 'text-gray-600 hover:bg-gray-100'
-                }`}
+                className={`flex items-center gap-1 sm:gap-2 py-2 sm:py-3 px-3 sm:px-5 rounded-lg font-medium text-xs sm:text-sm whitespace-nowrap transition-all duration-200 ${activeTab === 'all'
+                  ? 'bg-[#00bcd4]/10 text-[#00bcd4]'
+                  : 'text-gray-600 hover:bg-gray-100'
+                  }`}
               >
                 <FaBookOpen className={`${activeTab === 'all' ? 'text-[#00bcd4]' : 'text-gray-500'}`} />
                 All Courses
@@ -55,11 +54,10 @@ const CoursesPage = () => {
               {(currentUser.role === 'admin' || currentUser.role === 'tutor') && (
                 <button
                   onClick={() => setActiveTab('my')}
-                  className={`flex items-center gap-1 sm:gap-2 py-2 sm:py-3 px-3 sm:px-5 rounded-lg font-medium text-xs sm:text-sm whitespace-nowrap transition-all duration-200 ${
-                    activeTab === 'my'
-                      ? 'bg-[#00bcd4]/10 text-[#00bcd4]'
-                      : 'text-gray-600 hover:bg-gray-100'
-                  }`}
+                  className={`flex items-center gap-1 sm:gap-2 py-2 sm:py-3 px-3 sm:px-5 rounded-lg font-medium text-xs sm:text-sm whitespace-nowrap transition-all duration-200 ${activeTab === 'my'
+                    ? 'bg-[#00bcd4]/10 text-[#00bcd4]'
+                    : 'text-gray-600 hover:bg-gray-100'
+                    }`}
                 >
                   <FaChalkboardTeacher className={`${activeTab === 'my' ? 'text-[#00bcd4]' : 'text-gray-500'}`} />
                   My Courses
@@ -68,11 +66,10 @@ const CoursesPage = () => {
 
               <button
                 onClick={() => setActiveTab('enrolled')}
-                className={`flex items-center gap-1 sm:gap-2 py-2 sm:py-3 px-3 sm:px-5 rounded-lg font-medium text-xs sm:text-sm whitespace-nowrap transition-all duration-200 ${
-                  activeTab === 'enrolled'
-                    ? 'bg-[#00bcd4]/10 text-[#00bcd4]'
-                    : 'text-gray-600 hover:bg-gray-100'
-                }`}
+                className={`flex items-center gap-1 sm:gap-2 py-2 sm:py-3 px-3 sm:px-5 rounded-lg font-medium text-xs sm:text-sm whitespace-nowrap transition-all duration-200 ${activeTab === 'enrolled'
+                  ? 'bg-[#00bcd4]/10 text-[#00bcd4]'
+                  : 'text-gray-600 hover:bg-gray-100'
+                  }`}
               >
                 <FaGraduationCap className={`${activeTab === 'enrolled' ? 'text-[#00bcd4]' : 'text-gray-500'}`} />
                 Enrolled Courses

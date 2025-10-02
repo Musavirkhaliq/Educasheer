@@ -277,22 +277,22 @@ const TestSeriesSections = ({ testSeries, testSeriesId, userAttempts = {}, onQui
           <div key={section._id} className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
             {/* Section Header */}
             <div
-              className="flex items-center justify-between p-5 cursor-pointer hover:bg-gray-50 transition-colors border-l-4 border-l-[#00bcd4]"
+              className="flex items-center justify-between p-3 sm:p-4 lg:p-5 cursor-pointer hover:bg-gray-50 transition-colors border-l-4 border-l-[#00bcd4]"
               onClick={() => toggleSection(section._id)}
             >
-              <div className="flex items-center gap-4 flex-1">
-                <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 flex-1 min-w-0">
+                <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
                   {isExpanded ? (
-                    <FaChevronDown className="text-[#00bcd4] text-lg" />
+                    <FaChevronDown className="text-[#00bcd4] text-base sm:text-lg" />
                   ) : (
-                    <FaChevronRight className="text-gray-400 text-lg" />
+                    <FaChevronRight className="text-gray-400 text-base sm:text-lg" />
                   )}
-                  <div className="w-12 h-12 bg-gradient-to-br from-[#00bcd4] to-[#0097a7] text-white rounded-xl flex items-center justify-center text-lg font-bold shadow-md">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#00bcd4] to-[#0097a7] text-white rounded-xl flex items-center justify-center text-base sm:text-lg font-bold shadow-md">
                     {sectionIndex + 1}
                   </div>
                 </div>
-                <div className="flex-1">
-                  <h3 className="text-xl font-bold text-gray-900">{section.title}</h3>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate">{section.title}</h3>
                   {section.description && (
                     <div className="text-sm text-gray-600 mt-1">
                       {shouldTruncate && !isDescriptionExpanded ? (
@@ -325,14 +325,14 @@ const TestSeriesSections = ({ testSeries, testSeriesId, userAttempts = {}, onQui
                   )}
                 </div>
               </div>
-              <div className="flex items-center gap-6 text-sm text-gray-600">
-                <div className="flex items-center gap-2 bg-gray-100 px-3 py-2 rounded-lg">
-                  <FaListOl className="text-[#00bcd4]" />
-                  <span className="font-medium">{sectionQuizzes.length} tests</span>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 lg:gap-6 text-xs sm:text-sm text-gray-600 flex-shrink-0">
+                <div className="flex items-center gap-1 sm:gap-2 bg-gray-100 px-2 sm:px-3 py-1 sm:py-2 rounded-lg">
+                  <FaListOl className="text-[#00bcd4] text-xs sm:text-sm" />
+                  <span className="font-medium whitespace-nowrap">{sectionQuizzes.length} tests</span>
                 </div>
-                <div className="flex items-center gap-2 bg-gray-100 px-3 py-2 rounded-lg">
-                  <FaClock className="text-[#00bcd4]" />
-                  <span className="font-medium">
+                <div className="flex items-center gap-1 sm:gap-2 bg-gray-100 px-2 sm:px-3 py-1 sm:py-2 rounded-lg">
+                  <FaClock className="text-[#00bcd4] text-xs sm:text-sm" />
+                  <span className="font-medium whitespace-nowrap">
                     {sectionQuizzes.reduce((total, quiz) => total + (quiz.timeLimit || 0), 0)} min
                   </span>
                 </div>
@@ -340,32 +340,32 @@ const TestSeriesSections = ({ testSeries, testSeriesId, userAttempts = {}, onQui
             </div>
 
             {/* Section Progress Bar */}
-            <div className="px-5 pb-4 border-t border-gray-100">
-              <div className="flex items-center justify-between mt-4">
-                <div className="flex items-center gap-6">
+            <div className="px-3 sm:px-4 lg:px-5 pb-3 sm:pb-4 border-t border-gray-100">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-3 sm:mt-4 gap-3 sm:gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 lg:gap-6">
                   <div className="flex items-center gap-2">
-                    <FaChartLine className="text-[#00bcd4]" />
-                    <span className="text-sm font-medium text-gray-700">
+                    <FaChartLine className="text-[#00bcd4] text-sm" />
+                    <span className="text-xs sm:text-sm font-medium text-gray-700">
                       Completed: {sectionProgress.completed}/{sectionProgress.total} tests
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <FaCheck className="text-green-600" />
-                    <span className="text-sm font-medium text-gray-700">
+                    <FaCheck className="text-green-600 text-sm" />
+                    <span className="text-xs sm:text-sm font-medium text-gray-700">
                       Passed: {sectionProgress.passed}
                     </span>
                   </div>
                   {sectionProgress.averageScore > 0 && (
                     <div className="flex items-center gap-2">
-                      <FaTrophy className="text-amber-500" />
-                      <span className="text-sm font-medium text-gray-700">
+                      <FaTrophy className="text-amber-500 text-sm" />
+                      <span className="text-xs sm:text-sm font-medium text-gray-700">
                         Avg: {sectionProgress.averageScore}%
                       </span>
                     </div>
                   )}
                 </div>
-                <div className="text-right">
-                  <span className="text-lg font-bold text-[#00bcd4]">
+                <div className="text-left sm:text-right">
+                  <span className="text-base sm:text-lg font-bold text-[#00bcd4]">
                     {Math.round(sectionProgress.percentage)}%
                   </span>
                 </div>
@@ -381,7 +381,7 @@ const TestSeriesSections = ({ testSeries, testSeriesId, userAttempts = {}, onQui
             {/* Section Content */}
             {isExpanded && (
               <div className="border-t border-gray-200 bg-gray-50">
-                <div className="p-5 space-y-3">
+                <div className="p-3 sm:p-4 lg:p-5 space-y-2 sm:space-y-3">
                   {sectionQuizzes.map((quiz, quizIndex) => {
                     const status = getQuizStatus(quiz);
                     const bestAttempt = getBestAttempt(quiz._id);
@@ -390,36 +390,36 @@ const TestSeriesSections = ({ testSeries, testSeriesId, userAttempts = {}, onQui
                     return (
                       <div
                         key={quiz._id}
-                        className="flex items-center justify-between p-4 bg-white rounded-lg hover:shadow-md transition-all border border-gray-200"
+                        className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 bg-white rounded-lg hover:shadow-md transition-all border border-gray-200 gap-3 sm:gap-4"
                       >
-                        <div className="flex items-center gap-4 flex-1">
-                          <div className="w-10 h-10 bg-gradient-to-br from-gray-200 to-gray-300 text-gray-700 rounded-lg flex items-center justify-center text-sm font-bold shadow-sm">
+                        <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+                          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-gray-200 to-gray-300 text-gray-700 rounded-lg flex items-center justify-center text-xs sm:text-sm font-bold shadow-sm flex-shrink-0">
                             {quizIndex + 1}
                           </div>
-                          <div className="flex-1">
-                            <h4 className="font-semibold text-gray-900 text-base">{quiz.title}</h4>
-                            <div className="flex items-center gap-4 text-sm text-gray-600 mt-2">
-                              <div className="flex items-center gap-1.5">
-                                <FaQuestionCircle className="text-[#00bcd4]" />
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-semibold text-gray-900 text-sm sm:text-base truncate">{quiz.title}</h4>
+                            <div className="flex flex-wrap items-center gap-2 sm:gap-3 lg:gap-4 text-xs sm:text-sm text-gray-600 mt-1 sm:mt-2">
+                              <div className="flex items-center gap-1 sm:gap-1.5">
+                                <FaQuestionCircle className="text-[#00bcd4] text-xs sm:text-sm" />
                                 <span>{quiz.questions?.length || 0} questions</span>
                               </div>
-                              <div className="flex items-center gap-1.5">
-                                <FaClock className="text-[#00bcd4]" />
+                              <div className="flex items-center gap-1 sm:gap-1.5">
+                                <FaClock className="text-[#00bcd4] text-xs sm:text-sm" />
                                 <span>{quiz.timeLimit || 0} min</span>
                               </div>
                               {bestAttempt && (
-                                <div className={`flex items-center gap-1.5 font-medium ${status.color}`}>
-                                  <StatusIcon />
+                                <div className={`flex items-center gap-1 sm:gap-1.5 font-medium ${status.color}`}>
+                                  <StatusIcon className="text-xs sm:text-sm" />
                                   <span>Best: {status.score}%</span>
                                 </div>
                               )}
                             </div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-shrink-0">
                           <Link
                             to={`/test-series/${testSeriesId}/quiz/${quiz._id}/take`}
-                            className="text-sm font-medium px-4 py-2 bg-[#00bcd4] text-white rounded-lg hover:bg-[#0097a7] transition-colors flex items-center gap-2 shadow-sm hover:shadow-md"
+                            className="text-xs sm:text-sm font-medium px-3 sm:px-4 py-2 bg-[#00bcd4] text-white rounded-lg hover:bg-[#0097a7] transition-colors flex items-center gap-1 sm:gap-2 shadow-sm hover:shadow-md whitespace-nowrap"
                           >
                             <FaPlay className="text-xs" />
                             {bestAttempt ? 'Retake' : 'Start'}
@@ -438,20 +438,20 @@ const TestSeriesSections = ({ testSeries, testSeriesId, userAttempts = {}, onQui
       {/* Legacy Quizzes (not in sections) */}
       {legacyQuizzes.length > 0 && (
         <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
-          <div className="p-5 border-b border-gray-200 border-l-4 border-l-orange-400 bg-gradient-to-r from-orange-50 to-white">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-500 rounded-xl flex items-center justify-center shadow-md">
-                <FaBook className="text-white text-xl" />
+          <div className="p-3 sm:p-4 lg:p-5 border-b border-gray-200 border-l-4 border-l-orange-400 bg-gradient-to-r from-orange-50 to-white">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-orange-400 to-orange-500 rounded-xl flex items-center justify-center shadow-md">
+                <FaBook className="text-white text-lg sm:text-xl" />
               </div>
-              <div>
-                <h3 className="text-xl font-bold text-gray-900">Additional Tests</h3>
-                <p className="text-sm text-gray-600 mt-1">
+              <div className="min-w-0 flex-1">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900">Additional Tests</h3>
+                <p className="text-xs sm:text-sm text-gray-600 mt-1">
                   Tests not organized in sections • {legacyQuizzes.length} {legacyQuizzes.length === 1 ? 'test' : 'tests'}
                 </p>
               </div>
             </div>
           </div>
-          <div className="p-5 space-y-3 bg-gray-50">
+          <div className="p-3 sm:p-4 lg:p-5 space-y-2 sm:space-y-3 bg-gray-50">
             {legacyQuizzes.map((quiz, quizIndex) => {
               const status = getQuizStatus(quiz);
               const bestAttempt = getBestAttempt(quiz._id);
@@ -460,36 +460,36 @@ const TestSeriesSections = ({ testSeries, testSeriesId, userAttempts = {}, onQui
               return (
                 <div
                   key={quiz._id}
-                  className="flex items-center justify-between p-4 bg-white rounded-lg hover:shadow-md transition-all border border-gray-200"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 bg-white rounded-lg hover:shadow-md transition-all border border-gray-200 gap-3 sm:gap-4"
                 >
-                  <div className="flex items-center gap-4 flex-1">
-                    <div className="w-10 h-10 bg-gradient-to-br from-gray-200 to-gray-300 text-gray-700 rounded-lg flex items-center justify-center text-sm font-bold shadow-sm">
+                  <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-gray-200 to-gray-300 text-gray-700 rounded-lg flex items-center justify-center text-xs sm:text-sm font-bold shadow-sm flex-shrink-0">
                       {quizIndex + 1}
                     </div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-gray-900 text-base">{quiz.title}</h4>
-                      <div className="flex items-center gap-4 text-sm text-gray-600 mt-2">
-                        <div className="flex items-center gap-1.5">
-                          <FaQuestionCircle className="text-[#00bcd4]" />
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-semibold text-gray-900 text-sm sm:text-base truncate">{quiz.title}</h4>
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-3 lg:gap-4 text-xs sm:text-sm text-gray-600 mt-1 sm:mt-2">
+                        <div className="flex items-center gap-1 sm:gap-1.5">
+                          <FaQuestionCircle className="text-[#00bcd4] text-xs sm:text-sm" />
                           <span>{quiz.questions?.length || 0} questions</span>
                         </div>
-                        <div className="flex items-center gap-1.5">
-                          <FaClock className="text-[#00bcd4]" />
+                        <div className="flex items-center gap-1 sm:gap-1.5">
+                          <FaClock className="text-[#00bcd4] text-xs sm:text-sm" />
                           <span>{quiz.timeLimit || 0} min</span>
                         </div>
                         {bestAttempt && (
-                          <div className={`flex items-center gap-1.5 font-medium ${status.color}`}>
-                            <StatusIcon />
+                          <div className={`flex items-center gap-1 sm:gap-1.5 font-medium ${status.color}`}>
+                            <StatusIcon className="text-xs sm:text-sm" />
                             <span>Best: {status.score}%</span>
                           </div>
                         )}
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     <Link
                       to={`/test-series/${testSeriesId}/quiz/${quiz._id}/take`}
-                      className="text-sm font-medium px-4 py-2 bg-[#00bcd4] text-white rounded-lg hover:bg-[#0097a7] transition-colors flex items-center gap-2 shadow-sm hover:shadow-md"
+                      className="text-xs sm:text-sm font-medium px-3 sm:px-4 py-2 bg-[#00bcd4] text-white rounded-lg hover:bg-[#0097a7] transition-colors flex items-center gap-1 sm:gap-2 shadow-sm hover:shadow-md whitespace-nowrap"
                     >
                       <FaPlay className="text-xs" />
                       {bestAttempt ? 'Retake' : 'Start'}

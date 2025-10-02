@@ -179,7 +179,7 @@ const QuizDetails = () => {
           {/* Quiz Details Card */}
           <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-6">
             {/* Header Section */}
-            <div className="bg-gradient-to-r from-[#00bcd4] to-[#0097a7] text-white p-8">
+            <div className="bg-gradient-to-r from-[#00bcd4] to-[#0097a7] text-white p-4 sm:p-6 lg:p-8">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-3">
@@ -192,60 +192,60 @@ const QuizDetails = () => {
                       </span>
                     </div>
                   </div>
-                  <h1 className="text-3xl font-bold mb-2 break-words">{quiz.title}</h1>
-                  <p className="text-white/90 text-lg break-words">{quiz.description}</p>
+                  <h1 className="text-2xl sm:text-3xl font-bold mb-2 break-words">{quiz.title}</h1>
+                  <p className="text-white/90 text-base sm:text-lg break-words">{quiz.description}</p>
                 </div>
               </div>
             </div>
 
             {/* Content Section */}
-            <div className="p-8">
+            <div className="p-4 sm:p-6 lg:p-8">
               {/* Quiz Information Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
-                      <FaQuestionCircle className="text-white" />
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
+                <div className="bg-blue-50 rounded-xl p-3 sm:p-4 border border-blue-200">
+                  <div className="flex flex-col sm:flex-row items-center sm:items-center gap-2 sm:gap-3">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+                      <FaQuestionCircle className="text-white text-sm sm:text-base" />
                     </div>
-                    <div>
-                      <p className="text-blue-700 text-sm font-medium">Questions</p>
-                      <p className="text-blue-900 text-xl font-bold">{quiz.questions?.length || 0}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-green-50 rounded-xl p-4 border border-green-200">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
-                      <FaClock className="text-white" />
-                    </div>
-                    <div>
-                      <p className="text-green-700 text-sm font-medium">Time Limit</p>
-                      <p className="text-green-900 text-xl font-bold">{quiz.timeLimit} min</p>
+                    <div className="text-center sm:text-left">
+                      <p className="text-blue-700 text-xs sm:text-sm font-medium">Questions</p>
+                      <p className="text-blue-900 text-lg sm:text-xl font-bold">{quiz.questions?.length || 0}</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-yellow-50 rounded-xl p-4 border border-yellow-200">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-yellow-500 rounded-lg flex items-center justify-center">
-                      <FaTrophy className="text-white" />
+                <div className="bg-green-50 rounded-xl p-3 sm:p-4 border border-green-200">
+                  <div className="flex flex-col sm:flex-row items-center sm:items-center gap-2 sm:gap-3">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-green-500 rounded-lg flex items-center justify-center">
+                      <FaClock className="text-white text-sm sm:text-base" />
                     </div>
-                    <div>
-                      <p className="text-yellow-700 text-sm font-medium">Passing Score</p>
-                      <p className="text-yellow-900 text-xl font-bold">{quiz.passingScore}%</p>
+                    <div className="text-center sm:text-left">
+                      <p className="text-green-700 text-xs sm:text-sm font-medium">Time Limit</p>
+                      <p className="text-green-900 text-lg sm:text-xl font-bold">{quiz.timeLimit} min</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-purple-50 rounded-xl p-4 border border-purple-200">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center">
-                      <FaHistory className="text-white" />
+                <div className="bg-yellow-50 rounded-xl p-3 sm:p-4 border border-yellow-200">
+                  <div className="flex flex-col sm:flex-row items-center sm:items-center gap-2 sm:gap-3">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-yellow-500 rounded-lg flex items-center justify-center">
+                      <FaTrophy className="text-white text-sm sm:text-base" />
                     </div>
-                    <div>
-                      <p className="text-purple-700 text-sm font-medium">Max Attempts</p>
-                      <p className="text-purple-900 text-xl font-bold">
+                    <div className="text-center sm:text-left">
+                      <p className="text-yellow-700 text-xs sm:text-sm font-medium">Passing Score</p>
+                      <p className="text-yellow-900 text-lg sm:text-xl font-bold">{quiz.passingScore}%</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-purple-50 rounded-xl p-3 sm:p-4 border border-purple-200">
+                  <div className="flex flex-col sm:flex-row items-center sm:items-center gap-2 sm:gap-3">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-500 rounded-lg flex items-center justify-center">
+                      <FaHistory className="text-white text-sm sm:text-base" />
+                    </div>
+                    <div className="text-center sm:text-left">
+                      <p className="text-purple-700 text-xs sm:text-sm font-medium">Max Attempts</p>
+                      <p className="text-purple-900 text-lg sm:text-xl font-bold">
                         {quiz.maxAttempts || 'Unlimited'}
                       </p>
                     </div>
@@ -261,8 +261,8 @@ const QuizDetails = () => {
                     Your Performance
                   </h3>
 
-                  <div className="bg-gray-50 rounded-xl p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="bg-gray-50 rounded-xl p-4 sm:p-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
                       <div className="text-center">
                         <div className="text-3xl font-bold text-gray-800 mb-1">{attemptCount}</div>
                         <div className="text-gray-600">Attempts Made</div>
@@ -298,7 +298,7 @@ const QuizDetails = () => {
                   Quiz Information
                 </h3>
 
-                <div className="bg-blue-50 rounded-xl p-6 border border-blue-200">
+                <div className="bg-blue-50 rounded-xl p-4 sm:p-6 border border-blue-200">
                   <ul className="space-y-3 text-gray-700">
                     <li className="flex items-start gap-3">
                       <FaCheckCircle className="text-blue-500 mt-1 flex-shrink-0" />

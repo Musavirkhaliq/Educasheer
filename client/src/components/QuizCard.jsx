@@ -55,7 +55,7 @@ const QuizCard = ({ quiz, index, onQuizClick, getDifficultyColor, isAuthenticate
       </div>
 
       {/* Header with Gradient Background */}
-      <div className={`relative p-6 pb-4 ${
+      <div className={`relative p-4 sm:p-5 lg:p-6 pb-3 sm:pb-4 ${
         requiresEnrollment 
           ? 'bg-gradient-to-br from-[#01427a] to-[#00bcd4]' 
           : isAccessible 
@@ -93,10 +93,10 @@ const QuizCard = ({ quiz, index, onQuizClick, getDifficultyColor, isAuthenticate
           </div>
 
           {/* Title and Description */}
-          <h3 className="font-bold text-white text-lg leading-tight mb-2 group-hover:text-yellow-100 transition-colors">
+          <h3 className="font-bold text-white text-base sm:text-lg leading-tight mb-2 group-hover:text-yellow-100 transition-colors break-words">
             {quiz.title}
           </h3>
-          <p className="text-white/90 text-sm leading-relaxed line-clamp-2 mb-4">
+          <p className="text-white/90 text-xs sm:text-sm leading-relaxed line-clamp-2 mb-3 sm:mb-4 break-words">
             {quiz.description}
           </p>
 
@@ -110,10 +110,10 @@ const QuizCard = ({ quiz, index, onQuizClick, getDifficultyColor, isAuthenticate
       </div>
 
       {/* Content Section */}
-      <div className="p-6">
+      <div className="p-4 sm:p-5 lg:p-6">
         {/* Enrollment Warning */}
         {requiresEnrollment && (
-          <div className="mb-4 p-4 bg-gradient-to-r from-[#01427a]/10 to-[#00bcd4]/10 border-2 border-[#01427a]/30 rounded-2xl">
+          <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-gradient-to-r from-[#01427a]/10 to-[#00bcd4]/10 border-2 border-[#01427a]/30 rounded-xl sm:rounded-2xl">
             <div className="flex items-center gap-3 text-[#01427a]">
               <div className="w-8 h-8 bg-[#01427a] rounded-xl flex items-center justify-center flex-shrink-0">
                 <FaExclamationTriangle className="text-white text-sm" />
@@ -127,34 +127,34 @@ const QuizCard = ({ quiz, index, onQuizClick, getDifficultyColor, isAuthenticate
         )}
 
         {/* Stats Grid - Quiz Cards with Purple/Violet Theme */}
-        <div className="grid grid-cols-3 gap-3 mb-6">
-          <div className="bg-gradient-to-br from-purple-100 to-violet-200 rounded-2xl p-3 text-center border-2 border-purple-300 shadow-lg">
-            <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-violet-600 rounded-xl flex items-center justify-center mx-auto mb-2 shadow-md">
-              <FaQuestionCircle className="text-white text-sm" />
+        <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-4 sm:mb-6">
+          <div className="bg-gradient-to-br from-purple-100 to-violet-200 rounded-xl sm:rounded-2xl p-2 sm:p-3 text-center border-2 border-purple-300 shadow-lg">
+            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-purple-500 to-violet-600 rounded-lg sm:rounded-xl flex items-center justify-center mx-auto mb-1 sm:mb-2 shadow-md">
+              <FaQuestionCircle className="text-white text-xs sm:text-sm" />
             </div>
-            <div className="text-lg font-bold text-purple-800">{quiz.questions?.length || 0}</div>
+            <div className="text-base sm:text-lg font-bold text-purple-800">{quiz.questions?.length || 0}</div>
             <div className="text-purple-600 text-xs font-medium">Questions</div>
           </div>
           
-          <div className="bg-gradient-to-br from-indigo-100 to-purple-200 rounded-2xl p-3 text-center border-2 border-indigo-300 shadow-lg">
-            <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-2 shadow-md">
-              <FaClock className="text-white text-sm" />
+          <div className="bg-gradient-to-br from-indigo-100 to-purple-200 rounded-xl sm:rounded-2xl p-2 sm:p-3 text-center border-2 border-indigo-300 shadow-lg">
+            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg sm:rounded-xl flex items-center justify-center mx-auto mb-1 sm:mb-2 shadow-md">
+              <FaClock className="text-white text-xs sm:text-sm" />
             </div>
-            <div className="text-lg font-bold text-indigo-800">{quiz.timeLimit || 0}</div>
+            <div className="text-base sm:text-lg font-bold text-indigo-800">{quiz.timeLimit || 0}</div>
             <div className="text-indigo-600 text-xs font-medium">Minutes</div>
           </div>
           
-          <div className="bg-gradient-to-br from-violet-100 to-purple-200 rounded-2xl p-3 text-center border-2 border-violet-300 shadow-lg">
-            <div className="w-8 h-8 bg-gradient-to-r from-violet-500 to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-2 shadow-md">
-              <FaTrophy className="text-white text-sm" />
+          <div className="bg-gradient-to-br from-violet-100 to-purple-200 rounded-xl sm:rounded-2xl p-2 sm:p-3 text-center border-2 border-violet-300 shadow-lg">
+            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-violet-500 to-purple-600 rounded-lg sm:rounded-xl flex items-center justify-center mx-auto mb-1 sm:mb-2 shadow-md">
+              <FaTrophy className="text-white text-xs sm:text-sm" />
             </div>
-            <div className="text-lg font-bold text-violet-800">{quiz.passingScore || 0}%</div>
+            <div className="text-base sm:text-lg font-bold text-violet-800">{quiz.passingScore || 0}%</div>
             <div className="text-violet-600 text-xs font-medium">Pass Score</div>
           </div>
         </div>
 
         {/* Tags */}
-        <div className="flex flex-wrap gap-2 mb-6">
+        <div className="flex flex-wrap gap-1 sm:gap-2 mb-4 sm:mb-6">
           {quiz.category && (
             <span className="bg-gradient-to-r from-pink-100 to-rose-100 text-pink-800 px-3 py-1 rounded-xl text-xs font-medium border border-pink-200">
               {quiz.category}
@@ -163,7 +163,7 @@ const QuizCard = ({ quiz, index, onQuizClick, getDifficultyColor, isAuthenticate
         </div>
 
         {/* Action Button */}
-        <div className={`w-full flex items-center justify-center gap-3 px-6 py-4 rounded-2xl font-bold text-white transition-all duration-300 group-hover:shadow-lg transform group-hover:scale-105 ${
+        <div className={`w-full flex items-center justify-center gap-2 sm:gap-3 px-4 sm:px-6 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-white transition-all duration-300 group-hover:shadow-lg transform group-hover:scale-105 text-sm sm:text-base ${
           requiresEnrollment 
             ? 'bg-gradient-to-r from-[#01427a] to-[#00bcd4] hover:from-[#01427a]/90 hover:to-[#00bcd4]/90' 
             : isAccessible 

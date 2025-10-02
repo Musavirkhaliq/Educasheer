@@ -187,7 +187,7 @@ const TestSeriesDetail = () => {
           {/* Test Series Details Card */}
           <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-6">
             {/* Header Section */}
-            <div className="bg-gradient-to-r from-[#00bcd4] to-[#0097a7] text-white p-8">
+            <div className="bg-gradient-to-r from-[#00bcd4] to-[#0097a7] text-white p-4 sm:p-6 lg:p-8">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-3">
@@ -205,26 +205,26 @@ const TestSeriesDetail = () => {
                       )}
                     </div>
                   </div>
-                  <h1 className="text-3xl font-bold mb-2">{testSeries.title}</h1>
-                  <p className="text-white/90 text-lg mb-4">{testSeries.description}</p>
+                  <h1 className="text-2xl sm:text-3xl font-bold mb-2 break-words">{testSeries.title}</h1>
+                  <p className="text-white/90 text-base sm:text-lg mb-4 break-words">{testSeries.description}</p>
 
                   {/* Stats */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                     <div className="text-center">
-                      <div className="text-2xl font-bold">{testSeries.totalQuizzes}</div>
-                      <div className="text-white/80 text-sm">Tests</div>
+                      <div className="text-xl sm:text-2xl font-bold">{testSeries.totalQuizzes}</div>
+                      <div className="text-white/80 text-xs sm:text-sm">Tests</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl font-bold">{testSeries.totalQuestions}</div>
-                      <div className="text-white/80 text-sm">Questions</div>
+                      <div className="text-xl sm:text-2xl font-bold">{testSeries.totalQuestions}</div>
+                      <div className="text-white/80 text-xs sm:text-sm">Questions</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl font-bold">{testSeries.estimatedDuration}</div>
-                      <div className="text-white/80 text-sm">Minutes</div>
+                      <div className="text-xl sm:text-2xl font-bold">{testSeries.estimatedDuration}</div>
+                      <div className="text-white/80 text-xs sm:text-sm">Minutes</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl font-bold">{testSeries.enrolledStudentsCount || 0}</div>
-                      <div className="text-white/80 text-sm">Enrolled</div>
+                      <div className="text-xl sm:text-2xl font-bold">{testSeries.enrolledStudentsCount || 0}</div>
+                      <div className="text-white/80 text-xs sm:text-sm">Enrolled</div>
                     </div>
                   </div>
                 </div>
@@ -232,8 +232,8 @@ const TestSeriesDetail = () => {
             </div>
 
             {/* Content Section */}
-            <div className="p-8">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="p-4 sm:p-6 lg:p-8">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
                 {/* Main Content */}
                 <div className="lg:col-span-2">
                   {/* Progress and Quiz List */}
@@ -289,9 +289,9 @@ const TestSeriesDetail = () => {
                 </div>
 
                 {/* Sidebar */}
-                <div className="space-y-6">
+                <div className="space-y-4 lg:space-y-6">
                   {/* Enrollment Card */}
-                  <div className="bg-gray-50 rounded-lg p-6">
+                  <div className="bg-gray-50 rounded-lg p-4 sm:p-6">
                     <div className="text-center mb-4">
                       {testSeries.price > 0 ? (
                         <div>
@@ -338,7 +338,7 @@ const TestSeriesDetail = () => {
                   </div>
 
                   {/* Details */}
-                  <div className="bg-gray-50 rounded-lg p-6">
+                  <div className="bg-gray-50 rounded-lg p-4 sm:p-6">
                     <h4 className="font-semibold text-gray-800 mb-4">Details</h4>
                     <div className="space-y-3 text-sm">
                       <div className="flex justify-between">
@@ -374,7 +374,7 @@ const TestSeriesDetail = () => {
 
                   {/* Tags */}
                   {testSeries.tags && testSeries.tags.length > 0 && (
-                    <div className="bg-gray-50 rounded-lg p-6">
+                    <div className="bg-gray-50 rounded-lg p-4 sm:p-6">
                       <h4 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
                         <FaTag />
                         Tags

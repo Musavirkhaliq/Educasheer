@@ -188,28 +188,28 @@ const TestSeriesProgress = ({ testSeriesId, testSeries, onProgressUpdate }) => {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="text-center p-3 bg-blue-50 rounded-lg">
-            <div className="text-2xl font-bold text-blue-600">{stats.completedQuizzes}</div>
-            <div className="text-sm text-blue-800">Completed</div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+          <div className="text-center p-2 sm:p-3 bg-blue-50 rounded-lg">
+            <div className="text-xl sm:text-2xl font-bold text-blue-600">{stats.completedQuizzes}</div>
+            <div className="text-xs sm:text-sm text-blue-800">Completed</div>
             <div className="text-xs text-gray-600">of {stats.totalQuizzes}</div>
           </div>
           
-          <div className="text-center p-3 bg-green-50 rounded-lg">
-            <div className="text-2xl font-bold text-green-600">{stats.passedQuizzes}</div>
-            <div className="text-sm text-green-800">Passed</div>
+          <div className="text-center p-2 sm:p-3 bg-green-50 rounded-lg">
+            <div className="text-xl sm:text-2xl font-bold text-green-600">{stats.passedQuizzes}</div>
+            <div className="text-xs sm:text-sm text-green-800">Passed</div>
             <div className="text-xs text-gray-600">tests</div>
           </div>
           
-          <div className="text-center p-3 bg-purple-50 rounded-lg">
-            <div className="text-2xl font-bold text-purple-600">{stats.averageScore}%</div>
-            <div className="text-sm text-purple-800">Average</div>
+          <div className="text-center p-2 sm:p-3 bg-purple-50 rounded-lg">
+            <div className="text-xl sm:text-2xl font-bold text-purple-600">{stats.averageScore}%</div>
+            <div className="text-xs sm:text-sm text-purple-800">Average</div>
             <div className="text-xs text-gray-600">score</div>
           </div>
           
-          <div className="text-center p-3 bg-orange-50 rounded-lg">
-            <div className="text-2xl font-bold text-orange-600">{stats.totalTimeSpent}</div>
-            <div className="text-sm text-orange-800">Minutes</div>
+          <div className="text-center p-2 sm:p-3 bg-orange-50 rounded-lg">
+            <div className="text-xl sm:text-2xl font-bold text-orange-600">{stats.totalTimeSpent}</div>
+            <div className="text-xs sm:text-sm text-orange-800">Minutes</div>
             <div className="text-xs text-gray-600">spent</div>
           </div>
         </div>
