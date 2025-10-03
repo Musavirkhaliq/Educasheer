@@ -901,74 +901,85 @@ const CourseDetail = () => {
 
       {/* Course Details Modal */}
       {showCourseModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-            {/* Modal Header */}
-            <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-t-3xl">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="bg-white/20 p-3 rounded-2xl">
-                    <HiOutlineBookOpen className="w-6 h-6" />
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-end sm:items-center justify-center modal-backdrop"
+          onClick={() => setShowCourseModal(false)}
+        >
+          <div 
+            className="bg-white rounded-t-3xl sm:rounded-3xl w-full sm:max-w-4xl sm:w-full max-h-[95vh] sm:max-h-[90vh] overflow-hidden shadow-2xl flex flex-col sm:m-4 touch-manipulation"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Mobile drag indicator */}
+            <div className="sm:hidden w-12 h-1 bg-gray-400 rounded-full mx-auto mt-2 mb-2 cursor-grab active:cursor-grabbing"></div>
+            
+            <div className="overflow-y-auto flex-1">
+              {/* Modal Header */}
+              <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 sm:p-6 rounded-t-3xl sm:rounded-t-3xl flex-shrink-0">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 sm:gap-4 pr-8 sm:pr-0 min-w-0">
+                    <div className="bg-white/20 p-2 sm:p-3 rounded-2xl flex-shrink-0">
+                      <HiOutlineBookOpen className="w-5 h-5 sm:w-6 sm:h-6" />
+                    </div>
+                    <div className="min-w-0">
+                      <h2 className="text-lg sm:text-2xl font-bold line-clamp-1">{course.title}</h2>
+                      <p className="text-blue-100 text-sm sm:text-base">Complete Course Details</p>
+                    </div>
                   </div>
-                  <div>
-                    <h2 className="text-2xl font-bold">{course.title}</h2>
-                    <p className="text-blue-100">Complete Course Details</p>
-                  </div>
+                  <button
+                    onClick={() => setShowCourseModal(false)}
+                    className="absolute top-2 sm:top-4 right-2 sm:right-4 bg-white/20 hover:bg-white/30 p-2 rounded-xl transition-colors z-10"
+                    aria-label="Close modal"
+                  >
+                    <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
                 </div>
-                <button
-                  onClick={() => setShowCourseModal(false)}
-                  className="bg-white/20 hover:bg-white/30 p-2 rounded-xl transition-colors"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
               </div>
-            </div>
 
-            {/* Modal Content */}
-            <div className="p-8 space-y-8">
-              {/* Course Description */}
-              <div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">About This Course</h3>
-                <div className="prose prose-lg max-w-none">
-                  <p className="text-gray-700 leading-relaxed whitespace-pre-line">{course.description}</p>
-                </div>
-              </div>
-
-              {/* Course Stats Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                <div className="bg-blue-50 rounded-2xl p-6 text-center">
-                  <div className="bg-blue-600 p-3 rounded-xl mb-3 inline-block">
-                    <HiOutlineVideoCamera className="w-6 h-6 text-white" />
+              {/* Modal Content */}
+              <div className="p-4 sm:p-8 space-y-4 sm:space-y-8">
+                {/* Course Description */}
+                <div>
+                  <h3 className="text-lg sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">About This Course</h3>
+                  <div className="prose prose-sm sm:prose-lg max-w-none">
+                    <p className="text-gray-700 leading-relaxed whitespace-pre-line text-sm sm:text-base">{course.description}</p>
                   </div>
-                  <div className="text-2xl font-bold text-gray-900">{course.videos?.length || 0}</div>
-                  <div className="text-sm text-gray-600">Video Lessons</div>
                 </div>
 
-                <div className="bg-green-50 rounded-2xl p-6 text-center">
-                  <div className="bg-green-600 p-3 rounded-xl mb-3 inline-block">
-                    <HiOutlineClock className="w-6 h-6 text-white" />
+                {/* Course Stats Grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6">
+                  <div className="bg-blue-50 rounded-2xl p-3 sm:p-6 text-center">
+                    <div className="bg-blue-600 p-2 sm:p-3 rounded-xl mb-2 sm:mb-3 inline-block">
+                      <HiOutlineVideoCamera className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
+                    </div>
+                    <div className="text-lg sm:text-2xl font-bold text-gray-900">{course.videos?.length || 0}</div>
+                    <div className="text-xs sm:text-sm text-gray-600">Video Lessons</div>
                   </div>
-                  <div className="text-2xl font-bold text-gray-900">{calculateTotalDuration()}</div>
-                  <div className="text-sm text-gray-600">Total Duration</div>
-                </div>
 
-                <div className="bg-purple-50 rounded-2xl p-6 text-center">
-                  <div className="bg-purple-600 p-3 rounded-xl mb-3 inline-block">
-                    <HiOutlineUsers className="w-6 h-6 text-white" />
+                  <div className="bg-green-50 rounded-2xl p-3 sm:p-6 text-center">
+                    <div className="bg-green-600 p-2 sm:p-3 rounded-xl mb-2 sm:mb-3 inline-block">
+                      <HiOutlineClock className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
+                    </div>
+                    <div className="text-lg sm:text-2xl font-bold text-gray-900">{calculateTotalDuration()}</div>
+                    <div className="text-xs sm:text-sm text-gray-600">Total Duration</div>
                   </div>
-                  <div className="text-2xl font-bold text-gray-900">{course.enrolledStudents?.length || 0}</div>
-                  <div className="text-sm text-gray-600">Students</div>
-                </div>
 
-                <div className="bg-orange-50 rounded-2xl p-6 text-center">
-                  <div className="bg-orange-600 p-3 rounded-xl mb-3 inline-block">
-                    <HiOutlineAcademicCap className="w-6 h-6 text-white" />
+                  <div className="bg-purple-50 rounded-2xl p-3 sm:p-6 text-center">
+                    <div className="bg-purple-600 p-2 sm:p-3 rounded-xl mb-2 sm:mb-3 inline-block">
+                      <HiOutlineUsers className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
+                    </div>
+                    <div className="text-lg sm:text-2xl font-bold text-gray-900">{course.enrolledStudents?.length || 0}</div>
+                    <div className="text-xs sm:text-sm text-gray-600">Students</div>
                   </div>
-                  <div className="text-2xl font-bold text-gray-900">{course.level}</div>
-                  <div className="text-sm text-gray-600">Difficulty</div>
-                </div>
+
+                  <div className="bg-orange-50 rounded-2xl p-3 sm:p-6 text-center">
+                    <div className="bg-orange-600 p-2 sm:p-3 rounded-xl mb-2 sm:mb-3 inline-block">
+                      <HiOutlineAcademicCap className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
+                    </div>
+                    <div className="text-lg sm:text-2xl font-bold text-gray-900">{course.level}</div>
+                    <div className="text-xs sm:text-sm text-gray-600">Difficulty</div>
+                  </div>
               </div>
 
               {/* Course Features */}
@@ -1078,30 +1089,31 @@ const CourseDetail = () => {
               )}
             </div>
 
-            {/* Modal Footer */}
-            <div className="sticky bottom-0 bg-gray-50 p-6 rounded-b-3xl border-t border-gray-200">
-              <div className="flex items-center justify-between">
-                <div className="text-2xl font-bold text-gray-900">
-                  ₹{course.price.toFixed(2)}
-                  {course.originalPrice > course.price && (
-                    <span className="text-lg text-gray-400 line-through ml-2">
-                      ₹{course.originalPrice.toFixed(2)}
-                    </span>
+              {/* Modal Footer */}
+              <div className="sticky bottom-0 bg-gray-50 p-4 sm:p-6 rounded-b-3xl border-t border-gray-200 flex-shrink-0">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-0">
+                  <div className="text-xl sm:text-2xl font-bold text-gray-900 text-center sm:text-left">
+                    ₹{course.price.toFixed(2)}
+                    {course.originalPrice > course.price && (
+                      <span className="text-base sm:text-lg text-gray-400 line-through ml-2">
+                        ₹{course.originalPrice.toFixed(2)}
+                      </span>
+                    )}
+                  </div>
+                  {!isEnrolled() ? (
+                    <AddToCartButton
+                      itemType="course"
+                      itemId={course._id}
+                      className="w-full sm:w-auto"
+                      size="lg"
+                    />
+                  ) : (
+                    <div className="flex items-center gap-2 text-green-600">
+                      <HiOutlineCheckCircle className="w-5 h-5" />
+                      <span className="font-semibold text-sm sm:text-base">Already Enrolled</span>
+                    </div>
                   )}
                 </div>
-                {!isEnrolled() ? (
-                  <AddToCartButton
-                    itemType="course"
-                    itemId={course._id}
-                    className=""
-                    size="lg"
-                  />
-                ) : (
-                  <div className="flex items-center gap-2 text-green-600">
-                    <HiOutlineCheckCircle className="w-5 h-5" />
-                    <span className="font-semibold">Already Enrolled</span>
-                  </div>
-                )}
               </div>
             </div>
           </div>

@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { FaHome, FaVideo, FaGraduationCap, FaLayerGroup, FaBook, FaBars, FaTimes, FaUserCircle, FaMapMarkerAlt, FaTrophy } from "react-icons/fa";
+import { FaHome, FaVideo, FaGraduationCap, FaLayerGroup, FaBook, FaBars, FaTimes, FaUserCircle, FaMapMarkerAlt, FaTrophy, FaShoppingCart } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
+import { useCart } from "../../contexts/CartContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { navLinks } from "../../utils/NavigationLinks";
 
 const MobileNav = () => {
   const { currentUser, isAuthenticated, logout } = useAuth();
+  const { totalItems } = useCart();
   const navigate = useNavigate();
   const location = useLocation();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -116,6 +118,22 @@ const MobileNav = () => {
 
           {/* Right side icons */}
           <div className="flex items-center space-x-2">
+            {/* Cart Icon */}
+            {isAuthenticated && (
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={() => navigate("/cart")}
+                className="relative p-1.5 rounded-full glass-effect"
+              >
+                <FaShoppingCart className="text-lg text-primary" />
+                {totalItems > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center font-medium">
+                    {totalItems > 99 ? '99+' : totalItems}
+                  </span>
+                )}
+              </motion.button>
+            )}
+            
             {isAuthenticated ? (
               <motion.div
                 whileTap={{ scale: 0.95 }}
@@ -259,13 +277,26 @@ const MobileNav = () => {
                     </div>
                   </div>
 
-                  <div className="mt-4 flex space-x-2">
+                  <div className="mt-4 grid grid-cols-2 gap-2">
                     <motion.button
                       whileTap={{ scale: 0.95 }}
                       onClick={() => navigate("/profile")}
-                      className="flex-1 py-2 rounded-lg bg-white/10 text-white text-sm font-medium"
+                      className="py-2 rounded-lg bg-white/10 text-white text-sm font-medium"
                     >
                       Profile
+                    </motion.button>
+                    <motion.button
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => navigate("/cart")}
+                      className="relative py-2 rounded-lg bg-white/10 text-white text-sm font-medium flex items-center justify-center gap-1"
+                    >
+                      <FaShoppingCart />
+                      Cart
+                      {totalItems > 0 && (
+                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                          {totalItems > 9 ? '9+' : totalItems}
+                        </span>
+                      )}
                     </motion.button>
                     <motion.button
                       whileTap={{ scale: 0.95 }}
@@ -274,7 +305,7 @@ const MobileNav = () => {
                         navigate('/');
                         setIsDrawerOpen(false);
                       }}
-                      className="flex-1 py-2 rounded-lg bg-red-500/20 text-red-400 text-sm font-medium"
+                      className="col-span-2 py-2 rounded-lg bg-red-500/20 text-red-400 text-sm font-medium"
                     >
                       Logout
                     </motion.button>

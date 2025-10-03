@@ -179,6 +179,19 @@ html {
     min-height: 44px;
     min-width: 44px;
   }
+
+  /* Improve modal behavior on mobile */
+  .modal-backdrop {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+
+  /* Prevent zoom on double tap for buttons */
+  .touch-manipulation {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
 }
 /* Updated heading styles */
 h1,

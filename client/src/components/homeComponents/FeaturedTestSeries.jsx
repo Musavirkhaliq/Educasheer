@@ -212,8 +212,13 @@ const TestSeriesCard = ({ testSeries, delay, onKnowMore }) => {
         {/* Action Buttons - Fixed at bottom */}
         <div className="flex gap-1 mt-auto">
           <button
-            onClick={() => onKnowMore(testSeries)}
-            className="flex-1 bg-gray-100 text-gray-700 py-1 px-2 rounded text-xs font-medium hover:bg-gray-200 transition-all duration-300 flex items-center justify-center"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onKnowMore(testSeries);
+            }}
+            className="flex-1 bg-gray-100 text-gray-700 py-1 px-2 rounded text-xs font-medium hover:bg-gray-200 active:bg-gray-300 transition-all duration-300 flex items-center justify-center touch-manipulation"
+            style={{ touchAction: 'manipulation' }}
           >
             <FaInfoCircle className="text-xs mr-1" />
             <span>Know More</span>
@@ -234,6 +239,56 @@ const TestSeriesCard = ({ testSeries, delay, onKnowMore }) => {
 
 // Test Series Detail Modal Component
 const TestSeriesModal = ({ testSeries, isOpen, onClose }) => {
+  const [startY, setStartY] = useState(0);
+  const [currentY, setCurrentY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+
+  // Handle escape key and body scroll
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+      // Prevent body scroll when modal is open
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen, onClose]);
+
+  // Handle touch events for swipe to close on mobile
+  const handleTouchStart = (e) => {
+    if (window.innerWidth >= 640) return; // Only on mobile
+    setStartY(e.touches[0].clientY);
+    setIsDragging(true);
+  };
+
+  const handleTouchMove = (e) => {
+    if (!isDragging || window.innerWidth >= 640) return;
+    setCurrentY(e.touches[0].clientY);
+  };
+
+  const handleTouchEnd = () => {
+    if (!isDragging || window.innerWidth >= 640) return;
+    const deltaY = currentY - startY;
+    
+    // If swiped down more than 100px, close modal
+    if (deltaY > 100) {
+      onClose();
+    }
+    
+    setIsDragging(false);
+    setStartY(0);
+    setCurrentY(0);
+  };
+
   if (!isOpen || !testSeries) return null;
 
   return (
@@ -242,28 +297,53 @@ const TestSeriesModal = ({ testSeries, isOpen, onClose }) => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-end sm:items-center justify-center modal-backdrop"
         onClick={onClose}
       >
         <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
-          transition={{ type: "spring", duration: 0.3 }}
-          className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+          initial={{ 
+            scale: 0.95, 
+            opacity: 0,
+            y: window.innerWidth < 640 ? '100%' : 0
+          }}
+          animate={{ 
+            scale: 1, 
+            opacity: 1,
+            y: 0
+          }}
+          exit={{ 
+            scale: 0.95, 
+            opacity: 0,
+            y: window.innerWidth < 640 ? '100%' : 0
+          }}
+          transition={{ type: "spring", duration: 0.3, damping: 25, stiffness: 300 }}
+          className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-2xl sm:w-full max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col sm:m-4 touch-manipulation"
           onClick={(e) => e.stopPropagation()}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          style={{
+            transform: isDragging && window.innerWidth < 640 
+              ? `translateY(${Math.max(0, currentY - startY)}px)` 
+              : 'translateY(0)',
+            transition: isDragging ? 'none' : 'transform 0.3s ease'
+          }}
         >
           {/* Header */}
-          <div className="relative p-6 border-b border-gray-200">
+          <div className="relative p-4 sm:p-6 border-b border-gray-200 flex-shrink-0">
+            {/* Mobile drag indicator */}
+            <div className="sm:hidden w-12 h-1 bg-gray-400 rounded-full mx-auto mb-4 cursor-grab active:cursor-grabbing"></div>
+            
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
+              className="absolute top-2 sm:top-4 right-2 sm:right-4 p-2 hover:bg-gray-100 rounded-full transition-colors z-10"
+              aria-label="Close modal"
             >
-              <FaTimes className="text-gray-500" />
+              <FaTimes className="text-gray-500 text-lg" />
             </button>
 
-            <div className="flex items-start gap-4">
-              <div className="w-16 h-16 bg-gradient-to-br from-[#00bcd4]/10 to-[#01427a]/10 rounded-lg flex items-center justify-center flex-shrink-0">
+            <div className="flex items-start gap-3 sm:gap-4 pr-8 sm:pr-0">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-[#00bcd4]/10 to-[#01427a]/10 rounded-lg flex items-center justify-center flex-shrink-0">
                 {testSeries.thumbnail ? (
                   <img
                     src={testSeries.thumbnail}
@@ -271,12 +351,12 @@ const TestSeriesModal = ({ testSeries, isOpen, onClose }) => {
                     className="w-full h-full object-cover rounded-lg"
                   />
                 ) : (
-                  <FaBookOpen className="text-2xl text-[#00bcd4]" />
+                  <FaBookOpen className="text-xl sm:text-2xl text-[#00bcd4]" />
                 )}
               </div>
 
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-wrap items-center gap-2 mb-2">
                   <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gradient-to-r from-yellow-400 to-orange-500 text-white">
                     <FaStar className="w-3 h-3 mr-1" />
                     Featured
@@ -288,126 +368,127 @@ const TestSeriesModal = ({ testSeries, isOpen, onClose }) => {
                   )}
                 </div>
 
-                <h2 className="text-xl font-bold text-gray-900 mb-1">{testSeries.title}</h2>
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-1 line-clamp-2">{testSeries.title}</h2>
                 <p className="text-sm text-gray-600">{testSeries.category}</p>
               </div>
             </div>
           </div>
 
           {/* Content */}
-          <div className="p-6">
+          <div className="p-4 sm:p-6 overflow-y-auto flex-1">
             {/* Description */}
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">About This Test Series</h3>
-              <p className="text-gray-600 leading-relaxed">{testSeries.description}</p>
+            <div className="mb-4 sm:mb-6">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">About This Test Series</h3>
+              <p className="text-sm sm:text-base text-gray-600 leading-relaxed">{testSeries.description}</p>
             </div>
 
             {/* Key Features */}
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Key Features</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
-                  <FaQuestionCircle className="text-blue-600" />
-                  <div>
-                    <div className="font-semibold text-gray-900">{testSeries.totalQuizzes || 0} Tests</div>
-                    <div className="text-sm text-gray-600">Comprehensive coverage</div>
+            <div className="mb-4 sm:mb-6">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3">Key Features</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-blue-50 rounded-lg">
+                  <FaQuestionCircle className="text-blue-600 text-sm sm:text-base flex-shrink-0" />
+                  <div className="min-w-0">
+                    <div className="font-semibold text-gray-900 text-sm sm:text-base">{testSeries.totalQuizzes || 0} Tests</div>
+                    <div className="text-xs sm:text-sm text-gray-600">Comprehensive coverage</div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-                  <FaClock className="text-green-600" />
-                  <div>
-                    <div className="font-semibold text-gray-900">{testSeries.estimatedDuration || 0} Minutes</div>
-                    <div className="text-sm text-gray-600">Total duration</div>
+                <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-green-50 rounded-lg">
+                  <FaClock className="text-green-600 text-sm sm:text-base flex-shrink-0" />
+                  <div className="min-w-0">
+                    <div className="font-semibold text-gray-900 text-sm sm:text-base">{testSeries.estimatedDuration || 0} Minutes</div>
+                    <div className="text-xs sm:text-sm text-gray-600">Total duration</div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-lg">
-                  <FaUsers className="text-purple-600" />
-                  <div>
-                    <div className="font-semibold text-gray-900">{testSeries.enrolledStudentsCount || 0} Students</div>
-                    <div className="text-sm text-gray-600">Already enrolled</div>
+                <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-purple-50 rounded-lg">
+                  <FaUsers className="text-purple-600 text-sm sm:text-base flex-shrink-0" />
+                  <div className="min-w-0">
+                    <div className="font-semibold text-gray-900 text-sm sm:text-base">{testSeries.enrolledStudentsCount || 0} Students</div>
+                    <div className="text-xs sm:text-sm text-gray-600">Already enrolled</div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 p-3 bg-orange-50 rounded-lg">
-                  <FaGraduationCap className="text-orange-600" />
-                  <div>
-                    <div className="font-semibold text-gray-900 capitalize">{testSeries.difficulty || 'Medium'}</div>
-                    <div className="text-sm text-gray-600">Difficulty level</div>
+                <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-orange-50 rounded-lg">
+                  <FaGraduationCap className="text-orange-600 text-sm sm:text-base flex-shrink-0" />
+                  <div className="min-w-0">
+                    <div className="font-semibold text-gray-900 text-sm sm:text-base capitalize">{testSeries.difficulty || 'Medium'}</div>
+                    <div className="text-xs sm:text-sm text-gray-600">Difficulty level</div>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* What You'll Get */}
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">What You'll Get</h3>
+            <div className="mb-4 sm:mb-6">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3">What You'll Get</h3>
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <FaCheckCircle className="text-green-500 text-sm" />
-                  <span className="text-gray-700">Detailed performance analysis</span>
+                  <FaCheckCircle className="text-green-500 text-sm flex-shrink-0" />
+                  <span className="text-sm sm:text-base text-gray-700">Detailed performance analysis</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <FaCheckCircle className="text-green-500 text-sm" />
-                  <span className="text-gray-700">Step-by-step solutions</span>
+                  <FaCheckCircle className="text-green-500 text-sm flex-shrink-0" />
+                  <span className="text-sm sm:text-base text-gray-700">Step-by-step solutions</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <FaCheckCircle className="text-green-500 text-sm" />
-                  <span className="text-gray-700">Progress tracking</span>
+                  <FaCheckCircle className="text-green-500 text-sm flex-shrink-0" />
+                  <span className="text-sm sm:text-base text-gray-700">Progress tracking</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <FaCheckCircle className="text-green-500 text-sm" />
-                  <span className="text-gray-700">Leaderboard rankings</span>
+                  <FaCheckCircle className="text-green-500 text-sm flex-shrink-0" />
+                  <span className="text-sm sm:text-base text-gray-700">Leaderboard rankings</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <FaCheckCircle className="text-green-500 text-sm" />
-                  <span className="text-gray-700">Mobile-friendly interface</span>
+                  <FaCheckCircle className="text-green-500 text-sm flex-shrink-0" />
+                  <span className="text-sm sm:text-base text-gray-700">Mobile-friendly interface</span>
                 </div>
               </div>
             </div>
 
             {/* Pricing */}
-            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+            <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-gray-50 rounded-lg">
               <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-1">Pricing</h3>
-                  <div className="flex items-center gap-2">
+                <div className="flex-1">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1">Pricing</h3>
+                  <div className="flex flex-wrap items-center gap-2">
                     {testSeries.price > 0 ? (
                       <>
-                        <span className="text-2xl font-bold text-[#00bcd4]">₹{testSeries.price}</span>
+                        <span className="text-xl sm:text-2xl font-bold text-[#00bcd4]">₹{testSeries.price}</span>
                         {testSeries.originalPrice > testSeries.price && (
-                          <span className="text-lg text-gray-500 line-through">₹{testSeries.originalPrice}</span>
+                          <span className="text-base sm:text-lg text-gray-500 line-through">₹{testSeries.originalPrice}</span>
                         )}
                         {testSeries.originalPrice > testSeries.price && (
-                          <span className="text-sm bg-green-100 text-green-800 px-2 py-1 rounded">
+                          <span className="text-xs sm:text-sm bg-green-100 text-green-800 px-2 py-1 rounded">
                             Save ₹{testSeries.originalPrice - testSeries.price}
                           </span>
                         )}
                       </>
                     ) : (
-                      <span className="text-2xl font-bold text-green-600">Free</span>
+                      <span className="text-xl sm:text-2xl font-bold text-green-600">Free</span>
                     )}
                   </div>
                 </div>
-                <FaTag className="text-3xl text-gray-300" />
+                <FaTag className="text-2xl sm:text-3xl text-gray-300 flex-shrink-0" />
               </div>
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-2 border-t border-gray-100 mt-4">
               <button
                 onClick={onClose}
-                className="flex-1 bg-gray-100 text-gray-700 py-3 px-6 rounded-lg font-medium hover:bg-gray-200 transition-all duration-300"
+                className="flex-1 bg-gray-100 text-gray-700 py-2 sm:py-3 px-4 sm:px-6 rounded-lg font-medium hover:bg-gray-200 transition-all duration-300 text-sm sm:text-base"
               >
                 Close
               </button>
               <Link
                 to={`/test-series/${testSeries._id}`}
-                className="flex-1 bg-gradient-to-r from-[#00bcd4] to-[#01427a] text-white py-3 px-6 rounded-lg font-medium hover:shadow-lg transition-all duration-300 flex items-center justify-center"
+                className="flex-1 bg-gradient-to-r from-[#00bcd4] to-[#01427a] text-white py-2 sm:py-3 px-4 sm:px-6 rounded-lg font-medium hover:shadow-lg transition-all duration-300 flex items-center justify-center text-sm sm:text-base"
+                onClick={onClose}
               >
                 <span className="mr-2">Start Test Series</span>
-                <FaArrowRight />
+                <FaArrowRight className="text-sm" />
               </Link>
             </div>
           </div>

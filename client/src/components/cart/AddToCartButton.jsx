@@ -37,15 +37,15 @@ const AddToCartButton = ({ itemType, itemId, className = '', size = 'md' }) => {
     };
 
     const sizeClasses = {
-        sm: 'px-3 py-1.5 text-sm',
-        md: 'px-4 py-2 text-base',
-        lg: 'px-6 py-3 text-lg'
+        sm: 'px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm',
+        md: 'px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base',
+        lg: 'px-4 sm:px-6 py-2 sm:py-3 text-base sm:text-lg'
     };
 
     const iconSizes = {
-        sm: 16,
-        md: 20,
-        lg: 24
+        sm: 14,
+        md: 18,
+        lg: 20
     };
 
     return (
@@ -76,7 +76,7 @@ const AddToCartButton = ({ itemType, itemId, className = '', size = 'md' }) => {
             
             {message && (
                 <div className={`
-                    absolute top-full left-0 mt-2 p-2 rounded-md text-sm z-10 whitespace-nowrap
+                    absolute top-full left-0 mt-2 p-2 rounded-md text-xs sm:text-sm z-10 whitespace-nowrap max-w-xs
                     ${message.includes('success') || message.includes('added') || message.includes('removed')
                         ? 'bg-green-100 text-green-800 border border-green-200'
                         : 'bg-red-100 text-red-800 border border-red-200'

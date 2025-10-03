@@ -81,15 +81,15 @@ const CartPage = () => {
 
     if (totalItems === 0) {
         return (
-            <div className="min-h-screen bg-gray-50 py-8">
+            <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
                 <div className="max-w-4xl mx-auto px-4">
-                    <div className="text-center py-16">
-                        <ShoppingBag size={64} className="mx-auto text-gray-400 mb-4" />
-                        <h2 className="text-2xl font-bold text-gray-900 mb-2">Your cart is empty</h2>
-                        <p className="text-gray-600 mb-8">Start learning by adding courses, test series, or programs to your cart.</p>
+                    <div className="text-center py-8 sm:py-16">
+                        <ShoppingBag size={48} className="mx-auto text-gray-400 mb-4 sm:w-16 sm:h-16" />
+                        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Your cart is empty</h2>
+                        <p className="text-gray-600 mb-6 sm:mb-8 text-sm sm:text-base px-4">Start learning by adding courses, test series, or programs to your cart.</p>
                         <button
                             onClick={() => navigate('/courses')}
-                            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+                            className="bg-blue-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base"
                         >
                             Browse Courses
                         </button>
@@ -100,19 +100,19 @@ const CartPage = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 py-8">
+        <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
             <div className="max-w-6xl mx-auto px-4">
-                <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900">Shopping Cart</h1>
-                    <p className="text-gray-600 mt-2">{totalItems} item{totalItems !== 1 ? 's' : ''} in your cart</p>
+                <div className="mb-6 sm:mb-8">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Shopping Cart</h1>
+                    <p className="text-gray-600 mt-2 text-sm sm:text-base">{totalItems} item{totalItems !== 1 ? 's' : ''} in your cart</p>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
                     {/* Cart Items */}
                     <div className="lg:col-span-2">
                         <div className="bg-white rounded-lg shadow-sm">
-                            <div className="p-6 border-b border-gray-200 flex justify-between items-center">
-                                <h2 className="text-xl font-semibold">Cart Items</h2>
+                            <div className="p-4 sm:p-6 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                                <h2 className="text-lg sm:text-xl font-semibold">Cart Items</h2>
                                 <button
                                     onClick={handleClearCart}
                                     className="text-red-600 hover:text-red-700 text-sm font-medium"
@@ -123,17 +123,17 @@ const CartPage = () => {
                             
                             <div className="divide-y divide-gray-200">
                                 {items.map((item) => (
-                                    <div key={`${item.itemType}-${item.itemId}`} className="p-6 flex items-start gap-4">
+                                    <div key={`${item.itemType}-${item.itemId}`} className="p-4 sm:p-6 flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
                                         <img
                                             src={item.thumbnail || '/api/placeholder/80/60'}
                                             alt={item.title}
-                                            className="w-20 h-15 object-cover rounded-lg"
+                                            className="w-full sm:w-20 h-32 sm:h-15 object-cover rounded-lg"
                                         />
                                         
-                                        <div className="flex-1">
-                                            <div className="flex justify-between items-start">
-                                                <div>
-                                                    <h3 className="font-semibold text-gray-900 mb-1">{item.title}</h3>
+                                        <div className="flex-1 w-full">
+                                            <div className="flex flex-col sm:flex-row justify-between items-start gap-2">
+                                                <div className="flex-1">
+                                                    <h3 className="font-semibold text-gray-900 mb-2 text-sm sm:text-base">{item.title}</h3>
                                                     <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
                                                         {getItemTypeLabel(item.itemType)}
                                                     </span>
@@ -141,14 +141,14 @@ const CartPage = () => {
                                                 
                                                 <button
                                                     onClick={() => handleRemoveItem(item.itemType, item.itemId)}
-                                                    className="text-red-600 hover:text-red-700 p-1"
+                                                    className="text-red-600 hover:text-red-700 p-1 self-start"
                                                 >
                                                     <Trash2 size={18} />
                                                 </button>
                                             </div>
                                             
                                             <div className="mt-3 flex items-center gap-2">
-                                                <span className="text-lg font-bold text-gray-900">₹{item.price}</span>
+                                                <span className="text-base sm:text-lg font-bold text-gray-900">₹{item.price}</span>
                                                 {item.originalPrice > item.price && (
                                                     <span className="text-sm text-gray-500 line-through">₹{item.originalPrice}</span>
                                                 )}
@@ -162,27 +162,27 @@ const CartPage = () => {
 
                     {/* Order Summary */}
                     <div className="lg:col-span-1">
-                        <div className="bg-white rounded-lg shadow-sm p-6 sticky top-8">
-                            <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
+                        <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 lg:sticky lg:top-8">
+                            <h2 className="text-lg sm:text-xl font-semibold mb-4">Order Summary</h2>
                             
                             {/* Promo Code Section */}
                             <div className="mb-6">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Promo Code
                                 </label>
-                                <div className="flex gap-2">
+                                <div className="flex flex-col sm:flex-row gap-2">
                                     <input
                                         type="text"
                                         value={promoCode}
                                         onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
                                         placeholder="Enter promo code"
-                                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                                         disabled={promoDiscount}
                                     />
                                     {promoDiscount ? (
                                         <button
                                             onClick={removePromoCode}
-                                            className="px-3 py-2 text-red-600 hover:text-red-700 border border-red-300 rounded-md"
+                                            className="px-3 py-2 text-red-600 hover:text-red-700 border border-red-300 rounded-md text-sm sm:text-base whitespace-nowrap"
                                         >
                                             Remove
                                         </button>
@@ -190,7 +190,7 @@ const CartPage = () => {
                                         <button
                                             onClick={validatePromoCode}
                                             disabled={promoLoading}
-                                            className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:opacity-50"
+                                            className="px-3 sm:px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:opacity-50 text-sm sm:text-base whitespace-nowrap"
                                         >
                                             {promoLoading ? 'Checking...' : 'Apply'}
                                         </button>
@@ -241,10 +241,10 @@ const CartPage = () => {
                             
                             <button
                                 onClick={handleCheckout}
-                                className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 font-medium"
+                                className="w-full bg-blue-600 text-white py-2 sm:py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 font-medium text-sm sm:text-base"
                             >
                                 Proceed to Checkout
-                                <ArrowRight size={20} />
+                                <ArrowRight size={16} className="sm:w-5 sm:h-5" />
                             </button>
                             
                             <p className="text-xs text-gray-500 text-center mt-4">

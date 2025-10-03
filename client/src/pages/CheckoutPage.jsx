@@ -104,39 +104,39 @@ const CheckoutPage = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 py-8">
+        <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
             <div className="max-w-4xl mx-auto px-4">
-                <div className="mb-8">
+                <div className="mb-6 sm:mb-8">
                     <button
                         onClick={() => navigate('/cart')}
-                        className="flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-4"
+                        className="flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-4 text-sm sm:text-base"
                     >
-                        <ArrowLeft size={20} />
+                        <ArrowLeft size={16} className="sm:w-5 sm:h-5" />
                         Back to Cart
                     </button>
-                    <h1 className="text-3xl font-bold text-gray-900">Checkout</h1>
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Checkout</h1>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
                     {/* Order Summary */}
-                    <div className="bg-white rounded-lg shadow-sm p-6">
-                        <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
+                    <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
+                        <h2 className="text-lg sm:text-xl font-semibold mb-4">Order Summary</h2>
                         
-                        <div className="space-y-4 mb-6">
+                        <div className="space-y-3 sm:space-y-4 mb-6">
                             {items.map((item) => (
-                                <div key={`${item.itemType}-${item.itemId}`} className="flex items-center gap-4">
+                                <div key={`${item.itemType}-${item.itemId}`} className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
                                     <img
                                         src={item.thumbnail || '/api/placeholder/60/45'}
                                         alt={item.title}
-                                        className="w-15 h-11 object-cover rounded"
+                                        className="w-full sm:w-15 h-32 sm:h-11 object-cover rounded"
                                     />
-                                    <div className="flex-1">
-                                        <h3 className="font-medium text-gray-900">{item.title}</h3>
+                                    <div className="flex-1 w-full">
+                                        <h3 className="font-medium text-gray-900 text-sm sm:text-base mb-1">{item.title}</h3>
                                         <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
                                             {getItemTypeLabel(item.itemType)}
                                         </span>
                                     </div>
-                                    <span className="font-semibold">₹{item.price}</span>
+                                    <span className="font-semibold text-sm sm:text-base self-start sm:self-center">₹{item.price}</span>
                                 </div>
                             ))}
                         </div>
@@ -164,8 +164,8 @@ const CheckoutPage = () => {
                     </div>
 
                     {/* Payment Section */}
-                    <div className="bg-white rounded-lg shadow-sm p-6">
-                        <h2 className="text-xl font-semibold mb-4">Payment Details</h2>
+                    <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
+                        <h2 className="text-lg sm:text-xl font-semibold mb-4">Payment Details</h2>
                         
                         {finalAmount === 0 ? (
                             <div className="text-center py-8">
@@ -211,19 +211,19 @@ const CheckoutPage = () => {
                         <button
                             onClick={handlePayment}
                             disabled={loading}
-                            className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+                            className="w-full bg-blue-600 text-white py-2 sm:py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium text-sm sm:text-base"
                         >
                             {loading ? (
                                 <div className="flex items-center justify-center gap-2">
-                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                    Processing...
+                                    <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                    <span className="text-sm sm:text-base">Processing...</span>
                                 </div>
                             ) : (
                                 `${finalAmount === 0 ? 'Complete Order' : `Pay ₹${finalAmount}`}`
                             )}
                         </button>
 
-                        <p className="text-xs text-gray-500 text-center mt-4">
+                        <p className="text-xs text-gray-500 text-center mt-4 px-2">
                             By completing this purchase, you agree to our Terms of Service and Privacy Policy.
                         </p>
                     </div>
