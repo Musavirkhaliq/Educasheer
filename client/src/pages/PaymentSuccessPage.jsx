@@ -1,19 +1,57 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CheckCircle, Download, ArrowRight } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
+import axios from 'axios';
 
 const PaymentSuccessPage = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const { fetchCart } = useCart();
+    const [orderDetails, setOrderDetails] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     const { orderId, amount, items } = location.state || {};
 
     useEffect(() => {
-        // Refresh cart to reflect the purchase
-        fetchCart();
-    }, [fetchCart]);
+        // Fetch order details and refresh cart
+        let isMounted = true;
+        
+        const fetchOrderAndCart = async () => {
+            if (!orderId || !isMounted) return;
+            
+            try {
+                const token = localStorage.getItem('accessToken');
+                
+                // Fetch order details to get purchased items
+                const orderResponse = await axios.get(`/api/v1/payments/orders/${orderId}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                
+                if (orderResponse.data.success && isMounted) {
+                    setOrderDetails(orderResponse.data.data);
+                }
+                
+                // Refresh cart to reflect the purchase
+                if (isMounted) {
+                    await fetchCart();
+                }
+            } catch (error) {
+                console.error('Error fetching order details:', error);
+            } finally {
+                if (isMounted) {
+                    setLoading(false);
+                }
+            }
+        };
+        
+        fetchOrderAndCart();
+        
+        // Cleanup function to prevent state updates on unmounted component
+        return () => {
+            isMounted = false;
+        };
+    }, [orderId]); // Only depend on orderId
 
     useEffect(() => {
         // Redirect to home if no order data
@@ -23,7 +61,89 @@ const PaymentSuccessPage = () => {
     }, [orderId, navigate]);
 
     const handleContinueLearning = () => {
-        navigate('/dashboard');
+        if (!orderDetails || !orderDetails.items || orderDetails.items.length === 0) {
+            navigate('/profile');
+            return;
+        }
+
+        const purchasedItems = orderDetails.items;
+        
+        // If only one item, navigate directly to it
+        if (purchasedItems.length === 1) {
+            const item = purchasedItems[0];
+            navigateToItem(item);
+        } else {
+            // Multiple items - show options or navigate to first course/testSeries
+            const firstCourse = purchasedItems.find(item => item.itemType === 'course');
+            const firstTestSeries = purchasedItems.find(item => item.itemType === 'testSeries');
+            const firstProgram = purchasedItems.find(item => item.itemType === 'program');
+            
+            // Priority: course > testSeries > program > profile
+            if (firstCourse) {
+                navigateToItem(firstCourse);
+            } else if (firstTestSeries) {
+                navigateToItem(firstTestSeries);
+            } else if (firstProgram) {
+                navigateToItem(firstProgram);
+            } else {
+                navigate('/profile');
+            }
+        }
+    };
+
+    const navigateToItem = (item) => {
+        switch (item.itemType) {
+            case 'course':
+                navigate(`/courses/${item.itemId}`);
+                break;
+            case 'testSeries':
+                navigate(`/test-series/${item.itemId}`);
+                break;
+            case 'program':
+                navigate(`/programs/${item.itemId}`);
+                break;
+            default:
+                navigate('/profile');
+        }
+    };
+
+    const getStartButtonText = () => {
+        if (!orderDetails || !orderDetails.items || orderDetails.items.length === 0) {
+            return 'Go to Profile';
+        }
+
+        const purchasedItems = orderDetails.items;
+        
+        if (purchasedItems.length === 1) {
+            const item = purchasedItems[0];
+            switch (item.itemType) {
+                case 'course':
+                    return 'Start Course';
+                case 'testSeries':
+                    return 'Start Test Series';
+                case 'program':
+                    return 'Start Program';
+                default:
+                    return 'Start Learning';
+            }
+        } else {
+            // Multiple items
+            const hasCourse = purchasedItems.some(item => item.itemType === 'course');
+            const hasTestSeries = purchasedItems.some(item => item.itemType === 'testSeries');
+            const hasProgram = purchasedItems.some(item => item.itemType === 'program');
+            
+            if (hasCourse && hasTestSeries) {
+                return 'Start Learning';
+            } else if (hasCourse) {
+                return 'Start Courses';
+            } else if (hasTestSeries) {
+                return 'Start Test Series';
+            } else if (hasProgram) {
+                return 'Start Programs';
+            } else {
+                return 'Start Learning';
+            }
+        }
     };
 
     const handleDownloadReceipt = async () => {
@@ -90,13 +210,55 @@ const PaymentSuccessPage = () => {
                         </div>
                     </div>
 
+                    {/* Purchased Items */}
+                    {orderDetails && orderDetails.items && orderDetails.items.length > 0 && (
+                        <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6 mb-6 sm:mb-8">
+                            <h3 className="font-semibold text-gray-900 mb-4 text-sm sm:text-base">Your Purchased Items</h3>
+                            <div className="space-y-3">
+                                {orderDetails.items.map((item, index) => (
+                                    <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                                        <img
+                                            src={item.thumbnail || '/api/placeholder/48/36'}
+                                            alt={item.title}
+                                            className="w-12 h-9 object-cover rounded"
+                                        />
+                                        <div className="flex-1">
+                                            <h4 className="font-medium text-gray-900 text-sm">{item.title}</h4>
+                                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                                                {item.itemType === 'course' ? 'Course' : 
+                                                 item.itemType === 'testSeries' ? 'Test Series' : 
+                                                 item.itemType === 'program' ? 'Program' : 'Item'}
+                                            </span>
+                                        </div>
+                                        <button
+                                            onClick={() => navigateToItem(item)}
+                                            className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                                        >
+                                            Access →
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                     <div className="space-y-3 sm:space-y-4">
                         <button
                             onClick={handleContinueLearning}
-                            className="w-full bg-blue-600 text-white py-2 sm:py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 font-medium text-sm sm:text-base"
+                            disabled={loading}
+                            className="w-full bg-blue-600 text-white py-2 sm:py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 font-medium text-sm sm:text-base"
                         >
-                            Start Learning
-                            <ArrowRight size={16} className="sm:w-5 sm:h-5" />
+                            {loading ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                    Loading...
+                                </>
+                            ) : (
+                                <>
+                                    {getStartButtonText()}
+                                    <ArrowRight size={16} className="sm:w-5 sm:h-5" />
+                                </>
+                            )}
                         </button>
 
                         <button
@@ -106,6 +268,15 @@ const PaymentSuccessPage = () => {
                             <Download size={16} className="sm:w-5 sm:h-5" />
                             Download Receipt
                         </button>
+
+                        {orderDetails && orderDetails.items && orderDetails.items.length > 1 && (
+                            <button
+                                onClick={() => navigate('/profile')}
+                                className="w-full bg-green-50 border border-green-200 text-green-700 py-2 sm:py-3 rounded-lg hover:bg-green-100 transition-colors flex items-center justify-center gap-2 font-medium text-sm sm:text-base"
+                            >
+                                View All My Content
+                            </button>
+                        )}
 
                         <button
                             onClick={() => navigate('/orders')}

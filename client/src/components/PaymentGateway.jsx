@@ -117,14 +117,21 @@ const PaymentGateway = ({
                     console.log('Razorpay payment response:', response);
                     console.log('Using orderId for verification:', currentOrderId);
                     
-                    const verifyResponse = await axios.post('/api/v1/payments/verify/razorpay', {
-                        razorpay_order_id: response.razorpay_order_id,
-                        razorpay_payment_id: response.razorpay_payment_id,
-                        razorpay_signature: response.razorpay_signature,
-                        orderId: currentOrderId
-                    }, {
-                        headers: { Authorization: `Bearer ${token}` }
-                    });
+                    // Add timeout to prevent indefinite waiting
+                    const verifyResponse = await Promise.race([
+                        axios.post('/api/v1/payments/verify/razorpay', {
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_signature: response.razorpay_signature,
+                            orderId: currentOrderId
+                        }, {
+                            headers: { Authorization: `Bearer ${token}` },
+                            timeout: 30000 // 30 second timeout
+                        }),
+                        new Promise((_, reject) => 
+                            setTimeout(() => reject(new Error('Payment verification timeout')), 30000)
+                        )
+                    ]);
 
                     console.log('Verification response:', verifyResponse.data);
 
@@ -135,7 +142,11 @@ const PaymentGateway = ({
                     }
                 } catch (error) {
                     console.error('Payment verification error:', error);
-                    setError('Payment verification failed: ' + (error.response?.data?.message || error.message));
+                    if (error.message === 'Payment verification timeout') {
+                        setError('Payment verification is taking longer than expected. Please check your order status.');
+                    } else {
+                        setError('Payment verification failed: ' + (error.response?.data?.message || error.message));
+                    }
                 } finally {
                     setLoading(false);
                 }
@@ -186,12 +197,19 @@ const PaymentGateway = ({
             try {
                 const token = localStorage.getItem('accessToken');
                 
-                const verifyResponse = await axios.post('/api/v1/payments/verify/stripe', {
-                    payment_intent_id: paymentIntent.id,
-                    orderId: currentOrderId
-                }, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+                // Add timeout to prevent indefinite waiting
+                const verifyResponse = await Promise.race([
+                    axios.post('/api/v1/payments/verify/stripe', {
+                        payment_intent_id: paymentIntent.id,
+                        orderId: currentOrderId
+                    }, {
+                        headers: { Authorization: `Bearer ${token}` },
+                        timeout: 30000 // 30 second timeout
+                    }),
+                    new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error('Payment verification timeout')), 30000)
+                    )
+                ]);
 
                 if (verifyResponse.data.success) {
                     onSuccess(verifyResponse.data.data);
@@ -199,7 +217,11 @@ const PaymentGateway = ({
                     setError('Payment verification failed');
                 }
             } catch (error) {
-                setError('Payment verification failed');
+                if (error.message === 'Payment verification timeout') {
+                    setError('Payment verification is taking longer than expected. Please check your order status.');
+                } else {
+                    setError('Payment verification failed: ' + (error.response?.data?.message || error.message));
+                }
             } finally {
                 setLoading(false);
             }
@@ -212,19 +234,25 @@ const PaymentGateway = ({
             try {
                 const token = localStorage.getItem('accessToken');
                 
-                // Simulate successful payment
-                const verifyResponse = await axios.post('/api/v1/payments/success', {
-                    orderId: currentOrderId,
-                    paymentId: `demo_${Date.now()}`,
-                    paymentDetails: {
-                        method: 'demo',
-                        amount: data.amount,
-                        currency: 'INR',
-                        demo: true
-                    }
-                }, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+                // Simulate successful payment with timeout protection
+                const verifyResponse = await Promise.race([
+                    axios.post('/api/v1/payments/success', {
+                        orderId: currentOrderId,
+                        paymentId: `demo_${Date.now()}`,
+                        paymentDetails: {
+                            method: 'demo',
+                            amount: data.amount,
+                            currency: 'INR',
+                            demo: true
+                        }
+                    }, {
+                        headers: { Authorization: `Bearer ${token}` },
+                        timeout: 15000 // 15 second timeout for demo
+                    }),
+                    new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error('Demo payment timeout')), 15000)
+                    )
+                ]);
 
                 if (verifyResponse.data.success) {
                     onSuccess({ orderId: currentOrderId });
@@ -232,7 +260,11 @@ const PaymentGateway = ({
                     setError('Demo payment processing failed');
                 }
             } catch (error) {
-                setError('Demo payment processing failed');
+                if (error.message === 'Demo payment timeout') {
+                    setError('Demo payment is taking longer than expected. Please try again.');
+                } else {
+                    setError('Demo payment processing failed: ' + (error.response?.data?.message || error.message));
+                }
             } finally {
                 setLoading(false);
             }

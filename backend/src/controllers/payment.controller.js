@@ -344,8 +344,8 @@ const processOrderCompletion = async (orderId) => {
             throw new Error("Order not found");
         }
 
-        // Enroll user in purchased items
-        for (const item of order.items) {
+        // Enroll user in purchased items (parallel processing for better performance)
+        const enrollmentPromises = order.items.map(async (item) => {
             let Model;
             
             switch (item.itemType) {
@@ -359,14 +359,16 @@ const processOrderCompletion = async (orderId) => {
                     Model = Program;
                     break;
                 default:
-                    continue;
+                    return Promise.resolve();
             }
 
-            await Model.findByIdAndUpdate(
+            return Model.findByIdAndUpdate(
                 item.itemId,
                 { $addToSet: { enrolledStudents: order.user } }
             );
-        }
+        });
+
+        await Promise.all(enrollmentPromises);
 
         // Update promo code usage if used
         if (order.promoCode && order.promoCode.code) {

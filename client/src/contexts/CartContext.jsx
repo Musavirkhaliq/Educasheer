@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
 import axios from 'axios';
 
 const CartContext = createContext();
@@ -68,7 +68,7 @@ export const CartProvider = ({ children }) => {
     const [state, dispatch] = useReducer(cartReducer, initialState);
 
     // Get cart data
-    const fetchCart = async () => {
+    const fetchCart = useCallback(async () => {
         try {
             dispatch({ type: 'SET_LOADING', payload: true });
             const token = localStorage.getItem('accessToken');
@@ -89,7 +89,7 @@ export const CartProvider = ({ children }) => {
             console.error('Fetch cart error:', error);
             dispatch({ type: 'SET_ERROR', payload: error.response?.data?.message || 'Failed to fetch cart' });
         }
-    };
+    }, []); // Empty dependency array since we don't depend on any props or state
 
     // Add item to cart
     const addToCart = async (itemType, itemId) => {
