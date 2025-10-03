@@ -18,7 +18,7 @@ import {
 import { testSeriesAPI } from '../services/testSeriesAPI';
 import { quizAPI } from '../services/quizAPI';
 import { useAuth } from '../context/AuthContext';
-import toast from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 import TestSeriesProgress from './TestSeriesProgress';
 import AddToCartButton from './cart/AddToCartButton';
 
@@ -42,7 +42,10 @@ const TestSeriesDetail = () => {
 
     // Show enrollment message if redirected from quiz access
     if (location.state?.message) {
-      toast.info(location.state.message);
+      toast(location.state.message, {
+        icon: 'ℹ️',
+        duration: 4000,
+      });
     }
   }, [testSeriesId, currentUser, location.state]);
 

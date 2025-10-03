@@ -1,25 +1,28 @@
 import React, { useState } from 'react';
-import { ShoppingCart, Check, Loader2 } from 'lucide-react';
+import { ShoppingCart, Check, Loader2, ArrowRight } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
+import { useNavigate } from 'react-router-dom';
 
 const AddToCartButton = ({ itemType, itemId, className = '', size = 'md' }) => {
     const { addToCart, removeFromCart, isInCart } = useCart();
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
+    const navigate = useNavigate();
 
     const inCart = isInCart(itemType, itemId);
 
     const handleClick = async () => {
+        // If item is in cart, navigate to checkout
+        if (inCart) {
+            navigate('/checkout');
+            return;
+        }
+
         setLoading(true);
         setMessage('');
 
         try {
-            let result;
-            if (inCart) {
-                result = await removeFromCart(itemType, itemId);
-            } else {
-                result = await addToCart(itemType, itemId);
-            }
+            const result = await addToCart(itemType, itemId);
 
             if (result.success) {
                 setMessage(result.message);
@@ -56,7 +59,7 @@ const AddToCartButton = ({ itemType, itemId, className = '', size = 'md' }) => {
                 className={`
                     ${sizeClasses[size]}
                     ${inCart 
-                        ? 'bg-green-600 hover:bg-green-700 text-white' 
+                        ? 'bg-orange-600 hover:bg-orange-700 text-white' 
                         : 'bg-blue-600 hover:bg-blue-700 text-white'
                     }
                     ${loading ? 'opacity-75 cursor-not-allowed' : ''}
@@ -67,11 +70,11 @@ const AddToCartButton = ({ itemType, itemId, className = '', size = 'md' }) => {
                 {loading ? (
                     <Loader2 size={iconSizes[size]} className="animate-spin" />
                 ) : inCart ? (
-                    <Check size={iconSizes[size]} />
+                    <ArrowRight size={iconSizes[size]} />
                 ) : (
                     <ShoppingCart size={iconSizes[size]} />
                 )}
-                {loading ? 'Processing...' : inCart ? 'In Cart' : 'Add to Cart'}
+                {loading ? 'Processing...' : inCart ? 'Checkout' : 'Add to Cart'}
             </button>
             
             {message && (
