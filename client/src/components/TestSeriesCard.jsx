@@ -11,42 +11,66 @@ import {
   FaStar,
   FaCrown,
   FaGraduationCap,
-  FaArrowRight
+  FaArrowRight,
+  FaCheckCircle,
+  FaUserCheck
 } from 'react-icons/fa';
 
-const TestSeriesCard = ({ testSeries, index, getDifficultyColor }) => {
+const TestSeriesCard = ({ testSeries, index, getDifficultyColor, currentCategory }) => {
   const isEnrolled = testSeries.isEnrolled;
   const isFree = testSeries.price === 0;
   const isPremium = testSeries.price > 0;
+  const isEnrolledMode = currentCategory === 'enrolled';
   
   return (
-    <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 group">
+    <div className={`bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border group ${
+      isEnrolledMode 
+        ? 'border-green-200 ring-1 ring-green-100' 
+        : 'border-gray-100'
+    }`}>
       <Link to={`/test-series/${testSeries._id}`} className="block">
         {/* Header */}
-        <div className="p-4 bg-gradient-to-r from-[#01427a] to-[#00bcd4] text-white relative overflow-hidden">
+        <div className={`p-4 text-white relative overflow-hidden ${
+          isEnrolledMode 
+            ? 'bg-gradient-to-r from-green-600 to-emerald-600' 
+            : 'bg-gradient-to-r from-[#01427a] to-[#00bcd4]'
+        }`}>
           <div className="absolute inset-0 bg-black/10"></div>
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <FaGraduationCap className="text-white" />
+                {isEnrolledMode ? (
+                  <FaUserCheck className="text-white" />
+                ) : (
+                  <FaGraduationCap className="text-white" />
+                )}
                 <span className="text-xs font-medium bg-white/20 px-2 py-1 rounded-full">
-                  TEST SERIES
+                  {isEnrolledMode ? 'MY TEST SERIES' : 'TEST SERIES'}
                 </span>
               </div>
               
               {/* Status Badges */}
               <div className="flex gap-2">
-                {isEnrolled && (
-                  <span className="text-xs bg-green-500 px-2 py-1 rounded-full flex items-center gap-1">
-                    <FaCheck className="text-xs" />
+                {isEnrolledMode ? (
+                  <span className="text-xs bg-white/20 px-2 py-1 rounded-full flex items-center gap-1">
+                    <FaCheckCircle className="text-xs" />
                     Enrolled
                   </span>
-                )}
-                {isPremium && !isEnrolled && (
-                  <span className="text-xs bg-yellow-500 px-2 py-1 rounded-full flex items-center gap-1">
-                    <FaCrown className="text-xs" />
-                    Premium
-                  </span>
+                ) : (
+                  <>
+                    {isEnrolled && (
+                      <span className="text-xs bg-green-500 px-2 py-1 rounded-full flex items-center gap-1">
+                        <FaCheck className="text-xs" />
+                        Enrolled
+                      </span>
+                    )}
+                    {isPremium && !isEnrolled && (
+                      <span className="text-xs bg-yellow-500 px-2 py-1 rounded-full flex items-center gap-1">
+                        <FaCrown className="text-xs" />
+                        Premium
+                      </span>
+                    )}
+                  </>
                 )}
               </div>
             </div>
@@ -149,9 +173,20 @@ const TestSeriesCard = ({ testSeries, index, getDifficultyColor }) => {
           </div>
 
           {/* Action Button */}
-          <div className="w-full bg-[#00bcd4] text-white py-3 rounded-lg font-medium hover:bg-[#01427a] transition-colors duration-200 flex items-center justify-center gap-2">
+          <div className={`w-full text-white py-3 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2 ${
+            isEnrolledMode 
+              ? 'bg-green-600 hover:bg-green-700' 
+              : 'bg-[#00bcd4] hover:bg-[#01427a]'
+          }`}>
             <FaPlay className="text-sm" />
-            <span>{isEnrolled ? 'Continue Learning' : 'View Details'}</span>
+            <span>
+              {isEnrolledMode 
+                ? 'Continue Learning' 
+                : isEnrolled 
+                  ? 'Continue Learning' 
+                  : 'View Details'
+              }
+            </span>
           </div>
 
           {/* Creator Info */}

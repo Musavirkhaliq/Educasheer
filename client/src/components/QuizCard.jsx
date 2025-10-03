@@ -10,42 +10,60 @@ import {
   FaArrowRight,
   FaShieldAlt,
   FaTrophy,
-  FaBookOpen
+  FaBookOpen,
+  FaCheckCircle,
+  FaUserCheck
 } from 'react-icons/fa';
 
 const QuizCard = ({ quiz, index, onQuizClick, getDifficultyColor, isAuthenticated, currentCategory }) => {
   const requiresEnrollment = quiz.testSeries && !quiz.isEnrolledInTestSeries && currentCategory === 'all';
   const isAccessible = quiz.isEnrolledInTestSeries || !quiz.testSeries;
   const isExam = quiz.quizType === 'exam';
+  const isEnrolledMode = currentCategory === 'enrolled';
   
   return (
     <div
-      className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 group cursor-pointer"
+      className={`bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border group cursor-pointer ${
+        isEnrolledMode 
+          ? 'border-green-200 ring-1 ring-green-100' 
+          : 'border-gray-100'
+      }`}
       onClick={() => onQuizClick(quiz)}
     >
       {/* Header */}
-      <div className="p-4 bg-gradient-to-r from-[#01427a] to-[#00bcd4] text-white relative overflow-hidden">
+      <div className={`p-4 text-white relative overflow-hidden ${
+        isEnrolledMode 
+          ? 'bg-gradient-to-r from-green-600 to-emerald-600' 
+          : 'bg-gradient-to-r from-[#01427a] to-[#00bcd4]'
+      }`}>
         <div className="absolute inset-0 bg-black/10"></div>
         <div className="relative z-10">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              {isExam ? (
+              {isEnrolledMode ? (
+                <FaUserCheck className="text-white" />
+              ) : isExam ? (
                 <FaTrophy className="text-yellow-300" />
               ) : (
                 <FaBookOpen className="text-white" />
               )}
               <span className="text-xs font-medium bg-white/20 px-2 py-1 rounded-full">
-                {isExam ? 'EXAM' : 'QUIZ'}
+                {isEnrolledMode ? 'ENROLLED' : isExam ? 'EXAM' : 'QUIZ'}
               </span>
             </div>
             
             {/* Status Badge */}
-            {requiresEnrollment && (
+            {isEnrolledMode ? (
+              <span className="text-xs bg-white/20 px-2 py-1 rounded-full flex items-center gap-1">
+                <FaCheckCircle className="text-xs" />
+                My Content
+              </span>
+            ) : requiresEnrollment ? (
               <span className="text-xs bg-white/20 px-2 py-1 rounded-full flex items-center gap-1">
                 <FaLock className="text-xs" />
                 Locked
               </span>
-            )}
+            ) : null}
           </div>
           
           <h3 className="font-semibold text-lg mb-2 line-clamp-2 group-hover:text-yellow-100 transition-colors">
@@ -122,11 +140,20 @@ const QuizCard = ({ quiz, index, onQuizClick, getDifficultyColor, isAuthenticate
         </div>
 
         {/* Action Button */}
-        <button className="w-full bg-[#00bcd4] text-white py-3 rounded-lg font-medium hover:bg-[#01427a] transition-colors duration-200 flex items-center justify-center gap-2">
+        <button className={`w-full text-white py-3 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2 ${
+          isEnrolledMode 
+            ? 'bg-green-600 hover:bg-green-700' 
+            : 'bg-[#00bcd4] hover:bg-[#01427a]'
+        }`}>
           {requiresEnrollment ? (
             <>
               <FaLock className="text-sm" />
               View Details
+            </>
+          ) : isEnrolledMode ? (
+            <>
+              <FaPlay className="text-sm" />
+              Continue Quiz
             </>
           ) : (
             <>

@@ -6,15 +6,15 @@ import { useAuth } from '../context/AuthContext';
 import {
   FaSearch,
   FaFilter,
-  FaBook,
   FaBookOpen,
   FaUser,
   FaTimes,
   FaChevronDown,
-  FaTrophy,
-  FaUsers,
   FaGraduationCap,
-  FaChalkboardTeacher
+  FaCheckCircle,
+  FaInfoCircle,
+  FaEye,
+  FaUserCheck
 } from 'react-icons/fa';
 import QuizCard from '../components/QuizCard';
 import TestSeriesCard from '../components/TestSeriesCard';
@@ -184,11 +184,11 @@ const ExamsPage = () => {
 
         {/* Tabs Navigation */}
         <div className="mb-6 sm:mb-8 bg-white rounded-xl shadow-sm p-2 overflow-x-auto">
-          <nav className="flex flex-nowrap min-w-max sm:flex-wrap">
+          <nav className="flex flex-nowrap min-w-max sm:flex-wrap gap-1">
             <button
               onClick={() => setCurrentView('test-series')}
               className={`flex items-center gap-1 sm:gap-2 py-2 sm:py-3 px-3 sm:px-5 rounded-lg font-medium text-xs sm:text-sm whitespace-nowrap transition-all duration-200 ${currentView === 'test-series'
-                ? 'bg-[#00bcd4]/10 text-[#00bcd4]'
+                ? 'bg-[#00bcd4]/10 text-[#00bcd4] border border-[#00bcd4]/20'
                 : 'text-gray-600 hover:bg-gray-100'
                 }`}
             >
@@ -199,7 +199,7 @@ const ExamsPage = () => {
             <button
               onClick={() => setCurrentView('quizzes')}
               className={`flex items-center gap-1 sm:gap-2 py-2 sm:py-3 px-3 sm:px-5 rounded-lg font-medium text-xs sm:text-sm whitespace-nowrap transition-all duration-200 ${currentView === 'quizzes'
-                ? 'bg-[#00bcd4]/10 text-[#00bcd4]'
+                ? 'bg-[#00bcd4]/10 text-[#00bcd4] border border-[#00bcd4]/20'
                 : 'text-gray-600 hover:bg-gray-100'
                 }`}
             >
@@ -210,17 +210,54 @@ const ExamsPage = () => {
             {isAuthenticated && (
               <button
                 onClick={() => setCurrentCategory(currentCategory === 'all' ? 'enrolled' : 'all')}
-                className={`flex items-center gap-1 sm:gap-2 py-2 sm:py-3 px-3 sm:px-5 rounded-lg font-medium text-xs sm:text-sm whitespace-nowrap transition-all duration-200 ${currentCategory === 'enrolled'
-                  ? 'bg-[#00bcd4]/10 text-[#00bcd4]'
-                  : 'text-gray-600 hover:bg-gray-100'
+                className={`flex items-center gap-1 sm:gap-2 py-2 sm:py-3 px-3 sm:px-5 rounded-lg font-medium text-xs sm:text-sm whitespace-nowrap transition-all duration-200 relative ${currentCategory === 'enrolled'
+                  ? 'bg-green-50 text-green-700 border border-green-200 shadow-sm'
+                  : 'text-gray-600 hover:bg-gray-100 border border-transparent'
                   }`}
               >
-                <FaUser className={`${currentCategory === 'enrolled' ? 'text-[#00bcd4]' : 'text-gray-500'}`} />
-                {currentCategory === 'enrolled' ? 'Enrolled Only' : 'Show All'}
+                {currentCategory === 'enrolled' ? (
+                  <FaUserCheck className="text-green-600" />
+                ) : (
+                  <FaEye className="text-gray-500" />
+                )}
+                <span className="font-semibold">
+                  {currentCategory === 'enrolled' ? 'My Enrolled Content' : 'Browse All Content'}
+                </span>
+                {currentCategory === 'enrolled' && (
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full flex items-center justify-center">
+                    <FaCheckCircle className="text-white text-xs" />
+                  </div>
+                )}
               </button>
             )}
           </nav>
         </div>
+
+        {/* Enrolled Mode Banner */}
+        {currentCategory === 'enrolled' && isAuthenticated && (
+          <div className="mb-6 sm:mb-8 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <FaUserCheck className="text-green-600 text-lg" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-green-800 mb-1">
+                  Viewing Your Enrolled {currentView === 'test-series' ? 'Test Series' : 'Quizzes'}
+                </h3>
+                <p className="text-green-700 text-sm">
+                  {currentView === 'test-series'
+                    ? 'These are the test series you have enrolled in. You can access all quizzes within these series.'
+                    : 'These are the quizzes from your enrolled test series. Continue your learning journey!'
+                  }
+                </p>
+              </div>
+              <div className="flex items-center gap-2 text-green-600">
+                <FaInfoCircle className="text-sm" />
+                <span className="text-xs font-medium">Enrolled Only</span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Filters */}
         <div className="mb-6 sm:mb-8 bg-white rounded-xl shadow-sm overflow-hidden">
@@ -340,22 +377,44 @@ const ExamsPage = () => {
 
         {/* Results Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-          <h2 className="text-2xl font-bold text-gray-800 relative inline-block">
-            {currentView === 'test-series' ? (
-              currentCategory === 'enrolled' && isAuthenticated ?
-                'Enrolled Test Series' : 'Test Series'
-            ) : (
-              currentCategory === 'enrolled' && isAuthenticated ?
-                'Enrolled Quizzes' : 'Exams & Quizzes'
-            )}
-            <span className="absolute bottom-0 left-0 w-1/3 h-1 bg-[#00bcd4] rounded-full"></span>
-          </h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-2xl font-bold text-gray-800 relative inline-block">
+              {currentView === 'test-series' ? (
+                currentCategory === 'enrolled' && isAuthenticated ?
+                  'My Enrolled Test Series' : 'Available Test Series'
+              ) : (
+                currentCategory === 'enrolled' && isAuthenticated ?
+                  'My Enrolled Quizzes' : 'Available Exams & Quizzes'
+              )}
+              <span className={`absolute bottom-0 left-0 w-1/3 h-1 rounded-full ${currentCategory === 'enrolled' ? 'bg-green-500' : 'bg-[#00bcd4]'
+                }`}></span>
+            </h2>
 
-          <div className="text-sm text-gray-600">
-            {currentView === 'test-series' ? (
-              testSeriesLoading ? 'Loading...' : `${testSeries.length} test series found`
-            ) : (
-              loading ? 'Loading...' : `${pagination.total} results found`
+            {currentCategory === 'enrolled' && (
+              <div className="flex items-center gap-1 bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
+                <FaCheckCircle className="text-xs" />
+                <span>Enrolled</span>
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center gap-4">
+            <div className="text-sm text-gray-600">
+              {currentView === 'test-series' ? (
+                testSeriesLoading ? 'Loading...' : `${testSeries.length} ${currentCategory === 'enrolled' ? 'enrolled ' : ''}test series found`
+              ) : (
+                loading ? 'Loading...' : `${pagination.total} ${currentCategory === 'enrolled' ? 'enrolled ' : ''}results found`
+              )}
+            </div>
+
+            {currentCategory === 'enrolled' && isAuthenticated && (
+              <button
+                onClick={() => setCurrentCategory('all')}
+                className="text-sm text-[#00bcd4] hover:text-[#01427a] font-medium flex items-center gap-1 transition-colors"
+              >
+                <FaEye className="text-xs" />
+                Browse All
+              </button>
             )}
           </div>
         </div>
@@ -397,14 +456,41 @@ const ExamsPage = () => {
         {currentView === 'quizzes' && !loading && !error && (
           <>
             {quizzes.length === 0 ? (
-              <div className="text-center py-16 bg-white rounded-xl shadow-sm border border-gray-100">
-                <FaBookOpen className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-xl font-medium text-gray-800 mb-2">No quizzes found</h3>
-                <p className="text-gray-500 mb-6 max-w-md mx-auto">
+              <div className={`text-center py-16 rounded-xl shadow-sm border ${currentCategory === 'enrolled'
+                ? 'bg-green-50 border-green-200'
+                : 'bg-white border-gray-100'
+                }`}>
+                <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${currentCategory === 'enrolled'
+                  ? 'bg-green-100'
+                  : 'bg-gray-100'
+                  }`}>
+                  {currentCategory === 'enrolled' ? (
+                    <FaUserCheck className="h-8 w-8 text-green-500" />
+                  ) : (
+                    <FaBookOpen className="h-8 w-8 text-gray-400" />
+                  )}
+                </div>
+                <h3 className={`text-xl font-medium mb-2 ${currentCategory === 'enrolled' ? 'text-green-800' : 'text-gray-800'
+                  }`}>
                   {currentCategory === 'enrolled'
-                    ? "You haven't enrolled in any quizzes yet."
-                    : "There are no quizzes available at the moment."}
+                    ? 'No Enrolled Quizzes Yet'
+                    : 'No Quizzes Found'}
+                </h3>
+                <p className={`mb-6 max-w-md mx-auto ${currentCategory === 'enrolled' ? 'text-green-700' : 'text-gray-500'
+                  }`}>
+                  {currentCategory === 'enrolled'
+                    ? "You haven't enrolled in any test series yet. Browse available test series to start your learning journey!"
+                    : "There are no quizzes available at the moment. Check back later for new content."}
                 </p>
+                {currentCategory === 'enrolled' && (
+                  <button
+                    onClick={() => setCurrentCategory('all')}
+                    className="bg-green-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center gap-2 mx-auto"
+                  >
+                    <FaEye className="text-sm" />
+                    Browse All Test Series
+                  </button>
+                )}
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
@@ -453,14 +539,41 @@ const ExamsPage = () => {
         {currentView === 'test-series' && !testSeriesLoading && !testSeriesError && (
           <>
             {testSeries.length === 0 ? (
-              <div className="text-center py-16 bg-white rounded-xl shadow-sm border border-gray-100">
-                <FaGraduationCap className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-xl font-medium text-gray-800 mb-2">No test series found</h3>
-                <p className="text-gray-500 mb-6 max-w-md mx-auto">
+              <div className={`text-center py-16 rounded-xl shadow-sm border ${currentCategory === 'enrolled'
+                ? 'bg-green-50 border-green-200'
+                : 'bg-white border-gray-100'
+                }`}>
+                <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${currentCategory === 'enrolled'
+                  ? 'bg-green-100'
+                  : 'bg-gray-100'
+                  }`}>
+                  {currentCategory === 'enrolled' ? (
+                    <FaUserCheck className="h-8 w-8 text-green-500" />
+                  ) : (
+                    <FaGraduationCap className="h-8 w-8 text-gray-400" />
+                  )}
+                </div>
+                <h3 className={`text-xl font-medium mb-2 ${currentCategory === 'enrolled' ? 'text-green-800' : 'text-gray-800'
+                  }`}>
                   {currentCategory === 'enrolled'
-                    ? "You haven't enrolled in any test series yet."
-                    : "There are no test series available at the moment."}
+                    ? 'No Enrolled Test Series Yet'
+                    : 'No Test Series Found'}
+                </h3>
+                <p className={`mb-6 max-w-md mx-auto ${currentCategory === 'enrolled' ? 'text-green-700' : 'text-gray-500'
+                  }`}>
+                  {currentCategory === 'enrolled'
+                    ? "You haven't enrolled in any test series yet. Start your learning journey by enrolling in available test series!"
+                    : "There are no test series available at the moment. Check back later for new content."}
                 </p>
+                {currentCategory === 'enrolled' && (
+                  <button
+                    onClick={() => setCurrentCategory('all')}
+                    className="bg-green-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center gap-2 mx-auto"
+                  >
+                    <FaEye className="text-sm" />
+                    Browse All Test Series
+                  </button>
+                )}
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
@@ -470,6 +583,7 @@ const ExamsPage = () => {
                     testSeries={series}
                     index={index}
                     getDifficultyColor={getDifficultyColor}
+                    currentCategory={currentCategory}
                   />
                 ))}
               </div>
