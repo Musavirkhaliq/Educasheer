@@ -2,13 +2,9 @@ import React from 'react';
 import { 
   FaClock, 
   FaQuestionCircle, 
-  FaUser, 
   FaPlay, 
   FaLock,
   FaExclamationTriangle,
-  FaGraduationCap,
-  FaArrowRight,
-  FaShieldAlt,
   FaTrophy,
   FaBookOpen,
   FaCheckCircle,

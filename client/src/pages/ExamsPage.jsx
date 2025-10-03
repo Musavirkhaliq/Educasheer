@@ -7,7 +7,6 @@ import {
   FaSearch,
   FaFilter,
   FaBookOpen,
-  FaUser,
   FaTimes,
   FaChevronDown,
   FaGraduationCap,

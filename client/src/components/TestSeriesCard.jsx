@@ -8,10 +8,8 @@ import {
   FaPlay, 
   FaCheck,
   FaTag,
-  FaStar,
   FaCrown,
   FaGraduationCap,
-  FaArrowRight,
   FaCheckCircle,
   FaUserCheck
 } from 'react-icons/fa';
