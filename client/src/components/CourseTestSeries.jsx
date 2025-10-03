@@ -185,29 +185,77 @@ const TestSeriesModal = ({ testSeries, isOpen, onClose }) => {
               </div>
             </div>
 
+            {/* Enhanced Content Preview */}
+            {testSeries.previewData && (
+              <div className="mb-4 sm:mb-6">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3">Content Breakdown</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                  <div className="text-center p-2 bg-blue-50 rounded-lg">
+                    <div className="text-lg font-bold text-blue-700">{testSeries.previewData.totalTests}</div>
+                    <div className="text-xs text-blue-600">Tests</div>
+                  </div>
+                  <div className="text-center p-2 bg-green-50 rounded-lg">
+                    <div className="text-lg font-bold text-green-700">{testSeries.previewData.totalQuestions}</div>
+                    <div className="text-xs text-green-600">Questions</div>
+                  </div>
+                  <div className="text-center p-2 bg-purple-50 rounded-lg">
+                    <div className="text-lg font-bold text-purple-700">{testSeries.previewData.estimatedHours}h</div>
+                    <div className="text-xs text-purple-600">Study Time</div>
+                  </div>
+                  <div className="text-center p-2 bg-orange-50 rounded-lg">
+                    <div className="text-lg font-bold text-orange-700">{testSeries.previewData.averageTestDuration}m</div>
+                    <div className="text-xs text-orange-600">Avg Test</div>
+                  </div>
+                </div>
+
+                {/* Question Types Preview */}
+                {Object.keys(testSeries.previewData.questionTypeBreakdown).length > 0 && (
+                  <div className="mb-3">
+                    <h4 className="text-sm font-medium text-gray-800 mb-2">Question Types</h4>
+                    <div className="flex flex-wrap gap-1">
+                      {Object.entries(testSeries.previewData.questionTypeBreakdown).slice(0, 4).map(([type, count]) => (
+                        <span key={type} className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
+                          {type.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}: {count}
+                        </span>
+                      ))}
+                      {Object.keys(testSeries.previewData.questionTypeBreakdown).length > 4 && (
+                        <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
+                          +{Object.keys(testSeries.previewData.questionTypeBreakdown).length - 4} more
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* What You'll Get */}
             <div className="mb-4 sm:mb-6">
               <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3">What You'll Get</h3>
-              <div className="space-y-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <div className="flex items-center gap-2">
                   <FaCheckCircle className="text-green-500 text-sm flex-shrink-0" />
-                  <span className="text-sm sm:text-base text-gray-700">Detailed performance analysis</span>
+                  <span className="text-sm text-gray-700">Detailed performance analysis</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <FaCheckCircle className="text-green-500 text-sm flex-shrink-0" />
-                  <span className="text-sm sm:text-base text-gray-700">Step-by-step solutions</span>
+                  <span className="text-sm text-gray-700">Step-by-step solutions</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <FaCheckCircle className="text-green-500 text-sm flex-shrink-0" />
-                  <span className="text-sm sm:text-base text-gray-700">Progress tracking</span>
+                  <span className="text-sm text-gray-700">Progress tracking</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <FaCheckCircle className="text-green-500 text-sm flex-shrink-0" />
-                  <span className="text-sm sm:text-base text-gray-700">Leaderboard rankings</span>
+                  <span className="text-sm text-gray-700">Leaderboard rankings</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <FaCheckCircle className="text-green-500 text-sm flex-shrink-0" />
-                  <span className="text-sm sm:text-base text-gray-700">Mobile-friendly interface</span>
+                  <span className="text-sm text-gray-700">Mobile-friendly interface</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <FaCheckCircle className="text-green-500 text-sm flex-shrink-0" />
+                  <span className="text-sm text-gray-700">Instant result feedback</span>
                 </div>
               </div>
             </div>

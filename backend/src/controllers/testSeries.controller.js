@@ -311,10 +311,10 @@ const getTestSeriesById = asyncHandler(async (req, res) => {
             isEnrolled
         };
 
-        // For logged out users or non-enrolled users, filter quiz content but keep basic info
+        // For logged out users or non-enrolled users, provide enhanced preview while keeping security
         if (!isAuthenticated || (!isEnrolled && !isAdmin && !isCreator)) {
 
-            // Show quiz basic info but remove actual questions for security
+            // Show enhanced quiz info for better preview experience
             if (responseData.quizzes) {
                 responseData.quizzes = responseData.quizzes.map(quiz => ({
                     _id: quiz._id,
@@ -325,13 +325,18 @@ const getTestSeriesById = asyncHandler(async (req, res) => {
                     quizType: quiz.quizType,
                     difficulty: quiz.difficulty,
                     isPublished: quiz.isPublished,
+                    questionCount: quiz.questions ? quiz.questions.length : 0,
+                    // Add sample question types for preview (without actual content)
+                    questionTypes: quiz.questions ? [...new Set(quiz.questions.map(q => q.type))] : [],
+                    // Add estimated marks/points
+                    totalMarks: quiz.questions ? quiz.questions.reduce((sum, q) => sum + (q.points || 1), 0) : 0,
+                    // Keep questions structure for length but remove sensitive data
                     questions: quiz.questions ? { length: quiz.questions.length } : { length: 0 }
                 }));
             }
 
-            // Do the same for section quizzes
+            // Enhanced section quizzes with better preview
             if (responseData.sections) {
-
                 responseData.sections = responseData.sections.map(section => ({
                     ...section,
                     quizzes: section.quizzes ? section.quizzes.map(quiz => ({
@@ -343,11 +348,41 @@ const getTestSeriesById = asyncHandler(async (req, res) => {
                         quizType: quiz.quizType,
                         difficulty: quiz.difficulty,
                         isPublished: quiz.isPublished,
+                        questionCount: quiz.questions ? quiz.questions.length : 0,
+                        questionTypes: quiz.questions ? [...new Set(quiz.questions.map(q => q.type))] : [],
+                        totalMarks: quiz.questions ? quiz.questions.reduce((sum, q) => sum + (q.points || 1), 0) : 0,
                         questions: quiz.questions ? { length: quiz.questions.length } : { length: 0 }
                     })) : []
                 }));
-
             }
+
+            // Add enhanced preview data for logged-out users
+            responseData.previewData = {
+                totalTests: responseData.totalQuizzes || 0,
+                totalQuestions: responseData.totalQuestions || 0,
+                estimatedHours: Math.ceil((responseData.estimatedDuration || 0) / 60),
+                difficultyBreakdown: {},
+                questionTypeBreakdown: {},
+                averageTestDuration: responseData.totalQuizzes > 0 ? Math.round((responseData.estimatedDuration || 0) / responseData.totalQuizzes) : 0
+            };
+
+            // Calculate difficulty breakdown
+            const allQuizzes = [
+                ...(responseData.quizzes || []),
+                ...(responseData.sections || []).flatMap(section => section.quizzes || [])
+            ];
+
+            allQuizzes.forEach(quiz => {
+                const difficulty = quiz.difficulty || 'medium';
+                responseData.previewData.difficultyBreakdown[difficulty] = 
+                    (responseData.previewData.difficultyBreakdown[difficulty] || 0) + 1;
+
+                // Add question types
+                (quiz.questionTypes || []).forEach(type => {
+                    responseData.previewData.questionTypeBreakdown[type] = 
+                        (responseData.previewData.questionTypeBreakdown[type] || 0) + (quiz.questionCount || 0);
+                });
+            });
 
             // Remove enrolled students list for privacy (keep only count)
             responseData.enrolledStudentsCount = responseData.enrolledStudents?.length || 0;

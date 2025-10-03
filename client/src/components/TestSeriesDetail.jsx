@@ -16,7 +16,9 @@ import {
   FaEye,
   FaTrophy,
   FaChevronDown,
-  FaChevronUp
+  FaChevronUp,
+  FaChartLine,
+  FaCheckCircle
 } from 'react-icons/fa';
 import { testSeriesAPI } from '../services/testSeriesAPI';
 import { quizAPI } from '../services/quizAPI';
@@ -384,114 +386,327 @@ const TestSeriesDetail = () => {
                         </div>
                       </div>
 
-                      {/* Test Series Content Preview */}
-                      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                        <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
-                          <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                            <FaBook className="text-blue-500" />
-                            Test Series Content
-                          </h3>
-                          <p className="text-sm text-gray-600 mt-1">
-                            {currentUser ? 'Enroll to access all tests' : 'Login and enroll to access all tests'}
-                          </p>
-                        </div>
+                      {/* Enhanced Test Series Content Preview */}
+                      <div className="space-y-6">
+                        {/* Content Overview */}
+                        {testSeries.previewData && (
+                          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-200">
+                            <h3 className="text-lg font-semibold text-blue-900 mb-4 flex items-center gap-2">
+                              <FaInfoCircle className="text-blue-600" />
+                              What's Included
+                            </h3>
+                            
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+                              <div className="text-center">
+                                <div className="text-2xl font-bold text-blue-700">{testSeries.previewData.totalTests}</div>
+                                <div className="text-sm text-blue-600">Practice Tests</div>
+                              </div>
+                              <div className="text-center">
+                                <div className="text-2xl font-bold text-blue-700">{testSeries.previewData.totalQuestions}</div>
+                                <div className="text-sm text-blue-600">Questions</div>
+                              </div>
+                              <div className="text-center">
+                                <div className="text-2xl font-bold text-blue-700">{testSeries.previewData.estimatedHours}h</div>
+                                <div className="text-sm text-blue-600">Study Time</div>
+                              </div>
+                              <div className="text-center">
+                                <div className="text-2xl font-bold text-blue-700">{testSeries.previewData.averageTestDuration}m</div>
+                                <div className="text-sm text-blue-600">Avg Test</div>
+                              </div>
+                            </div>
 
-                        <div className="p-6">
-                          {/* Show quiz list as preview */}
+                            {/* Difficulty Breakdown */}
+                            {Object.keys(testSeries.previewData.difficultyBreakdown).length > 0 && (
+                              <div className="mb-4">
+                                <h4 className="text-sm font-medium text-blue-800 mb-2">Difficulty Distribution</h4>
+                                <div className="flex flex-wrap gap-2">
+                                  {Object.entries(testSeries.previewData.difficultyBreakdown).map(([difficulty, count]) => (
+                                    <span key={difficulty} className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(difficulty)}`}>
+                                      {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}: {count} tests
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
 
-                          {((testSeries.quizzes && testSeries.quizzes.length > 0) ||
-                            (testSeries.sections && testSeries.sections.some(section => section.quizzes && section.quizzes.length > 0))) ? (
-                            <div className="space-y-3">
-                              {/* Render direct quizzes */}
-                              {testSeries.quizzes && testSeries.quizzes.map((quiz, index) => (
-                                <div key={quiz._id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors">
-                                  <div className="flex items-center gap-3 flex-1 mb-2 sm:mb-0">
-                                    <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-sm font-medium text-gray-600 flex-shrink-0">
-                                      {index + 1}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                      <h4 className="font-medium text-gray-800 truncate">{quiz.title}</h4>
-                                      <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600 mt-1">
-                                        <span className="flex items-center gap-1">
-                                          <FaQuestionCircle className="text-xs" />
-                                          {Array.isArray(quiz.questions) ? quiz.questions.length : (quiz.questions?.length || 0)} questions
-                                        </span>
-                                        {quiz.timeLimit && (
-                                          <span className="flex items-center gap-1">
-                                            <FaClock className="text-xs" />
-                                            {quiz.timeLimit} min
-                                          </span>
+                            {/* Question Types */}
+                            {Object.keys(testSeries.previewData.questionTypeBreakdown).length > 0 && (
+                              <div>
+                                <h4 className="text-sm font-medium text-blue-800 mb-2">Question Types</h4>
+                                <div className="flex flex-wrap gap-2">
+                                  {Object.entries(testSeries.previewData.questionTypeBreakdown).map(([type, count]) => (
+                                    <span key={type} className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-medium">
+                                      {type.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}: {count}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Test Series Content Preview */}
+                        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                          <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                            <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                              <FaBook className="text-blue-500" />
+                              Test Series Content
+                            </h3>
+                            <p className="text-sm text-gray-600 mt-1">
+                              {currentUser ? 'Enroll to access all tests' : 'Login and enroll to access all tests'}
+                            </p>
+                          </div>
+
+                          <div className="p-6">
+                            {/* Show enhanced quiz list as preview */}
+                            {((testSeries.quizzes && testSeries.quizzes.length > 0) ||
+                              (testSeries.sections && testSeries.sections.some(section => section.quizzes && section.quizzes.length > 0))) ? (
+                              <div className="space-y-3">
+                                {/* Render direct quizzes */}
+                                {testSeries.quizzes && testSeries.quizzes.map((quiz, index) => (
+                                  <div key={quiz._id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg border border-gray-200 hover:from-gray-100 hover:to-blue-100 transition-all duration-200">
+                                    <div className="flex items-center gap-3 flex-1 mb-2 sm:mb-0">
+                                      <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0">
+                                        {index + 1}
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <h4 className="font-semibold text-gray-800 mb-1">{quiz.title}</h4>
+                                        {quiz.description && (
+                                          <p className="text-xs text-gray-600 mb-2 line-clamp-2">{quiz.description}</p>
                                         )}
+                                        <div className="flex flex-wrap items-center gap-3 text-xs text-gray-600">
+                                          <span className="flex items-center gap-1 bg-white px-2 py-1 rounded">
+                                            <FaQuestionCircle className="text-blue-500" />
+                                            {quiz.questionCount || quiz.questions?.length || 0} questions
+                                          </span>
+                                          {quiz.timeLimit && (
+                                            <span className="flex items-center gap-1 bg-white px-2 py-1 rounded">
+                                              <FaClock className="text-green-500" />
+                                              {quiz.timeLimit} min
+                                            </span>
+                                          )}
+                                          {quiz.totalMarks && (
+                                            <span className="flex items-center gap-1 bg-white px-2 py-1 rounded">
+                                              <FaStar className="text-yellow-500" />
+                                              {quiz.totalMarks} marks
+                                            </span>
+                                          )}
+                                          {quiz.difficulty && (
+                                            <span className={`px-2 py-1 rounded text-xs font-medium ${getDifficultyColor(quiz.difficulty)}`}>
+                                              {quiz.difficulty.charAt(0).toUpperCase() + quiz.difficulty.slice(1)}
+                                            </span>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center justify-between sm:justify-end gap-2 ml-13 sm:ml-0">
+                                      <Link
+                                        to={`/test-series/${testSeriesId}/quiz/${quiz._id}`}
+                                        className="bg-blue-500 text-white hover:bg-blue-600 text-xs font-medium px-3 py-2 rounded-lg transition-colors flex items-center gap-1"
+                                      >
+                                        <FaEye className="text-xs" />
+                                        Preview
+                                      </Link>
+                                      <div className="text-gray-400">
+                                        <FaTimes className="text-sm" />
                                       </div>
                                     </div>
                                   </div>
-                                  <div className="flex items-center justify-between sm:justify-end gap-2 ml-11 sm:ml-0">
-                                    <Link
-                                      to={`/test-series/${testSeriesId}/quiz/${quiz._id}`}
-                                      className="text-blue-600 hover:text-blue-800 text-xs sm:text-sm font-medium px-2 py-1 rounded hover:bg-blue-50 transition-colors"
-                                    >
-                                      View Details
-                                    </Link>
-                                    <div className="text-gray-400">
-                                      <FaTimes className="text-sm" />
-                                    </div>
-                                  </div>
-                                </div>
-                              ))}
+                                ))}
 
-                              {/* Render section-based quizzes */}
-                              {testSeries.sections && testSeries.sections.map((section, sectionIndex) => (
-                                section.quizzes && section.quizzes.length > 0 && (
-                                  <div key={section._id} className="space-y-2">
-                                    <h5 className="font-semibold text-gray-700 text-sm sm:text-base uppercase tracking-wide px-2 sm:px-0">
-                                      {section.title}
-                                    </h5>
-                                    {section.quizzes.map((quiz, quizIndex) => (
-                                      <div key={quiz._id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors ml-2 sm:ml-4">
-                                        <div className="flex items-center gap-3 flex-1 mb-2 sm:mb-0">
-                                          <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-sm font-medium text-gray-600 flex-shrink-0">
-                                            {quizIndex + 1}
-                                          </div>
-                                          <div className="flex-1 min-w-0">
-                                            <h4 className="font-medium text-gray-800 truncate">{quiz.title}</h4>
-                                            <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600 mt-1">
-                                              <span className="flex items-center gap-1">
-                                                <FaQuestionCircle className="text-xs" />
-                                                {Array.isArray(quiz.questions) ? quiz.questions.length : (quiz.questions?.length || 0)} questions
-                                              </span>
-                                              {quiz.timeLimit && (
-                                                <span className="flex items-center gap-1">
-                                                  <FaClock className="text-xs" />
-                                                  {quiz.timeLimit} min
-                                                </span>
+                                {/* Render section-based quizzes */}
+                                {testSeries.sections && testSeries.sections.map((section, sectionIndex) => (
+                                  section.quizzes && section.quizzes.length > 0 && (
+                                    <div key={section._id} className="space-y-3">
+                                      <div className="flex items-center gap-2 mt-6 mb-3">
+                                        <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
+                                          <FaBook className="text-white text-sm" />
+                                        </div>
+                                        <h5 className="font-bold text-gray-800 text-base">
+                                          {section.title}
+                                        </h5>
+                                        <div className="flex-1 h-px bg-gray-200"></div>
+                                        <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                                          {section.quizzes.length} tests
+                                        </span>
+                                      </div>
+                                      {section.description && (
+                                        <p className="text-sm text-gray-600 mb-3 ml-10">{section.description}</p>
+                                      )}
+                                      {section.quizzes.map((quiz, quizIndex) => (
+                                        <div key={quiz._id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg border border-purple-200 hover:from-purple-100 hover:to-indigo-100 transition-all duration-200 ml-4">
+                                          <div className="flex items-center gap-3 flex-1 mb-2 sm:mb-0">
+                                            <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0">
+                                              {quizIndex + 1}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                              <h4 className="font-semibold text-gray-800 mb-1">{quiz.title}</h4>
+                                              {quiz.description && (
+                                                <p className="text-xs text-gray-600 mb-2 line-clamp-2">{quiz.description}</p>
                                               )}
+                                              <div className="flex flex-wrap items-center gap-3 text-xs text-gray-600">
+                                                <span className="flex items-center gap-1 bg-white px-2 py-1 rounded">
+                                                  <FaQuestionCircle className="text-purple-500" />
+                                                  {quiz.questionCount || quiz.questions?.length || 0} questions
+                                                </span>
+                                                {quiz.timeLimit && (
+                                                  <span className="flex items-center gap-1 bg-white px-2 py-1 rounded">
+                                                    <FaClock className="text-green-500" />
+                                                    {quiz.timeLimit} min
+                                                  </span>
+                                                )}
+                                                {quiz.totalMarks && (
+                                                  <span className="flex items-center gap-1 bg-white px-2 py-1 rounded">
+                                                    <FaStar className="text-yellow-500" />
+                                                    {quiz.totalMarks} marks
+                                                  </span>
+                                                )}
+                                                {quiz.difficulty && (
+                                                  <span className={`px-2 py-1 rounded text-xs font-medium ${getDifficultyColor(quiz.difficulty)}`}>
+                                                    {quiz.difficulty.charAt(0).toUpperCase() + quiz.difficulty.slice(1)}
+                                                  </span>
+                                                )}
+                                              </div>
+                                            </div>
+                                          </div>
+                                          <div className="flex items-center justify-between sm:justify-end gap-2 ml-11 sm:ml-0">
+                                            <Link
+                                              to={`/test-series/${testSeriesId}/quiz/${quiz._id}`}
+                                              className="bg-purple-500 text-white hover:bg-purple-600 text-xs font-medium px-3 py-2 rounded-lg transition-colors flex items-center gap-1"
+                                            >
+                                              <FaEye className="text-xs" />
+                                              Preview
+                                            </Link>
+                                            <div className="text-gray-400">
+                                              <FaTimes className="text-sm" />
                                             </div>
                                           </div>
                                         </div>
-                                        <div className="flex items-center justify-between sm:justify-end gap-2 ml-11 sm:ml-0">
-                                          <Link
-                                            to={`/test-series/${testSeriesId}/quiz/${quiz._id}`}
-                                            className="bg-blue-100 text-blue-700 hover:bg-blue-200 text-xs sm:text-sm font-medium px-3 py-2 rounded-lg transition-colors flex items-center gap-1"
-                                          >
-                                            <FaEye className="text-xs" />
-                                            View Details
-                                          </Link>
-                                          <div className="text-gray-400">
-                                            <FaTimes className="text-sm" />
-                                          </div>
-                                        </div>
-                                      </div>
-                                    ))}
+                                      ))}
+                                    </div>
+                                  )
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="text-center py-8 text-gray-500">
+                                <FaBook className="text-4xl mx-auto mb-4 opacity-50" />
+                                <p>No tests available in this series yet.</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Sample Test Experience Preview */}
+                        <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg p-6 border border-indigo-200">
+                          <h3 className="text-lg font-semibold text-indigo-900 mb-4 flex items-center gap-2">
+                            <FaEye className="text-indigo-600" />
+                            Test Experience Preview
+                          </h3>
+                          
+                          <div className="space-y-4">
+                            {/* Mock Question Preview */}
+                            <div className="bg-white rounded-lg p-4 border border-indigo-200">
+                              <div className="flex items-center justify-between mb-3">
+                                <span className="text-sm font-medium text-indigo-700">Sample Question Format</span>
+                                <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded">Multiple Choice</span>
+                              </div>
+                              <div className="text-sm text-gray-700 mb-3">
+                                <strong>Q. What is the primary advantage of this test series?</strong>
+                              </div>
+                              <div className="space-y-2 text-sm">
+                                <div className="flex items-center gap-2 p-2 bg-gray-50 rounded">
+                                  <div className="w-4 h-4 border border-gray-300 rounded-full"></div>
+                                  <span>Comprehensive coverage of all topics</span>
+                                </div>
+                                <div className="flex items-center gap-2 p-2 bg-green-50 rounded border border-green-200">
+                                  <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                                    <FaCheck className="text-white text-xs" />
                                   </div>
-                                )
-                              ))}
+                                  <span className="text-green-700">Detailed performance analytics</span>
+                                </div>
+                                <div className="flex items-center gap-2 p-2 bg-gray-50 rounded">
+                                  <div className="w-4 h-4 border border-gray-300 rounded-full"></div>
+                                  <span>Mobile-friendly interface</span>
+                                </div>
+                                <div className="flex items-center gap-2 p-2 bg-gray-50 rounded">
+                                  <div className="w-4 h-4 border border-gray-300 rounded-full"></div>
+                                  <span>All of the above</span>
+                                </div>
+                              </div>
+                              <div className="mt-3 text-xs text-gray-500 italic">
+                                * This is a sample question format. Actual questions will be available after enrollment.
+                              </div>
                             </div>
-                          ) : (
-                            <div className="text-center py-8 text-gray-500">
-                              <FaBook className="text-4xl mx-auto mb-4 opacity-50" />
-                              <p>No tests available in this series yet.</p>
+
+                            {/* Features Preview */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              <div className="bg-white rounded-lg p-3 border border-indigo-200">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <FaChartLine className="text-indigo-600" />
+                                  <span className="text-sm font-medium text-indigo-800">Performance Tracking</span>
+                                </div>
+                                <p className="text-xs text-gray-600">Real-time analytics with detailed breakdowns</p>
+                              </div>
+                              
+                              <div className="bg-white rounded-lg p-3 border border-indigo-200">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <FaTrophy className="text-indigo-600" />
+                                  <span className="text-sm font-medium text-indigo-800">Leaderboard</span>
+                                </div>
+                                <p className="text-xs text-gray-600">Compete with students nationwide</p>
+                              </div>
                             </div>
-                          )}
+                          </div>
+                        </div>
+
+                        {/* Value Proposition for Logged-out Users */}
+                        <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-6 border border-green-200">
+                          <h3 className="text-lg font-semibold text-green-900 mb-4 flex items-center gap-2">
+                            <FaCheckCircle className="text-green-600" />
+                            Why Choose This Test Series?
+                          </h3>
+                          
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="flex items-start gap-3">
+                              <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                <FaChartLine className="text-white text-sm" />
+                              </div>
+                              <div>
+                                <h4 className="font-medium text-green-800 mb-1">Detailed Analytics</h4>
+                                <p className="text-sm text-green-700">Track your performance with comprehensive reports and insights</p>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-start gap-3">
+                              <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                <FaTrophy className="text-white text-sm" />
+                              </div>
+                              <div>
+                                <h4 className="font-medium text-green-800 mb-1">Leaderboard Rankings</h4>
+                                <p className="text-sm text-green-700">Compete with thousands of students nationwide</p>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-start gap-3">
+                              <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                <FaBook className="text-white text-sm" />
+                              </div>
+                              <div>
+                                <h4 className="font-medium text-green-800 mb-1">Detailed Solutions</h4>
+                                <p className="text-sm text-green-700">Step-by-step explanations for every question</p>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-start gap-3">
+                              <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                <FaClock className="text-white text-sm" />
+                              </div>
+                              <div>
+                                <h4 className="font-medium text-green-800 mb-1">Flexible Timing</h4>
+                                <p className="text-sm text-green-700">Take tests at your own pace, anytime, anywhere</p>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -576,9 +791,9 @@ const TestSeriesDetail = () => {
                     )}
                   </div>
 
-                  {/* Details */}
+                  {/* Enhanced Details */}
                   <div className="bg-gray-50 rounded-lg p-4 sm:p-6">
-                    <h4 className="font-semibold text-gray-800 mb-4">Details</h4>
+                    <h4 className="font-semibold text-gray-800 mb-4">Test Series Details</h4>
                     <div className="space-y-3 text-sm">
                       <div className="flex justify-between">
                         <span className="text-gray-600">Category:</span>
@@ -592,44 +807,81 @@ const TestSeriesDetail = () => {
                       )}
                       <div className="flex justify-between">
                         <span className="text-gray-600">Difficulty:</span>
-                        <span className="font-medium capitalize">{testSeries.difficulty}</span>
+                        <span className={`font-medium px-2 py-1 rounded text-xs ${getDifficultyColor(testSeries.difficulty)}`}>
+                          {testSeries.difficulty?.charAt(0).toUpperCase() + testSeries.difficulty?.slice(1)}
+                        </span>
                       </div>
-                      {testSeries.maxAttempts > 0 && (
+                      {testSeries.examType && (
                         <div className="flex justify-between">
-                          <span className="text-gray-600">Max Attempts:</span>
-                          <span className="font-medium">{testSeries.maxAttempts}</span>
+                          <span className="text-gray-600">Exam Type:</span>
+                          <span className="font-medium">{testSeries.examType}</span>
                         </div>
                       )}
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Review Allowed:</span>
-                        <span className="font-medium">{testSeries.allowReview ? 'Yes' : 'No'}</span>
+                        <span className="text-gray-600">Total Tests:</span>
+                        <span className="font-medium text-blue-600">{testSeries.totalQuizzes || 0}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Show Results:</span>
-                        <span className="font-medium">{testSeries.showResults ? 'Yes' : 'No'}</span>
+                        <span className="text-gray-600">Questions:</span>
+                        <span className="font-medium text-green-600">{testSeries.totalQuestions || 0}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Study Time:</span>
+                        <span className="font-medium text-purple-600">{Math.ceil((testSeries.estimatedDuration || 0) / 60)}h</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Students:</span>
+                        <span className="font-medium text-orange-600">{testSeries.enrolledStudentsCount || 0}+</span>
+                      </div>
+                    </div>
+
+                    {/* Success Rate Preview */}
+                    {(testSeries.enrolledStudentsCount || 0) > 50 && (
+                      <div className="mt-4 pt-4 border-t border-gray-200">
+                        <div className="flex items-center gap-2 mb-2">
+                          <FaTrophy className="text-yellow-500 text-sm" />
+                          <span className="text-sm font-medium text-gray-800">Popular Choice</span>
+                        </div>
+                        <p className="text-xs text-gray-600">
+                          Trusted by {testSeries.enrolledStudentsCount || 0}+ students for exam preparation
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* What's Included */}
+                  <div className="bg-blue-50 rounded-lg p-4 sm:p-6 border border-blue-200">
+                    <h4 className="font-semibold text-blue-900 mb-4 flex items-center gap-2">
+                      <FaCheckCircle className="text-blue-600" />
+                      What's Included
+                    </h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        <FaCheck className="text-green-500 text-xs" />
+                        <span className="text-blue-800">Unlimited test attempts</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <FaCheck className="text-green-500 text-xs" />
+                        <span className="text-blue-800">Detailed performance reports</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <FaCheck className="text-green-500 text-xs" />
+                        <span className="text-blue-800">Step-by-step solutions</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <FaCheck className="text-green-500 text-xs" />
+                        <span className="text-blue-800">Leaderboard rankings</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <FaCheck className="text-green-500 text-xs" />
+                        <span className="text-blue-800">Mobile & desktop access</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <FaCheck className="text-green-500 text-xs" />
+                        <span className="text-blue-800">Progress tracking</span>
                       </div>
                     </div>
                   </div>
-
-                  {/* Tags */}
-                  {testSeries.tags && testSeries.tags.length > 0 && (
-                    <div className="bg-gray-50 rounded-lg p-4 sm:p-6">
-                      <h4 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                        <FaTag />
-                        Tags
-                      </h4>
-                      <div className="flex flex-wrap gap-2">
-                        {testSeries.tags.map((tag, index) => (
-                          <span
-                            key={index}
-                            className="bg-white text-gray-700 px-3 py-1 rounded-full text-sm border"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
 
 
                 </div>

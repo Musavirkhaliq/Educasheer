@@ -406,23 +406,23 @@ const TestSeriesModal = ({ testSeries, isOpen, onClose }) => {
                   <FaQuestionCircle className="text-blue-600 text-sm sm:text-base flex-shrink-0" />
                   <div className="min-w-0">
                     <div className="font-semibold text-gray-900 text-sm sm:text-base">{testSeries.totalQuizzes || 0} Tests</div>
-                    <div className="text-xs sm:text-sm text-gray-600">Comprehensive coverage</div>
+                    <div className="text-xs sm:text-sm text-gray-600">Practice tests</div>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-green-50 rounded-lg">
                   <FaClock className="text-green-600 text-sm sm:text-base flex-shrink-0" />
                   <div className="min-w-0">
-                    <div className="font-semibold text-gray-900 text-sm sm:text-base">{testSeries.estimatedDuration || 0} Minutes</div>
-                    <div className="text-xs sm:text-sm text-gray-600">Total duration</div>
+                    <div className="font-semibold text-gray-900 text-sm sm:text-base">{Math.ceil((testSeries.estimatedDuration || 0) / 60)}h</div>
+                    <div className="text-xs sm:text-sm text-gray-600">Study time</div>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-purple-50 rounded-lg">
                   <FaUsers className="text-purple-600 text-sm sm:text-base flex-shrink-0" />
                   <div className="min-w-0">
-                    <div className="font-semibold text-gray-900 text-sm sm:text-base">{testSeries.enrolledStudentsCount || 0} Students</div>
-                    <div className="text-xs sm:text-sm text-gray-600">Already enrolled</div>
+                    <div className="font-semibold text-gray-900 text-sm sm:text-base">{testSeries.enrolledStudentsCount || 0}</div>
+                    <div className="text-xs sm:text-sm text-gray-600">Students enrolled</div>
                   </div>
                 </div>
 
@@ -435,6 +435,20 @@ const TestSeriesModal = ({ testSeries, isOpen, onClose }) => {
                 </div>
               </div>
             </div>
+
+            {/* Enhanced Preview for Popular Test Series */}
+            {(testSeries.enrolledStudentsCount || 0) > 100 && (
+              <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <FaTrophy className="text-yellow-600" />
+                  <h4 className="text-sm sm:text-base font-semibold text-yellow-800">Popular Choice</h4>
+                </div>
+                <p className="text-xs sm:text-sm text-yellow-700">
+                  Join {testSeries.enrolledStudentsCount || 0}+ students who are already practicing with this test series. 
+                  Get detailed performance analytics and compete on the leaderboard!
+                </p>
+              </div>
+            )}
 
             {/* What You'll Get */}
             <div className="mb-4 sm:mb-6">
