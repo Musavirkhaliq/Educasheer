@@ -28,7 +28,7 @@ const GamificationPage = () => {
 
   // Redirect to login if not authenticated
   if (!isAuthenticated) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/login?redirect=%2Fgamification" />;
   }
 
   // Make sure we have user data before rendering

@@ -267,6 +267,7 @@ const getTestSeriesById = asyncHandler(async (req, res) => {
             .populate({
                 path: "quizzes",
                 select: "title description timeLimit questions passingScore quizType difficulty isPublished",
+                // Don't filter by isPublished here - we want to show quiz info for preview
                 populate: {
                     path: "questions",
                     select: "text type points"
@@ -284,6 +285,8 @@ const getTestSeriesById = asyncHandler(async (req, res) => {
         if (!testSeries) {
             throw new ApiError(404, "Test series not found");
         }
+
+
 
         // Check if user can access this test series
         const isAuthenticated = req.user ? true : false;
@@ -306,6 +309,49 @@ const getTestSeriesById = asyncHandler(async (req, res) => {
             ...testSeries.toObject(),
             isEnrolled
         };
+
+        // For logged out users or non-enrolled users, filter quiz content but keep basic info
+        if (!isAuthenticated || (!isEnrolled && !isAdmin && !isCreator)) {
+
+            // Show quiz basic info but remove actual questions for security
+            if (responseData.quizzes) {
+                responseData.quizzes = responseData.quizzes.map(quiz => ({
+                    _id: quiz._id,
+                    title: quiz.title,
+                    description: quiz.description,
+                    timeLimit: quiz.timeLimit,
+                    passingScore: quiz.passingScore,
+                    quizType: quiz.quizType,
+                    difficulty: quiz.difficulty,
+                    isPublished: quiz.isPublished,
+                    questions: quiz.questions ? { length: quiz.questions.length } : { length: 0 }
+                }));
+            }
+
+            // Do the same for section quizzes
+            if (responseData.sections) {
+
+                responseData.sections = responseData.sections.map(section => ({
+                    ...section,
+                    quizzes: section.quizzes ? section.quizzes.map(quiz => ({
+                        _id: quiz._id,
+                        title: quiz.title,
+                        description: quiz.description,
+                        timeLimit: quiz.timeLimit,
+                        passingScore: quiz.passingScore,
+                        quizType: quiz.quizType,
+                        difficulty: quiz.difficulty,
+                        isPublished: quiz.isPublished,
+                        questions: quiz.questions ? { length: quiz.questions.length } : { length: 0 }
+                    })) : []
+                }));
+
+            }
+
+            // Remove enrolled students list for privacy (keep only count)
+            responseData.enrolledStudentsCount = responseData.enrolledStudents?.length || 0;
+            delete responseData.enrolledStudents;
+        }
 
         return res.status(200).json(
             new ApiResponse(200, responseData, "Test series fetched successfully")

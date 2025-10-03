@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { FaEye, FaEyeSlash, FaGoogle, FaEnvelope } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
 import { useGoogleLogin } from "@react-oauth/google";
@@ -17,7 +17,25 @@ const Login = () => {
   const [showVerificationOption, setShowVerificationOption] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { login, googleLogin, isAuthenticated, currentUser } = useAuth();
+
+  // Get redirect URL from query parameters or React Router state
+  const getRedirectUrl = () => {
+    // First check query parameters
+    const params = new URLSearchParams(location.search);
+    const redirectUrl = params.get('redirect');
+    if (redirectUrl) {
+      return decodeURIComponent(redirectUrl);
+    }
+    
+    // Then check React Router state
+    if (location.state?.from) {
+      return location.state.from;
+    }
+    
+    return null;
+  };
 
   // Check if Google Client ID is available
   const isGoogleClientIdAvailable = !!import.meta.env.VITE_GOOGLE_CLIENT_ID;
@@ -62,18 +80,21 @@ const Login = () => {
         // Show success message
         const successMessage = `Login successful! You are logged in as a ${user.role}.`;
 
-        // Make sure we're using the correct role for redirection
+        // Check for redirect URL
+        const redirectUrl = getRedirectUrl();
+        
+        console.log("Google login redirect URL:", redirectUrl);
         console.log("Redirecting based on role (Google login):", user.role);
 
-        // Redirect based on role
-        if (user.role === "admin") {
+        // Redirect logic
+        if (redirectUrl) {
+          console.log("Redirecting to original page (Google login):", redirectUrl);
+          setTimeout(() => navigate(redirectUrl), 500);
+        } else if (user.role === "admin") {
           console.log("Redirecting to admin dashboard (Google login)");
           setTimeout(() => navigate("/admin"), 500);
-        } else if (user.role === "tutor") {
-          console.log("Redirecting to home page (tutor) (Google login)");
-          setTimeout(() => navigate("/"), 500);
         } else {
-          console.log("Redirecting to home page (learner) (Google login)");
+          console.log("Redirecting to home page (Google login)");
           setTimeout(() => navigate("/"), 500);
         }
 
@@ -100,8 +121,14 @@ const Login = () => {
   React.useEffect(() => {
     if (isAuthenticated && currentUser) {
       console.log("User already authenticated, redirecting...", currentUser);
-      // Make sure we're using the latest role information
-      if (currentUser.role === "admin") {
+      
+      // Check for redirect URL
+      const redirectUrl = getRedirectUrl();
+      
+      if (redirectUrl) {
+        console.log("Redirecting authenticated user to original page:", redirectUrl);
+        navigate(redirectUrl);
+      } else if (currentUser.role === "admin") {
         console.log("Redirecting admin to admin dashboard");
         navigate("/admin");
       } else {
@@ -109,7 +136,7 @@ const Login = () => {
         navigate("/");
       }
     }
-  }, [isAuthenticated, currentUser, navigate]);
+  }, [isAuthenticated, currentUser, navigate, location.search, location.state]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -155,21 +182,23 @@ const Login = () => {
       // Show success message with role information
       const successMessage = `Login successful! You are logged in as a ${user.role}.`;
 
-      // Make sure we're using the correct role for redirection
+      // Check for redirect URL
+      const redirectUrl = getRedirectUrl();
+      
+      console.log("Login redirect URL:", redirectUrl);
       console.log("Redirecting based on role:", user.role);
 
-      // Redirect based on role
-      if (user.role === "admin") {
+      // Redirect logic
+      if (redirectUrl) {
+        console.log("Redirecting to original page:", redirectUrl);
+        setTimeout(() => navigate(redirectUrl), 500);
+      } else if (user.role === "admin") {
         // Admin dashboard
         console.log("Redirecting to admin dashboard");
         setTimeout(() => navigate("/admin"), 500);
-      } else if (user.role === "tutor") {
-        // Tutor home page
-        console.log("Redirecting to home page (tutor)");
-        setTimeout(() => navigate("/"), 500);
       } else {
-        // Learner home page
-        console.log("Redirecting to home page (learner)");
+        // Default to home page for tutors and learners
+        console.log("Redirecting to home page");
         setTimeout(() => navigate("/"), 500);
       }
 

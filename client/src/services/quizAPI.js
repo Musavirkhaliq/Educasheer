@@ -101,8 +101,19 @@ export const quizAPI = {
     }
   },
 
-  // Get quiz by ID
+  // Get quiz by ID (authenticated)
   getQuizById: (quizId) => api.get(`/quizzes/${quizId}`),
+
+  // Get quiz by ID (public - for logged out users)
+  getPublicQuizById: async (quizId) => {
+    try {
+      const response = await axios.get(`/api/public/quizzes/${quizId}`);
+      return response;
+    } catch (error) {
+      console.error('Error fetching public quiz:', error);
+      throw error;
+    }
+  },
 
   // Admin: Update quiz
   updateQuiz: (quizId, data) => api.put(`/quizzes/${quizId}`, data),

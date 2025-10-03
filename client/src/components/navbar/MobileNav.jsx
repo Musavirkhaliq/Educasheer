@@ -137,7 +137,7 @@ const MobileNav = () => {
             ) : (
               <motion.button
                 whileTap={{ scale: 0.95 }}
-                onClick={() => navigate("/login")}
+                onClick={() => navigate(`/login?redirect=${encodeURIComponent(location.pathname)}`)}
                 className="btn-glass text-primary neon-border px-4 py-1.5 rounded-full text-sm font-medium"
               >
                 Login
@@ -320,7 +320,7 @@ const MobileNav = () => {
                     <motion.button
                       whileTap={{ scale: 0.95 }}
                       onClick={() => {
-                        navigate("/login");
+                        navigate(`/login?redirect=${encodeURIComponent(location.pathname)}`);
                         setIsDrawerOpen(false);
                       }}
                       className="flex-1 py-3 rounded-lg bg-white/10 text-white text-sm font-medium"

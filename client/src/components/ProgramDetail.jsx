@@ -61,7 +61,7 @@ const ProgramDetail = () => {
   const handleEnroll = async () => {
     if (!currentUser) {
       console.log('ProgramDetail - No user logged in, redirecting to login');
-      navigate('/login', { state: { from: `/programs/${programId}` } });
+      navigate(`/login?redirect=${encodeURIComponent(`/programs/${programId}`)}`);;
       return;
     }
 

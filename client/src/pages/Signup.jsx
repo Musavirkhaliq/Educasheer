@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { FaEye, FaEyeSlash, FaUpload, FaGoogle, FaEnvelope } from "react-icons/fa";
 import { authAPI } from "../services/api";
 import { useGoogleLogin } from "@react-oauth/google";
@@ -23,7 +23,25 @@ const Signup = () => {
   const [showResendOption, setShowResendOption] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { googleLogin } = useAuth();
+
+  // Get redirect URL from query parameters or React Router state
+  const getRedirectUrl = () => {
+    // First check query parameters
+    const params = new URLSearchParams(location.search);
+    const redirectUrl = params.get('redirect');
+    if (redirectUrl) {
+      return decodeURIComponent(redirectUrl);
+    }
+    
+    // Then check React Router state
+    if (location.state?.from) {
+      return location.state.from;
+    }
+    
+    return null;
+  };
 
   // Check if Google Client ID is available
   const isGoogleClientIdAvailable = !!import.meta.env.VITE_GOOGLE_CLIENT_ID;
@@ -51,13 +69,22 @@ const Signup = () => {
         // Show success message
         const successMessage = `Account created successfully! You are logged in as a ${user.role}.`;
 
-        // Redirect based on role
-        if (user.role === "admin") {
+        // Check for redirect URL
+        const redirectUrl = getRedirectUrl();
+        
+        console.log("Google signup redirect URL:", redirectUrl);
+        console.log("Redirecting based on role (Google signup):", user.role);
+
+        // Redirect logic
+        if (redirectUrl) {
+          console.log("Redirecting to original page (Google signup):", redirectUrl);
+          setTimeout(() => navigate(redirectUrl), 500);
+        } else if (user.role === "admin") {
+          console.log("Redirecting to admin dashboard (Google signup)");
           setTimeout(() => navigate("/admin"), 500);
-        } else if (user.role === "tutor") {
-          setTimeout(() => navigate("/profile"), 500);
         } else {
-          setTimeout(() => navigate("/profile"), 500);
+          console.log("Redirecting to home page (Google signup)");
+          setTimeout(() => navigate("/"), 500);
         }
 
         // Alert the user about their role

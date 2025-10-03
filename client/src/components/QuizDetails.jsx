@@ -38,7 +38,10 @@ const QuizDetails = () => {
 
   const fetchQuizDetails = async () => {
     try {
-      const response = await quizAPI.getQuizById(quizId);
+      // Use public endpoint for logged out users, authenticated endpoint for logged in users
+      const response = currentUser 
+        ? await quizAPI.getQuizById(quizId)
+        : await quizAPI.getPublicQuizById(quizId);
       setQuiz(response.data.data);
     } catch (err) {
       console.error('Error fetching quiz details:', err);
@@ -48,6 +51,11 @@ const QuizDetails = () => {
   };
 
   const fetchUserAttempts = async () => {
+    if (!currentUser) {
+      setLoading(false);
+      return;
+    }
+    
     try {
       const response = await quizAPI.getUserQuizAttempts(quizId);
       setUserAttempts(response.data.data);
@@ -67,6 +75,7 @@ const QuizDetails = () => {
     } catch (err) {
       console.error('Error fetching leaderboard:', err);
       // Don't show error for leaderboard as it's not critical
+      setLeaderboard([]);
     } finally {
       setLeaderboardLoading(false);
     }
@@ -209,7 +218,9 @@ const QuizDetails = () => {
                     </div>
                     <div className="text-center sm:text-left">
                       <p className="text-blue-700 text-xs sm:text-sm font-medium">Questions</p>
-                      <p className="text-blue-900 text-lg sm:text-xl font-bold">{quiz.questions?.length || 0}</p>
+                      <p className="text-blue-900 text-lg sm:text-xl font-bold">
+                        {Array.isArray(quiz.questions) ? quiz.questions.length : (quiz.questions?.length || 0)}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -310,7 +321,7 @@ const QuizDetails = () => {
                     </li>
                     <li className="flex items-start gap-3">
                       <FaCheckCircle className="text-blue-500 mt-1 flex-shrink-0" />
-                      <span>This {quiz.quizType} contains <strong>{quiz.questions?.length || 0} questions</strong></span>
+                      <span>This {quiz.quizType} contains <strong>{Array.isArray(quiz.questions) ? quiz.questions.length : (quiz.questions?.length || 0)} questions</strong></span>
                     </li>
                     {quiz.maxAttempts > 0 && (
                       <li className="flex items-start gap-3">
@@ -450,53 +461,99 @@ const QuizDetails = () => {
                 )}
               </div>
 
-              {/* Action Buttons */}
+              {/* Access Control and Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                {hasAttempted && (
+                {/* Show access message for users without access */}
+                {quiz.accessMessage && !quiz.hasAccess && (
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 sm:p-6 mb-6 border border-blue-200">
+                    <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <FaInfoCircle className="text-white text-lg sm:text-xl" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-base sm:text-lg font-semibold text-blue-900 mb-2">
+                          {quiz.requiresLogin ? 'Login Required' : quiz.requiresPurchase ? 'Purchase Required' : 'Access Required'}
+                        </h3>
+                        <p className="text-sm sm:text-base text-blue-800 mb-4">{quiz.accessMessage}</p>
+                        <div className="flex flex-col sm:flex-row gap-2">
+                          {quiz.requiresLogin ? (
+                            <button
+                              onClick={() => navigate(`/login?redirect=${encodeURIComponent(window.location.pathname)}`)}
+                              className="bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base w-full sm:w-auto"
+                            >
+                              Login to Access
+                            </button>
+                          ) : quiz.requiresPurchase && quiz.testSeries ? (
+                            <Link
+                              to={`/test-series/${quiz.testSeries._id}`}
+                              className="bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base w-full sm:w-auto text-center"
+                            >
+                              View Test Series
+                            </Link>
+                          ) : quiz.requiresEnrollment && quiz.testSeries ? (
+                            <Link
+                              to={`/test-series/${quiz.testSeries._id}`}
+                              className="bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base w-full sm:w-auto text-center"
+                            >
+                              Enroll in Test Series
+                            </Link>
+                          ) : null}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Show normal action buttons for users with access */}
+                {quiz.hasAccess && (
                   <>
-                    {(courseId || testSeriesId) && (
-                      <Link
-                        to={courseId
-                          ? `/courses/${courseId}/quizzes/${quizId}/attempts`
-                          : `/test-series/${testSeriesId}/quiz/${quizId}/attempts`
-                        }
-                        className="bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition-colors inline-flex items-center justify-center gap-2"
-                      >
-                        <FaHistory />
-                        View All Attempts
-                      </Link>
+                    {hasAttempted && (
+                      <>
+                        {(courseId || testSeriesId) && (
+                          <Link
+                            to={courseId
+                              ? `/courses/${courseId}/quizzes/${quizId}/attempts`
+                              : `/test-series/${testSeriesId}/quiz/${quizId}/attempts`
+                            }
+                            className="bg-gray-100 text-gray-700 px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-gray-200 transition-colors inline-flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-auto"
+                          >
+                            <FaHistory />
+                            View All Attempts
+                          </Link>
+                        )}
+
+                        {bestAttempt && (courseId || testSeriesId) && (
+                          <Link
+                            to={courseId
+                              ? `/courses/${courseId}/quizzes/${quizId}/results/${bestAttempt._id}`
+                              : `/test-series/${testSeriesId}/quiz/${quizId}/results/${bestAttempt._id}`
+                            }
+                            className="bg-blue-100 text-blue-700 px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-blue-200 transition-colors inline-flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-auto"
+                          >
+                            <FaEye />
+                            View Best Result
+                          </Link>
+                        )}
+                      </>
                     )}
 
-                    {bestAttempt && (courseId || testSeriesId) && (
-                      <Link
-                        to={courseId
-                          ? `/courses/${courseId}/quizzes/${quizId}/results/${bestAttempt._id}`
-                          : `/test-series/${testSeriesId}/quiz/${quizId}/results/${bestAttempt._id}`
-                        }
-                        className="bg-blue-100 text-blue-700 px-6 py-3 rounded-lg hover:bg-blue-200 transition-colors inline-flex items-center justify-center gap-2"
+                    {canRetake && (
+                      <button
+                        onClick={handleStartQuiz}
+                        className="bg-[#00bcd4] text-white px-6 sm:px-8 py-2 sm:py-3 rounded-lg hover:bg-[#0097a7] transition-colors inline-flex items-center justify-center gap-2 font-semibold text-base sm:text-lg w-full sm:w-auto"
                       >
-                        <FaEye />
-                        View Best Result
-                      </Link>
+                        <FaPlay />
+                        {hasAttempted ? `Retake ${quiz.quizType}` : `Start ${quiz.quizType}`}
+                      </button>
+                    )}
+
+                    {!canRetake && (courseId || testSeriesId) && (
+                      <div className="bg-red-50 text-red-700 px-6 py-3 rounded-lg border border-red-200 text-center">
+                        <FaTimesCircle className="inline mr-2" />
+                        You have reached the maximum number of attempts ({quiz.maxAttempts})
+                      </div>
                     )}
                   </>
-                )}
-
-                {canRetake && (
-                  <button
-                    onClick={handleStartQuiz}
-                    className="bg-[#00bcd4] text-white px-8 py-3 rounded-lg hover:bg-[#0097a7] transition-colors inline-flex items-center justify-center gap-2 font-semibold text-lg"
-                  >
-                    <FaPlay />
-                    {hasAttempted ? `Retake ${quiz.quizType}` : `Start ${quiz.quizType}`}
-                  </button>
-                )}
-
-                {!canRetake && (courseId || testSeriesId) && (
-                  <div className="bg-red-50 text-red-700 px-6 py-3 rounded-lg border border-red-200 text-center">
-                    <FaTimesCircle className="inline mr-2" />
-                    You have reached the maximum number of attempts ({quiz.maxAttempts})
-                  </div>
                 )}
 
                 {!courseId && !testSeriesId && (

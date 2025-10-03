@@ -25,7 +25,7 @@ const BlogCreatePage = () => {
 
   // Redirect if not authenticated
   if (!isAuthenticated) {
-    navigate('/login');
+    navigate('/login?redirect=%2Fblogs%2Fcreate');
     return null;
   }
 

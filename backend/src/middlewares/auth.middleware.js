@@ -52,6 +52,44 @@ export const verifyAdmin = asyncHandler(async (req, res, next) => {
   }
 });
 
+// Optional JWT verification - doesn't throw error if no token provided
+export const optionalVerifyJWT = asyncHandler(async (req, res, next) => {
+  try {
+    // Get token from cookies or authorization header
+    const token =
+      req.cookies?.accessToken ||
+      (req.headers.authorization && req.headers.authorization.replace("Bearer ", ""));
+
+    if (!token) {
+      // No token provided, continue without user
+      req.user = null;
+      return next();
+    }
+
+    // Verify the token
+    const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+
+    // Find the user
+    const user = await User.findById(decodedToken.id).select(
+      "-password -refreshToken"
+    );
+
+    if (!user) {
+      // Invalid token, continue without user
+      req.user = null;
+      return next();
+    }
+
+    // Attach user to request object
+    req.user = user;
+    next();
+  } catch (error) {
+    // Token verification failed, continue without user
+    req.user = null;
+    next();
+  }
+});
+
 // const jwt = require("jsonwebtoken");
 
 // const authMiddleware = (req, res, next) => {

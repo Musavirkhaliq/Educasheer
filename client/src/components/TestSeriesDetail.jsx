@@ -48,7 +48,13 @@ const TestSeriesDetail = () => {
   const fetchTestSeriesDetails = async () => {
     try {
       setLoading(true);
-      const response = await testSeriesAPI.getTestSeriesById(testSeriesId);
+      // Use public endpoint for logged out users, authenticated endpoint for logged in users
+      const response = currentUser
+        ? await testSeriesAPI.getTestSeriesById(testSeriesId)
+        : await testSeriesAPI.getPublicTestSeriesById(testSeriesId);
+
+
+
       setTestSeries(response.data.data);
       setError('');
     } catch (error) {
@@ -81,7 +87,8 @@ const TestSeriesDetail = () => {
 
   const handleEnroll = async () => {
     if (!currentUser) {
-      toast.error('Please login to enroll in test series');
+      // Redirect to login with return URL
+      navigate(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
       return;
     }
 
@@ -243,32 +250,164 @@ const TestSeriesDetail = () => {
                       testSeries={testSeries}
                     />
                   ) : (
-                    <div className="bg-gray-50 rounded-lg p-6 text-center">
-                      <h3 className="text-lg font-medium text-gray-800 mb-2">
-                        {testSeries.price > 0 ? 'Purchase Required' : 'Enrollment Required'}
-                      </h3>
-                      <p className="text-gray-600 mb-4">
-                        {testSeries.price > 0
-                          ? 'Purchase this test series to access all tests and track your progress.'
-                          : 'Enroll in this free test series to access all tests and track your progress.'
-                        }
-                      </p>
-                      {testSeries.price > 0 ? (
-                        <AddToCartButton
-                          itemType="testSeries"
-                          itemId={testSeriesId}
-                          className="mx-auto"
-                          size="md"
-                        />
-                      ) : (
-                        <button
-                          onClick={handleEnroll}
-                          disabled={enrolling}
-                          className="bg-[#00bcd4] text-white px-6 py-3 rounded-lg hover:bg-[#0097a7] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {enrolling ? 'Enrolling...' : 'Enroll Now'}
-                        </button>
-                      )}
+                    <div>
+                      {/* Test Series Overview for Non-Enrolled Users */}
+                      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 sm:p-6 mb-6 border border-blue-200">
+                        <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
+                          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <FaInfoCircle className="text-white text-xl" />
+                          </div>
+                          <div className="flex-1">
+                            <h3 className="text-base sm:text-lg font-semibold text-blue-900 mb-2">
+                              {testSeries.price > 0 ? 'Purchase Required' : 'Enrollment Required'}
+                            </h3>
+                            <p className="text-sm sm:text-base text-blue-800 mb-4">
+                              {testSeries.price > 0
+                                ? 'Purchase this test series to access all tests and track your progress.'
+                                : currentUser
+                                  ? 'Enroll in this free test series to access all tests and track your progress.'
+                                  : 'Login and enroll in this free test series to access all tests and track your progress.'
+                              }
+                            </p>
+                            <div className="flex flex-col sm:flex-row gap-2">
+                              {testSeries.price > 0 ? (
+                                currentUser ? (
+                                  <AddToCartButton
+                                    itemType="testSeries"
+                                    itemId={testSeriesId}
+                                    size="md"
+                                  />
+                                ) : (
+                                  <button
+                                    onClick={() => navigate(`/login?redirect=${encodeURIComponent(window.location.pathname)}`)}
+                                    className="bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base w-full sm:w-auto"
+                                  >
+                                    Login to Purchase
+                                  </button>
+                                )
+                              ) : (
+                                <button
+                                  onClick={handleEnroll}
+                                  disabled={enrolling}
+                                  className="bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base w-full sm:w-auto"
+                                >
+                                  {enrolling ? 'Enrolling...' : currentUser ? 'Enroll Now' : 'Login to Enroll'}
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Test Series Content Preview */}
+                      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                        <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                          <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                            <FaBook className="text-blue-500" />
+                            Test Series Content
+                          </h3>
+                          <p className="text-sm text-gray-600 mt-1">
+                            {currentUser ? 'Enroll to access all tests' : 'Login and enroll to access all tests'}
+                          </p>
+                        </div>
+
+                        <div className="p-6">
+                          {/* Show quiz list as preview */}
+
+                          {((testSeries.quizzes && testSeries.quizzes.length > 0) ||
+                            (testSeries.sections && testSeries.sections.some(section => section.quizzes && section.quizzes.length > 0))) ? (
+                            <div className="space-y-3">
+                              {/* Render direct quizzes */}
+                              {testSeries.quizzes && testSeries.quizzes.map((quiz, index) => (
+                                <div key={quiz._id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors">
+                                  <div className="flex items-center gap-3 flex-1 mb-2 sm:mb-0">
+                                    <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-sm font-medium text-gray-600 flex-shrink-0">
+                                      {index + 1}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <h4 className="font-medium text-gray-800 truncate">{quiz.title}</h4>
+                                      <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600 mt-1">
+                                        <span className="flex items-center gap-1">
+                                          <FaQuestionCircle className="text-xs" />
+                                          {Array.isArray(quiz.questions) ? quiz.questions.length : (quiz.questions?.length || 0)} questions
+                                        </span>
+                                        {quiz.timeLimit && (
+                                          <span className="flex items-center gap-1">
+                                            <FaClock className="text-xs" />
+                                            {quiz.timeLimit} min
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center justify-between sm:justify-end gap-2 ml-11 sm:ml-0">
+                                    <Link
+                                      to={`/test-series/${testSeriesId}/quiz/${quiz._id}`}
+                                      className="text-blue-600 hover:text-blue-800 text-xs sm:text-sm font-medium px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+                                    >
+                                      View Details
+                                    </Link>
+                                    <div className="text-gray-400">
+                                      <FaTimes className="text-sm" />
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+
+                              {/* Render section-based quizzes */}
+                              {testSeries.sections && testSeries.sections.map((section, sectionIndex) => (
+                                section.quizzes && section.quizzes.length > 0 && (
+                                  <div key={section._id} className="space-y-2">
+                                    <h5 className="font-semibold text-gray-700 text-sm sm:text-base uppercase tracking-wide px-2 sm:px-0">
+                                      {section.title}
+                                    </h5>
+                                    {section.quizzes.map((quiz, quizIndex) => (
+                                      <div key={quiz._id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors ml-2 sm:ml-4">
+                                        <div className="flex items-center gap-3 flex-1 mb-2 sm:mb-0">
+                                          <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-sm font-medium text-gray-600 flex-shrink-0">
+                                            {quizIndex + 1}
+                                          </div>
+                                          <div className="flex-1 min-w-0">
+                                            <h4 className="font-medium text-gray-800 truncate">{quiz.title}</h4>
+                                            <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600 mt-1">
+                                              <span className="flex items-center gap-1">
+                                                <FaQuestionCircle className="text-xs" />
+                                                {Array.isArray(quiz.questions) ? quiz.questions.length : (quiz.questions?.length || 0)} questions
+                                              </span>
+                                              {quiz.timeLimit && (
+                                                <span className="flex items-center gap-1">
+                                                  <FaClock className="text-xs" />
+                                                  {quiz.timeLimit} min
+                                                </span>
+                                              )}
+                                            </div>
+                                          </div>
+                                        </div>
+                                        <div className="flex items-center justify-between sm:justify-end gap-2 ml-11 sm:ml-0">
+                                          <Link
+                                            to={`/test-series/${testSeriesId}/quiz/${quiz._id}`}
+                                            className="text-blue-600 hover:text-blue-800 text-xs sm:text-sm font-medium px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+                                          >
+                                            View Details
+                                          </Link>
+                                          <div className="text-gray-400">
+                                            <FaTimes className="text-sm" />
+                                          </div>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="text-center py-8 text-gray-500">
+                              <FaBook className="text-4xl mx-auto mb-4 opacity-50" />
+                              <p>No tests available in this series yet.</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   )}
 
@@ -318,19 +457,33 @@ const TestSeriesDetail = () => {
                     ) : (
                       <div className="space-y-3">
                         {testSeries.price > 0 ? (
-                          <AddToCartButton
-                            itemType="testSeries"
-                            itemId={testSeriesId}
-                            className="w-full"
-                            size="lg"
-                          />
+                          currentUser ? (
+                            <AddToCartButton
+                              itemType="testSeries"
+                              itemId={testSeriesId}
+                              className="w-full"
+                              size="lg"
+                            />
+                          ) : (
+                            <div className="text-center">
+                              <button
+                                onClick={() => navigate(`/login?redirect=${encodeURIComponent(window.location.pathname)}`)}
+                                className="w-full bg-[#00bcd4] text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-[#0097a7] transition-colors text-base sm:text-lg font-medium"
+                              >
+                                Login to Purchase
+                              </button>
+                              <p className="text-sm text-gray-600 mt-2">
+                                Please login to add this test series to your cart
+                              </p>
+                            </div>
+                          )
                         ) : (
                           <button
                             onClick={handleEnroll}
                             disabled={enrolling}
-                            className="w-full bg-[#00bcd4] text-white px-6 py-3 rounded-lg hover:bg-[#0097a7] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-lg font-medium"
+                            className="w-full bg-[#00bcd4] text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-[#0097a7] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-base sm:text-lg font-medium"
                           >
-                            {enrolling ? 'Enrolling...' : 'Enroll Now'}
+                            {enrolling ? 'Enrolling...' : currentUser ? 'Enroll Now' : 'Login to Enroll'}
                           </button>
                         )}
                       </div>

@@ -6,6 +6,7 @@ import { fileURLToPath } from "url";
 import { ApiError } from "./utils/ApiError.js";
 import { ApiResponse } from "./utils/ApiResponse.js";
 import { noCacheMiddleware, staticAssetCacheMiddleware, htmlNoCacheMiddleware } from "./middlewares/cache-control.middleware.js";
+import { optionalVerifyJWT } from "./middlewares/auth.middleware.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -15,8 +16,8 @@ const app = express();
 
 // Configure CORS
 app.use(cors({
-    origin: process.env.CORS_ORIGIN || "http://localhost:5174",
-    credentials: true
+  origin: process.env.CORS_ORIGIN || "http://localhost:5174",
+  credentials: true
 }));
 
 // Parse JSON request body with increased limit for large quizzes
@@ -75,26 +76,30 @@ app.use(htmlNoCacheMiddleware); // Prevent caching for HTML content
 
 // Health check endpoint
 app.get("/api/v1/health", (req, res) => {
-    res.status(200).json(new ApiResponse(200, { status: "ok" }, "Server is running"));
+  res.status(200).json(new ApiResponse(200, { status: "ok" }, "Server is running"));
 });
 
 // Simple test endpoint to debug routing issues
 app.get("/api/v1/test-public", (req, res) => {
-    res.status(200).json(new ApiResponse(200, { message: "Public endpoint working" }, "Success"));
+  res.status(200).json(new ApiResponse(200, { message: "Public endpoint working" }, "Success"));
 });
 
 // Try a different path to avoid whatever global middleware is affecting /api/v1/*
 app.get("/api/public/test", (req, res) => {
-    res.status(200).json(new ApiResponse(200, { message: "Public API test working" }, "Success"));
+  res.status(200).json(new ApiResponse(200, { message: "Public API test working" }, "Success"));
 });
 
 // Public quiz endpoints under /api/public/
 app.get("/api/public/quizzes", getPublishedQuizzes);
 app.get("/api/public/quiz-categories", getQuizCategories);
 app.get("/api/public/quiz-tags", getQuizTags);
+app.get("/api/public/quizzes/:quizId", optionalVerifyJWT, getQuizById);
 
 // Public test series endpoints under /api/public/
 app.get("/api/public/test-series", getPublishedTestSeries);
+app.get("/api/public/test-series/:testSeriesId", optionalVerifyJWT, getTestSeriesById);
+
+
 
 // Public testimonial endpoints under /api/public/
 app.get("/api/public/testimonials", getApprovedTestimonials);
@@ -131,9 +136,9 @@ import promocodeRouter from "./routes/promocode.routes.js";
 import paymentRouter from "./routes/payment.routes.js";
 
 // Import public quiz routes
-import { getPublishedQuizzes, getEnrolledQuizzes, getQuizCategories, getQuizTags } from "./controllers/quiz.controller.js";
+import { getPublishedQuizzes, getEnrolledQuizzes, getQuizCategories, getQuizTags, getQuizById } from "./controllers/quiz.controller.js";
 // Import public test series routes
-import { getPublishedTestSeries, getEnrolledTestSeries } from "./controllers/testSeries.controller.js";
+import { getPublishedTestSeries, getEnrolledTestSeries, getTestSeriesById } from "./controllers/testSeries.controller.js";
 // Import public testimonial routes
 import { getApprovedTestimonials } from "./controllers/testimonial.controller.js";
 
@@ -142,9 +147,9 @@ import { initializeCleanupScheduler } from "./services/quizCleanup.service.js";
 
 // Initialize cleanup scheduler when app starts
 try {
-    initializeCleanupScheduler();
+  initializeCleanupScheduler();
 } catch (error) {
-    console.error("Failed to initialize quiz cleanup scheduler:", error);
+  console.error("Failed to initialize quiz cleanup scheduler:", error);
 }
 
 // Routes declaration
@@ -174,7 +179,7 @@ app.use("/api/v1/rewards", rewardRouter);
 app.get("/api/v1/public/quizzes", getPublishedQuizzes);
 app.get("/api/v1/public/quiz-categories", getQuizCategories);
 app.get("/api/v1/public/quiz-test", (req, res) => {
-    res.json({ success: true, message: "Public quiz test endpoint working", data: [] });
+  res.json({ success: true, message: "Public quiz test endpoint working", data: [] });
 });
 
 app.use("/api/v1/quizzes", quizRouter);
@@ -188,43 +193,43 @@ app.use("/api/v1/payments", paymentRouter);
 
 // Serve frontend for all non-API routes
 app.get("*", (req, res, next) => {
-    // If the request is for an API route, pass it to the next middleware (404 handler for API)
-    if (req.originalUrl.startsWith("/api")) {
-        return next();
-    }
+  // If the request is for an API route, pass it to the next middleware (404 handler for API)
+  if (req.originalUrl.startsWith("/api")) {
+    return next();
+  }
 
-    // Otherwise serve the frontend app with no-cache headers
-    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    res.set('Pragma', 'no-cache');
-    res.set('Expires', '0');
-    res.sendFile(path.join(clientDistPath, "index.html"));
+  // Otherwise serve the frontend app with no-cache headers
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
+  res.sendFile(path.join(clientDistPath, "index.html"));
 });
 
 // 404 handler for API routes
 app.use("/api/*", (req, res) => {
-    return res.status(404).json(
-        new ApiResponse(404, null, `Route ${req.originalUrl} not found`)
-    );
+  return res.status(404).json(
+    new ApiResponse(404, null, `Route ${req.originalUrl} not found`)
+  );
 });
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-    console.error("ERROR:", err);
+  console.error("ERROR:", err);
 
-    if (err instanceof ApiError) {
-        return res.status(err.statusCode).json({
-            success: false,
-            message: err.message,
-            errors: err.errors,
-            stack: process.env.NODE_ENV === "development" ? err.stack : undefined
-        });
-    }
-
-    return res.status(500).json({
-        success: false,
-        message: "Something went wrong",
-        stack: process.env.NODE_ENV === "development" ? err.stack : undefined
+  if (err instanceof ApiError) {
+    return res.status(err.statusCode).json({
+      success: false,
+      message: err.message,
+      errors: err.errors,
+      stack: process.env.NODE_ENV === "development" ? err.stack : undefined
     });
+  }
+
+  return res.status(500).json({
+    success: false,
+    message: "Something went wrong",
+    stack: process.env.NODE_ENV === "development" ? err.stack : undefined
+  });
 });
 
 export { app };

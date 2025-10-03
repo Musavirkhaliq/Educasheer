@@ -59,9 +59,31 @@ export const testSeriesAPI = {
     return await customFetch.get(url);
   },
 
-  // Get test series by ID
+  // Get test series by ID (authenticated users)
   getTestSeriesById: async (testSeriesId) => {
     return await customFetch.get(`/test-series/${testSeriesId}`);
+  },
+
+  // Get test series by ID (public - for logged out users)
+  getPublicTestSeriesById: async (testSeriesId) => {
+    try {
+      const response = await fetch(`/api/public/test-series/${testSeriesId}`, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to fetch test series');
+      }
+      
+      return { data };
+    } catch (error) {
+      console.error('Error fetching public test series:', error);
+      throw error;
+    }
   },
 
   // Get test series by course ID

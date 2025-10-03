@@ -491,7 +491,7 @@ const DesktopNav = () => {
             ) : (
               <div className="flex items-center space-x-3">
                 <motion.button
-                  onClick={() => navigate("/login")}
+                  onClick={() => navigate(`/login?redirect=${encodeURIComponent(location.pathname)}`)}
                   className="btn-glass text-primary neon-border px-5 py-1.5 rounded-full text-sm font-medium hover:text-white hover:bg-gradient-to-r hover:from-primary hover:to-secondary transition-all duration-300"
                   whileHover={{ scale: 1.05 }}
                   transition={{ type: "spring", stiffness: 400, damping: 10 }}

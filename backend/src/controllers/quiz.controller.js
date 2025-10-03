@@ -196,23 +196,47 @@ const getQuizById = asyncHandler(async (req, res) => {
         // Check access permissions
         let hasAccess = false;
         let accessMessage = "";
+        let requiresLogin = false;
+        let requiresPurchase = false;
 
-        // Admin and creator always have access
-        if (req.user.role === "admin" || quiz.creator.toString() === req.user._id.toString()) {
-            hasAccess = true;
-        }
-        // For test series quizzes, check if test series is published and user is enrolled
-        else if (quiz.testSeries) {
-            const testSeries = quiz.testSeries;
-            if (testSeries.isPublished) {
-                if (testSeries.enrolledStudents.includes(req.user._id)) {
-                    hasAccess = true;
+        // If user is not authenticated
+        if (!req.user) {
+            if (quiz.testSeries && quiz.testSeries.isPublished) {
+                if (quiz.testSeries.price > 0) {
+                    accessMessage = "Please login and purchase this test series to access the quiz.";
+                    requiresLogin = true;
+                    requiresPurchase = true;
                 } else {
-                    // User can see quiz details but needs to enroll in test series first
-                    accessMessage = `You need to enroll in the test series "${testSeries.title}" to access this quiz.`;
+                    accessMessage = "Please login and enroll in this free test series to access the quiz.";
+                    requiresLogin = true;
                 }
             } else {
-                accessMessage = "This quiz is not published yet.";
+                accessMessage = "This quiz is not available.";
+            }
+        }
+        // If user is authenticated
+        else {
+            // Admin and creator always have access
+            if (req.user.role === "admin" || quiz.creator.toString() === req.user._id.toString()) {
+                hasAccess = true;
+            }
+            // For test series quizzes, check if test series is published and user is enrolled
+            else if (quiz.testSeries) {
+                const testSeries = quiz.testSeries;
+                if (testSeries.isPublished) {
+                    if (testSeries.enrolledStudents.includes(req.user._id)) {
+                        hasAccess = true;
+                    } else {
+                        if (testSeries.price > 0) {
+                            accessMessage = `You need to purchase the test series "${testSeries.title}" to access this quiz.`;
+                            requiresPurchase = true;
+                        } else {
+                            accessMessage = `You need to enroll in the test series "${testSeries.title}" to access this quiz.`;
+                        }
+                    }
+                } else {
+                    accessMessage = "This quiz is not published yet.";
+                }
             }
         }
 
@@ -228,7 +252,9 @@ const getQuizById = asyncHandler(async (req, res) => {
         // Add access information
         quizObj.hasAccess = hasAccess;
         quizObj.accessMessage = accessMessage;
-        quizObj.requiresEnrollment = !hasAccess && quiz.testSeries && !quiz.testSeries.enrolledStudents.includes(req.user._id);
+        quizObj.requiresLogin = requiresLogin;
+        quizObj.requiresPurchase = requiresPurchase;
+        quizObj.requiresEnrollment = !hasAccess && quiz.testSeries && req.user && !quiz.testSeries.enrolledStudents.includes(req.user._id);
 
         return res.status(200).json(
             new ApiResponse(200, quizObj, "Quiz fetched successfully")

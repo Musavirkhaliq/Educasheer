@@ -126,7 +126,7 @@ const CourseDetail = () => {
   const handleEnroll = async () => {
     if (!currentUser) {
       console.log('CourseDetail - No user logged in, redirecting to login');
-      navigate('/login', { state: { from: `/courses/${courseId}` } });
+      navigate(`/login?redirect=${encodeURIComponent(`/courses/${courseId}`)}`);;
       return;
     }
 

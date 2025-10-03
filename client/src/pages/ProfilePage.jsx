@@ -33,7 +33,7 @@ const ProfilePage = () => {
   // Redirect to login if not authenticated
   if (!isAuthenticated) {
     console.log('Not authenticated, redirecting to login');
-    return <Navigate to="/login" />;
+    return <Navigate to="/login?redirect=%2Fprofile" />;
   }
 
   // Make sure we have user data before rendering the profile
