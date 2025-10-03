@@ -47,6 +47,22 @@ const CourseDetail = () => {
     }
   }, [authLoading, isAuthenticated, currentUser]);
 
+  // Effect to handle body scroll when modal is open
+  useEffect(() => {
+    if (showCourseModal) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'relative';
+    } else {
+      document.body.style.overflow = 'unset';
+      document.body.style.position = 'static';
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+      document.body.style.position = 'static';
+    };
+  }, [showCourseModal]);
+
   // Effect to fetch course details after authentication is checked
   useEffect(() => {
     // Only fetch course details after authentication check is complete
@@ -292,112 +308,112 @@ const CourseDetail = () => {
       {/* Modern Hero Section */}
       <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700">
         <div className="absolute inset-0 bg-black/20"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 items-start lg:items-center">
             {/* Course Info */}
-            <div className="lg:col-span-2">
-              <div className="flex items-center gap-3 mb-4">
-                <span className="bg-white/20 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-medium">
+            <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                <span className="bg-white/20 backdrop-blur-sm text-white px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium">
                   {course.category}
                 </span>
-                <span className="bg-emerald-500/90 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-medium">
+                <span className="bg-emerald-500/90 backdrop-blur-sm text-white px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium">
                   {course.level}
                 </span>
                 {course.courseType === 'offline' && (
-                  <span className="bg-orange-500/90 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-medium">
+                  <span className="bg-orange-500/90 backdrop-blur-sm text-white px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium">
                     Offline
                   </span>
                 )}
               </div>
 
-              <h1 className="text-4xl lg:text-5xl font-bold text-white mb-4 leading-tight">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight">
                 {course.title}
               </h1>
 
-              <p className="text-xl text-blue-100 mb-6 leading-relaxed">
+              <p className="text-base sm:text-lg lg:text-xl text-blue-100 leading-relaxed">
                 {course.description?.substring(0, 200)}...
               </p>
 
               <button
                 onClick={() => setShowCourseModal(true)}
-                className="bg-white/20 backdrop-blur-sm text-white px-6 py-3 rounded-xl hover:bg-white/30 transition-all duration-300 flex items-center gap-2 font-medium border border-white/20 hover:border-white/40"
+                className="bg-white/20 backdrop-blur-sm text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl hover:bg-white/30 transition-all duration-300 flex items-center gap-2 font-medium border border-white/20 hover:border-white/40 text-sm sm:text-base"
               >
-                <HiOutlineBookOpen className="w-5 h-5" />
+                <HiOutlineBookOpen className="w-4 h-4 sm:w-5 sm:h-5" />
                 Know More
               </button>
 
               {/* Instructor Info */}
-              <div className="flex items-center gap-4 bg-white/10 backdrop-blur-sm rounded-xl p-4">
+              <div className="flex items-center gap-3 sm:gap-4 bg-white/10 backdrop-blur-sm rounded-xl p-3 sm:p-4 mt-4 sm:mt-6">
                 <img
                   src={course.creator?.avatar}
                   alt={course.creator?.fullName}
-                  className="w-12 h-12 rounded-full object-cover border-2 border-white/30"
+                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-white/30"
                 />
                 <div>
-                  <p className="text-white font-medium">{course.creator?.fullName}</p>
-                  <p className="text-blue-200 text-sm">Course Instructor</p>
+                  <p className="text-white font-medium text-sm sm:text-base">{course.creator?.fullName}</p>
+                  <p className="text-blue-200 text-xs sm:text-sm">Course Instructor</p>
                 </div>
               </div>
             </div>
 
             {/* Course Stats Card */}
-            <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl">
-              <div className="text-center mb-6">
-                <div className="text-3xl font-bold text-gray-900 mb-1">
+            <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-4 sm:p-6 shadow-xl">
+              <div className="text-center mb-4 sm:mb-6">
+                <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">
                   ₹{course.price.toFixed(2)}
                   {course.originalPrice > course.price && (
-                    <span className="text-lg text-gray-400 line-through ml-2">
+                    <span className="text-base sm:text-lg text-gray-400 line-through ml-2">
                       ₹{course.originalPrice.toFixed(2)}
                     </span>
                   )}
                 </div>
                 {course.price === 0 && (
-                  <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
+                  <span className="bg-green-100 text-green-700 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium">
                     Free Course
                   </span>
                 )}
               </div>
 
               {/* Quick Stats */}
-              <div className="space-y-3 mb-6">
+              <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-gray-600">
-                    <HiOutlineVideoCamera className="w-5 h-5" />
-                    <span className="text-sm">Videos</span>
+                    <HiOutlineVideoCamera className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span className="text-xs sm:text-sm">Videos</span>
                   </div>
-                  <span className="font-medium">{course.videos?.length || 0}</span>
+                  <span className="font-medium text-sm sm:text-base">{course.videos?.length || 0}</span>
                 </div>
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-gray-600">
-                    <HiOutlineClock className="w-5 h-5" />
-                    <span className="text-sm">Duration</span>
+                    <HiOutlineClock className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span className="text-xs sm:text-sm">Duration</span>
                   </div>
-                  <span className="font-medium">{calculateTotalDuration()}</span>
+                  <span className="font-medium text-sm sm:text-base">{calculateTotalDuration()}</span>
                 </div>
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-gray-600">
-                    <HiOutlineUsers className="w-5 h-5" />
-                    <span className="text-sm">Students</span>
+                    <HiOutlineUsers className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span className="text-xs sm:text-sm">Students</span>
                   </div>
-                  <span className="font-medium">{course.enrolledStudents?.length || 0}</span>
+                  <span className="font-medium text-sm sm:text-base">{course.enrolledStudents?.length || 0}</span>
                 </div>
               </div>
 
               {/* Enrollment Button */}
               {isEnrolled() ? (
-                <div className="space-y-3">
-                  <button className="w-full bg-green-500 text-white py-3 px-4 rounded-xl font-medium flex items-center justify-center gap-2 cursor-default">
-                    <HiOutlineCheckCircle className="w-5 h-5" />
+                <div className="space-y-2 sm:space-y-3">
+                  <button className="w-full bg-green-500 text-white py-2 sm:py-3 px-4 rounded-xl font-medium flex items-center justify-center gap-2 cursor-default text-sm sm:text-base">
+                    <HiOutlineCheckCircle className="w-4 h-4 sm:w-5 sm:h-5" />
                     Enrolled
                   </button>
                   {course.courseType !== 'offline' && course.videos?.length > 0 && (
                     <Link
                       to={`/courses/${course._id}/video/${course.videos[0]._id}`}
-                      className="w-full bg-blue-600 text-white py-3 px-4 rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors"
+                      className="w-full bg-blue-600 text-white py-2 sm:py-3 px-4 rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors text-sm sm:text-base"
                     >
-                      <BiPlay className="w-5 h-5" />
+                      <BiPlay className="w-4 h-4 sm:w-5 sm:h-5" />
                       Continue Learning
                     </Link>
                   )}
@@ -428,45 +444,45 @@ const CourseDetail = () => {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
         {!course.isPublished && (
-          <div className="bg-amber-50 border border-amber-200 text-amber-800 px-6 py-4 rounded-2xl mb-12 flex items-center gap-3 shadow-sm">
-            <div className="w-5 h-5 text-amber-500">⚠️</div>
-            <span className="font-medium">This course is not published yet. Only you can see it.</span>
+          <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 sm:px-6 py-3 sm:py-4 rounded-2xl mb-8 sm:mb-12 flex items-center gap-3 shadow-sm">
+            <div className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500 flex-shrink-0">⚠️</div>
+            <span className="font-medium text-sm sm:text-base">This course is not published yet. Only you can see it.</span>
           </div>
         )}
 
-        <div className="space-y-12">
+        <div className="space-y-8 sm:space-y-12">
 
 
           {/* Topics/Tags */}
           {course.tags?.length > 0 && (
-            <div className="bg-gradient-to-br from-indigo-50 via-white to-purple-50 rounded-3xl p-10 shadow-lg border border-gray-100 relative overflow-hidden">
+            <div className="bg-gradient-to-br from-indigo-50 via-white to-purple-50 rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-10 shadow-lg border border-gray-100 relative overflow-hidden">
               {/* Background decoration */}
-              <div className="absolute top-0 left-0 w-40 h-40 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full -translate-y-20 -translate-x-20 opacity-40"></div>
-              <div className="absolute bottom-0 right-0 w-32 h-32 bg-gradient-to-tl from-blue-100 to-indigo-100 rounded-full translate-y-16 translate-x-16 opacity-40"></div>
+              <div className="absolute top-0 left-0 w-32 h-32 sm:w-40 sm:h-40 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full -translate-y-16 sm:-translate-y-20 -translate-x-16 sm:-translate-x-20 opacity-40"></div>
+              <div className="absolute bottom-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-tl from-blue-100 to-indigo-100 rounded-full translate-y-12 sm:translate-y-16 translate-x-12 sm:translate-x-16 opacity-40"></div>
 
               <div className="relative z-10">
-                <div className="flex items-center gap-4 mb-8">
-                  <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-3 rounded-2xl shadow-lg">
-                    <BiBook className="w-6 h-6 text-white" />
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
+                  <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-2 sm:p-3 rounded-xl sm:rounded-2xl shadow-lg">
+                    <BiBook className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-3xl font-bold text-gray-900">Topics Covered</h2>
-                    <p className="text-gray-600 mt-1">Key areas you'll master in this course</p>
+                    <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Topics Covered</h2>
+                    <p className="text-gray-600 mt-1 text-sm sm:text-base">Key areas you'll master in this course</p>
                   </div>
                 </div>
 
-                <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 shadow-sm">
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div className="bg-white/70 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                     {course.tags.map((tag, index) => (
                       <div
                         key={index}
-                        className="group bg-gradient-to-r from-white to-gray-50 border border-gray-200 rounded-xl p-4 hover:from-indigo-50 hover:to-purple-50 hover:border-indigo-200 transition-all duration-300 shadow-sm hover:shadow-md"
+                        className="group bg-gradient-to-r from-white to-gray-50 border border-gray-200 rounded-lg sm:rounded-xl p-3 sm:p-4 hover:from-indigo-50 hover:to-purple-50 hover:border-indigo-200 transition-all duration-300 shadow-sm hover:shadow-md"
                       >
-                        <div className="flex items-center gap-3">
-                          <div className="w-2 h-2 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full group-hover:scale-125 transition-transform"></div>
-                          <span className="text-gray-700 font-medium text-sm group-hover:text-indigo-700 transition-colors">
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <div className="w-2 h-2 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full group-hover:scale-125 transition-transform flex-shrink-0"></div>
+                          <span className="text-gray-700 font-medium text-xs sm:text-sm group-hover:text-indigo-700 transition-colors">
                             {tag}
                           </span>
                         </div>
@@ -829,14 +845,14 @@ const CourseDetail = () => {
             </section>
 
             {/* Test Series Section */}
-            <section className="border-b border-gray-200 pb-16">
-              <div className="flex items-center gap-4 mb-8">
-                <div className="bg-purple-600 p-3 rounded-xl">
-                  <HiOutlineAcademicCap className="w-6 h-6 text-white" />
+            <section className="border-b border-gray-200 pb-8 sm:pb-12 lg:pb-16">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
+                <div className="bg-purple-600 p-2 sm:p-3 rounded-xl">
+                  <HiOutlineAcademicCap className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-3xl font-bold text-gray-900">Test Series</h2>
-                  <p className="text-gray-600">Practice tests and assessments</p>
+                  <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Test Series</h2>
+                  <p className="text-gray-600 text-sm sm:text-base">Practice tests and assessments</p>
                 </div>
               </div>
               <CourseTestSeries
@@ -847,14 +863,14 @@ const CourseDetail = () => {
             </section>
 
             {/* Study Materials Section */}
-            <section className="border-b border-gray-200 pb-16">
-              <div className="flex items-center gap-4 mb-8">
-                <div className="bg-green-600 p-3 rounded-xl">
-                  <HiOutlineBookOpen className="w-6 h-6 text-white" />
+            <section className="border-b border-gray-200 pb-8 sm:pb-12 lg:pb-16">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
+                <div className="bg-green-600 p-2 sm:p-3 rounded-xl">
+                  <HiOutlineBookOpen className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-3xl font-bold text-gray-900">Study Materials</h2>
-                  <p className="text-gray-600">Notes, PDFs, and resources</p>
+                  <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Study Materials</h2>
+                  <p className="text-gray-600 text-sm sm:text-base">Notes, PDFs, and resources</p>
                 </div>
               </div>
               {isEnrolled() ? (
@@ -863,12 +879,12 @@ const CourseDetail = () => {
                   isInstructor={canEdit()}
                 />
               ) : (
-                <div className="bg-gray-50 rounded-xl p-8 text-center">
-                  <div className="bg-gray-200 p-4 rounded-xl mb-4 inline-block">
-                    <BiLock className="w-8 h-8 text-gray-400 mx-auto" />
+                <div className="bg-gray-50 rounded-xl p-6 sm:p-8 text-center">
+                  <div className="bg-gray-200 p-3 sm:p-4 rounded-xl mb-4 inline-block">
+                    <BiLock className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400 mx-auto" />
                   </div>
-                  <h4 className="font-semibold text-gray-800 mb-2">Premium Materials</h4>
-                  <p className="text-gray-600 mb-6">Add to cart and purchase to access study materials</p>
+                  <h4 className="font-semibold text-gray-800 mb-2 text-base sm:text-lg">Premium Materials</h4>
+                  <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">Add to cart and purchase to access study materials</p>
                   <AddToCartButton
                     itemType="course"
                     itemId={course._id}
@@ -902,11 +918,26 @@ const CourseDetail = () => {
       {/* Course Details Modal */}
       {showCourseModal && (
         <div 
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-end sm:items-center justify-center modal-backdrop"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center mobile-modal-backdrop"
+          style={{ 
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 9999,
+            WebkitOverflowScrolling: 'touch',
+            overflowY: 'auto'
+          }}
           onClick={() => setShowCourseModal(false)}
         >
           <div 
-            className="bg-white rounded-t-3xl sm:rounded-3xl w-full sm:max-w-4xl sm:w-full max-h-[95vh] sm:max-h-[90vh] overflow-hidden shadow-2xl flex flex-col sm:m-4 touch-manipulation"
+            className="bg-white rounded-t-3xl sm:rounded-3xl w-full sm:max-w-4xl sm:w-full max-h-[95vh] sm:max-h-[90vh] overflow-hidden shadow-2xl flex flex-col sm:m-4 touch-manipulation mobile-modal-content"
+            style={{
+              WebkitOverflowScrolling: 'touch',
+              maxWidth: window.innerWidth < 640 ? '100vw' : undefined,
+              maxHeight: window.innerWidth < 640 ? '95vh' : '90vh'
+            }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Mobile drag indicator */}

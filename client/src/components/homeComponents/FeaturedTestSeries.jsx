@@ -255,11 +255,14 @@ const TestSeriesModal = ({ testSeries, isOpen, onClose }) => {
       document.addEventListener('keydown', handleEscape);
       // Prevent body scroll when modal is open
       document.body.style.overflow = 'hidden';
+      // Ensure modal is above everything
+      document.body.style.position = 'relative';
     }
 
     return () => {
       document.removeEventListener('keydown', handleEscape);
       document.body.style.overflow = 'unset';
+      document.body.style.position = 'static';
     };
   }, [isOpen, onClose]);
 
@@ -278,12 +281,12 @@ const TestSeriesModal = ({ testSeries, isOpen, onClose }) => {
   const handleTouchEnd = () => {
     if (!isDragging || window.innerWidth >= 640) return;
     const deltaY = currentY - startY;
-    
+
     // If swiped down more than 100px, close modal
     if (deltaY > 100) {
       onClose();
     }
-    
+
     setIsDragging(false);
     setStartY(0);
     setCurrentY(0);
@@ -297,34 +300,47 @@ const TestSeriesModal = ({ testSeries, isOpen, onClose }) => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-end sm:items-center justify-center modal-backdrop"
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center mobile-modal-backdrop"
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 9999,
+          WebkitOverflowScrolling: 'touch',
+          overflowY: 'auto'
+        }}
         onClick={onClose}
       >
         <motion.div
-          initial={{ 
-            scale: 0.95, 
+          initial={{
+            scale: 0.95,
             opacity: 0,
             y: window.innerWidth < 640 ? '100%' : 0
           }}
-          animate={{ 
-            scale: 1, 
+          animate={{
+            scale: 1,
             opacity: 1,
             y: 0
           }}
-          exit={{ 
-            scale: 0.95, 
+          exit={{
+            scale: 0.95,
             opacity: 0,
             y: window.innerWidth < 640 ? '100%' : 0
           }}
           transition={{ type: "spring", duration: 0.3, damping: 25, stiffness: 300 }}
-          className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-2xl sm:w-full max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col sm:m-4 touch-manipulation"
+          className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-2xl sm:w-full max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col sm:m-4 touch-manipulation mobile-modal-content"
           onClick={(e) => e.stopPropagation()}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
           style={{
-            transform: isDragging && window.innerWidth < 640 
-              ? `translateY(${Math.max(0, currentY - startY)}px)` 
+            WebkitOverflowScrolling: 'touch',
+            maxWidth: window.innerWidth < 640 ? '100vw' : undefined,
+            maxHeight: window.innerWidth < 640 ? '95vh' : '90vh',
+            transform: isDragging && window.innerWidth < 640
+              ? `translateY(${Math.max(0, currentY - startY)}px)`
               : 'translateY(0)',
             transition: isDragging ? 'none' : 'transform 0.3s ease'
           }}
@@ -333,7 +349,7 @@ const TestSeriesModal = ({ testSeries, isOpen, onClose }) => {
           <div className="relative p-4 sm:p-6 border-b border-gray-200 flex-shrink-0">
             {/* Mobile drag indicator */}
             <div className="sm:hidden w-12 h-1 bg-gray-400 rounded-full mx-auto mb-4 cursor-grab active:cursor-grabbing"></div>
-            
+
             <button
               onClick={onClose}
               className="absolute top-2 sm:top-4 right-2 sm:right-4 p-2 hover:bg-gray-100 rounded-full transition-colors z-10"
