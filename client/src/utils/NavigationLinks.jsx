@@ -14,7 +14,7 @@ import {
   Armchair,
   QrCode,
 } from "lucide-react";
-import { FaHome, FaLayerGroup, FaMapMarkerAlt } from "react-icons/fa";
+import { FaHome, FaLayerGroup, FaMapMarkerAlt, FaShoppingBag } from "react-icons/fa";
 import { MdNotifications } from "react-icons/md";
 
 const navLinks = [
@@ -67,6 +67,11 @@ const navLinks = [
     name: "My Bookings",
     address: "/my-bookings",
     icon: <Calendar />,
+  },
+  {
+    name: "My Orders",
+    address: "/orders",
+    icon: <FaShoppingBag />,
   },
   {
     name: "Categories",

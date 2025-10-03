@@ -6,6 +6,7 @@ import ProfileTabs from '../components/profile/ProfileTabs';
 import AccountSettings from '../components/profile/AccountSettings';
 import WatchHistory from '../components/profile/WatchHistory';
 import UserBlogs from '../components/profile/UserBlogs';
+import OrdersProfile from '../components/profile/OrdersProfile';
 import GamificationProfile from '../components/gamification/GamificationProfile';
 import ExamPerformance from '../components/profile/ExamPerformance';
 
@@ -56,6 +57,7 @@ const ProfilePage = () => {
 
           <div className="p-6">
             {activeTab === 'account' && <AccountSettings user={currentUser} />}
+            {activeTab === 'orders' && <OrdersProfile />}
             {activeTab === 'exams' && <ExamPerformance />}
             {activeTab === 'history' && <WatchHistory />}
             {activeTab === 'blogs' && <UserBlogs />}

@@ -7,6 +7,7 @@ import { Course } from "../models/course.model.js";
 import BookingStatusService from "../services/bookingStatusService.js";
 import scheduledTasksService from "../services/scheduledTasks.js";
 import { getCurrentISTTimeString, formatISTDate, getCurrentISTDate } from "../utils/timezone.js";
+import { Order } from "../models/order.model.js";
 
 // Get all users (admin only)
 const getAllUsers = asyncHandler(async (req, res) => {
@@ -288,5 +289,136 @@ export {
     createAdminUser,
     getSystemStatus,
     updateBookingStatus,
-    controlScheduledTasks
+    controlScheduledTasks,
+    getAllOrders,
+    getOrderStats,
+    getOrderDetails
 };
+
+// Get all orders (admin only)
+const getAllOrders = asyncHandler(async (req, res) => {
+    try {
+        // Check if user is admin
+        if (req.user.role !== "admin") {
+            throw new ApiError(403, "Unauthorized access");
+        }
+
+        const { page = 1, limit = 20, status, dateRange } = req.query;
+        const filter = {};
+
+        // Filter by status if provided
+        if (status && status !== 'all') {
+            filter.paymentStatus = status;
+        }
+
+        // Filter by date range if provided
+        if (dateRange && dateRange !== 'all') {
+            const now = new Date();
+            let startDate;
+
+            switch (dateRange) {
+                case 'today':
+                    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                    break;
+                case 'week':
+                    startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                    break;
+                case 'month':
+                    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                    break;
+                default:
+                    startDate = null;
+            }
+
+            if (startDate) {
+                filter.createdAt = { $gte: startDate };
+            }
+        }
+
+        const orders = await Order.find(filter)
+            .populate('user', 'fullName email avatar')
+            .sort({ createdAt: -1 })
+            .limit(limit * 1)
+            .skip((page - 1) * limit);
+
+        const total = await Order.countDocuments(filter);
+
+        return res.status(200).json(
+            new ApiResponse(200, {
+                orders,
+                totalPages: Math.ceil(total / limit),
+                currentPage: page,
+                total
+            }, "Orders retrieved successfully")
+        );
+    } catch (error) {
+        if (error instanceof ApiError) {
+            throw error;
+        }
+        throw new ApiError(500, "Something went wrong while retrieving orders");
+    }
+});
+
+// Get order statistics (admin only)
+const getOrderStats = asyncHandler(async (req, res) => {
+    try {
+        // Check if user is admin
+        if (req.user.role !== "admin") {
+            throw new ApiError(403, "Unauthorized access");
+        }
+
+        const totalOrders = await Order.countDocuments();
+        const completedOrders = await Order.countDocuments({ paymentStatus: 'completed' });
+        const pendingOrders = await Order.countDocuments({ paymentStatus: 'pending' });
+
+        // Calculate total revenue from completed orders
+        const revenueResult = await Order.aggregate([
+            { $match: { paymentStatus: 'completed' } },
+            { $group: { _id: null, totalRevenue: { $sum: '$totalAmount' } } }
+        ]);
+
+        const totalRevenue = revenueResult.length > 0 ? revenueResult[0].totalRevenue : 0;
+
+        return res.status(200).json(
+            new ApiResponse(200, {
+                totalOrders,
+                totalRevenue,
+                completedOrders,
+                pendingOrders
+            }, "Order statistics retrieved successfully")
+        );
+    } catch (error) {
+        if (error instanceof ApiError) {
+            throw error;
+        }
+        throw new ApiError(500, "Something went wrong while retrieving order statistics");
+    }
+});
+
+// Get order details (admin only)
+const getOrderDetails = asyncHandler(async (req, res) => {
+    try {
+        // Check if user is admin
+        if (req.user.role !== "admin") {
+            throw new ApiError(403, "Unauthorized access");
+        }
+
+        const { orderId } = req.params;
+
+        const order = await Order.findOne({ orderId })
+            .populate('user', 'fullName email avatar');
+
+        if (!order) {
+            throw new ApiError(404, "Order not found");
+        }
+
+        return res.status(200).json(
+            new ApiResponse(200, order, "Order details retrieved successfully")
+        );
+    } catch (error) {
+        if (error instanceof ApiError) {
+            throw error;
+        }
+        throw new ApiError(500, "Something went wrong while retrieving order details");
+    }
+});

@@ -1,9 +1,10 @@
 import React from 'react';
-import { FaUser, FaHistory, FaEdit, FaTrophy, FaGraduationCap } from 'react-icons/fa';
+import { FaUser, FaHistory, FaEdit, FaTrophy, FaGraduationCap, FaShoppingBag } from 'react-icons/fa';
 
 const ProfileTabs = ({ activeTab, setActiveTab }) => {
   const tabs = [
     { id: 'account', label: 'Account Settings', icon: FaUser },
+    { id: 'orders', label: 'My Orders', icon: FaShoppingBag },
     { id: 'exams', label: 'Exam Performance', icon: FaGraduationCap },
     { id: 'history', label: 'Watch History', icon: FaHistory },
     { id: 'blogs', label: 'My Blogs', icon: FaEdit },

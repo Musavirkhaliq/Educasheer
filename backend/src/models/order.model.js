@@ -70,6 +70,10 @@ const orderSchema = new Schema({
         enum: ["razorpay", "stripe", "paypal", "free"],
         required: true
     },
+    paymentGatewayOrderId: {
+        type: String,
+        required: false
+    },
     paymentId: {
         type: String,
         required: false

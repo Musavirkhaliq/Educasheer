@@ -25,7 +25,12 @@ module.exports = {
         EMAIL_USER: "8b7bc7001@smtp-brevo.com",
         EMAIL_PASS: "7ZYwMhrzsjybBWgK",
         EMAIL_FROM: "sukoonsphere@gmail.com",
-        CLIENT_URL: "https://educasheer.in"
+        CLIENT_URL: "https://educasheer.in",
+        RAZORPAY_KEY_ID: "rzp_live_ROqcIbmwaas9Qe",
+        RAZORPAY_KEY_SECRET: "F24rO4KbIlvtygUsBnpiD3KK",
+        STRIPE_SECRET_KEY: "your_stripe_secret_key_here",
+        STRIPE_PUBLISHABLE_KEY: "your_stripe_publishable_key_here",
+        STRIPE_WEBHOOK_SECRET: "your_stripe_webhook_secret_here"
       },
       env_production: {
         NODE_ENV: "production",
@@ -40,7 +45,18 @@ module.exports = {
         CLOUDINARY_CLOUD_NAME: "SukoonSphere",
         CLOUDINARY_API_KEY: "886621559396257",
         CLOUDINARY_API_SERCRET: "neo6vM5-zlvKwTZy7vWdGYhRfdU",
-        YOUTUBE_API_KEY: "AIzaSyCVTgtSlfY8E6Es2m8z79VBl1NfamIJ_ZQ"
+        YOUTUBE_API_KEY: "AIzaSyCVTgtSlfY8E6Es2m8z79VBl1NfamIJ_ZQ",
+        EMAIL_HOST: "smtp-relay.brevo.com",
+        EMAIL_PORT: 587,
+        EMAIL_USER: "8b7bc7001@smtp-brevo.com",
+        EMAIL_PASS: "7ZYwMhrzsjybBWgK",
+        EMAIL_FROM: "sukoonsphere@gmail.com",
+        CLIENT_URL: "https://educasheer.in",
+        RAZORPAY_KEY_ID: "rzp_live_ROqcIbmwaas9Qe",
+        RAZORPAY_KEY_SECRET: "F24rO4KbIlvtygUsBnpiD3KK",
+        STRIPE_SECRET_KEY: "your_stripe_secret_key_here",
+        STRIPE_PUBLISHABLE_KEY: "your_stripe_publishable_key_here",
+        STRIPE_WEBHOOK_SECRET: "your_stripe_webhook_secret_here"
       }
     }
   ]

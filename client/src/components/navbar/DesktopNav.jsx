@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { FaAngleDown, FaUserCircle, FaGraduationCap, FaVideo, FaBook, FaHeadset, FaEdit, FaLayerGroup, FaMapMarkerAlt, FaTrophy } from "react-icons/fa";
+import { FaAngleDown, FaUserCircle, FaGraduationCap, FaVideo, FaBook, FaHeadset, FaEdit, FaLayerGroup, FaMapMarkerAlt, FaTrophy, FaShoppingBag } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
 import { motion } from "framer-motion";
 import CartIcon from "../cart/CartIcon";
@@ -385,6 +385,18 @@ const DesktopNav = () => {
                           <FaGraduationCap className="mr-3 text-primary" />
                         </motion.div>
                         My Courses
+                      </Link>
+                      <Link
+                        to="/orders"
+                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-white/30 hover:text-primary transition-all duration-200"
+                      >
+                        <motion.div
+                          whileHover={{ rotate: 15 }}
+                          transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                        >
+                          <FaShoppingBag className="mr-3 text-primary" />
+                        </motion.div>
+                        My Orders
                       </Link>
                       <Link
                         to="/gamification"

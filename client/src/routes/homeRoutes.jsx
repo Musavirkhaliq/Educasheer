@@ -53,6 +53,7 @@ import AdminBookingManagementPage from '../pages/AdminBookingManagementPage';
 import CartPage from '../pages/CartPage';
 import CheckoutPage from '../pages/CheckoutPage';
 import PaymentSuccessPage from '../pages/PaymentSuccessPage';
+import OrdersPage from '../pages/OrdersPage';
 import PromoCodeManagement from '../components/admin/PromoCodeManagement';
 
 export const homeRoutes = [
@@ -581,6 +582,14 @@ export const homeRoutes = [
     element: (
       <Suspense fallback={<h1>Loading</h1>}>
         <PaymentSuccessPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: "orders",
+    element: (
+      <Suspense fallback={<h1>Loading</h1>}>
+        <OrdersPage />
       </Suspense>
     ),
   },

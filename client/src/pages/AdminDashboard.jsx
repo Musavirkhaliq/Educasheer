@@ -13,6 +13,7 @@ import SeatManagement from "../components/admin/SeatManagement";
 import QuizCleanupManager from "../components/admin/QuizCleanupManager";
 import TestSectionDebug from "../components/admin/TestSectionDebug";
 import PromoCodeManagement from "../components/admin/PromoCodeManagement";
+import OrderManagement from "../components/admin/OrderManagement";
 
 const AdminDashboard = () => {
   const { currentUser, isAuthenticated, logout } = useAuth();
@@ -342,6 +343,16 @@ const AdminDashboard = () => {
         >
           Promo Codes
         </button>
+        <button
+          className={`py-2 px-4 font-medium ${
+            activeTab === "orders"
+              ? "text-[#00bcd4] border-b-2 border-[#00bcd4]"
+              : "text-gray-500 hover:text-gray-700"
+          }`}
+          onClick={() => setActiveTab("orders")}
+        >
+          Orders
+        </button>
       </div>
 
       {/* Content */}
@@ -610,6 +621,11 @@ const AdminDashboard = () => {
           {/* Promo Codes Tab */}
           {activeTab === "promocodes" && (
             <PromoCodeManagement />
+          )}
+
+          {/* Orders Management Tab */}
+          {activeTab === "orders" && (
+            <OrderManagement />
           )}
         </>
       )}

@@ -6,7 +6,10 @@ import {
     createAdminUser,
     getSystemStatus,
     updateBookingStatus,
-    controlScheduledTasks
+    controlScheduledTasks,
+    getAllOrders,
+    getOrderStats,
+    getOrderDetails
 } from "../controllers/admin.controller.js";
 import {
     getCleanupStatistics,
@@ -34,5 +37,10 @@ router.route("/quiz-cleanup/stats").get(verifyJWT, getCleanupStatistics);
 router.route("/quiz-cleanup/expired").post(verifyJWT, cleanupExpired);
 router.route("/quiz-cleanup/old").post(verifyJWT, cleanupOldAttempts);
 router.route("/quiz-cleanup/full").post(verifyJWT, performFullCleanup);
+
+// Order management routes
+router.route("/orders").get(verifyJWT, getAllOrders);
+router.route("/orders/stats").get(verifyJWT, getOrderStats);
+router.route("/orders/:orderId").get(verifyJWT, getOrderDetails);
 
 export default router;

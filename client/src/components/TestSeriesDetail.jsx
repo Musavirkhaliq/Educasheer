@@ -283,7 +283,7 @@ const TestSeriesDetail = () => {
                                     onClick={() => navigate(`/login?redirect=${encodeURIComponent(window.location.pathname)}`)}
                                     className="bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base w-full sm:w-auto"
                                   >
-                                    Login to Purchase
+                                    Login to Enroll
                                   </button>
                                 )
                               ) : (
@@ -472,7 +472,7 @@ const TestSeriesDetail = () => {
                                 onClick={() => navigate(`/login?redirect=${encodeURIComponent(window.location.pathname)}`)}
                                 className="w-full bg-[#00bcd4] text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-[#0097a7] transition-colors text-base sm:text-lg font-medium"
                               >
-                                Login to Purchase
+                                Login to Enroll
                               </button>
                               <p className="text-sm text-gray-600 mt-2">
                                 Please login to add this test series to your cart

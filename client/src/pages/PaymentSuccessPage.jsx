@@ -26,9 +26,32 @@ const PaymentSuccessPage = () => {
         navigate('/dashboard');
     };
 
-    const handleDownloadReceipt = () => {
-        // In a real app, this would generate and download a PDF receipt
-        alert('Receipt download functionality would be implemented here');
+    const handleDownloadReceipt = async () => {
+        try {
+            const token = localStorage.getItem('accessToken');
+            const response = await fetch(`/api/v1/payments/orders/${orderId}/receipt`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `receipt-${orderId}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            } else {
+                alert('Failed to download receipt. Please try again.');
+            }
+        } catch (error) {
+            console.error('Error downloading receipt:', error);
+            alert('Failed to download receipt. Please try again.');
+        }
     };
 
     if (!orderId) {
@@ -82,6 +105,13 @@ const PaymentSuccessPage = () => {
                         >
                             <Download size={16} className="sm:w-5 sm:h-5" />
                             Download Receipt
+                        </button>
+
+                        <button
+                            onClick={() => navigate('/orders')}
+                            className="w-full bg-white border border-gray-300 text-gray-700 py-2 sm:py-3 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 font-medium text-sm sm:text-base"
+                        >
+                            View All Orders
                         </button>
                     </div>
 

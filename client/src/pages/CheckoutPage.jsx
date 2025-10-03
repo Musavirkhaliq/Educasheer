@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
-import { CreditCard, Shield, ArrowLeft } from 'lucide-react';
+import { Shield, ArrowLeft } from 'lucide-react';
+import PaymentGateway from '../components/PaymentGateway';
 import axios from 'axios';
 
 const CheckoutPage = () => {
@@ -22,7 +23,9 @@ const CheckoutPage = () => {
         }
     }, [items, navigate]);
 
-    const handlePayment = async () => {
+    const [currentOrderId, setCurrentOrderId] = useState(null);
+
+    const handleFreeOrder = async () => {
         setLoading(true);
         setError('');
 
@@ -50,44 +53,26 @@ const CheckoutPage = () => {
                     });
                     return;
                 }
-
-                // For paid orders, you would integrate with payment gateway here
-                // For now, we'll simulate a successful payment
-                
-                // Simulate payment processing
-                setTimeout(async () => {
-                    try {
-                        // Process payment success
-                        await axios.post('/api/v1/payments/success', {
-                            orderId,
-                            paymentId: `pay_${Date.now()}`,
-                            paymentDetails: {
-                                method: 'demo',
-                                amount: orderAmount,
-                                currency: 'INR'
-                            }
-                        }, {
-                            headers: { Authorization: `Bearer ${token}` }
-                        });
-
-                        // Redirect to success page
-                        navigate('/payment-success', { 
-                            state: { 
-                                orderId,
-                                amount: orderAmount,
-                                items: items.length
-                            }
-                        });
-                    } catch (error) {
-                        setError('Payment processing failed. Please try again.');
-                        setLoading(false);
-                    }
-                }, 2000);
             }
         } catch (error) {
-            setError(error.response?.data?.message || 'Failed to process payment');
+            setError(error.response?.data?.message || 'Failed to process order');
+        } finally {
             setLoading(false);
         }
+    };
+
+    const handlePaymentSuccess = (data) => {
+        navigate('/payment-success', { 
+            state: { 
+                orderId: data.orderId,
+                amount: finalAmount,
+                items: items.length
+            }
+        });
+    };
+
+    const handlePaymentError = (error) => {
+        setError(error);
     };
 
     const getItemTypeLabel = (itemType) => {
@@ -176,52 +161,38 @@ const CheckoutPage = () => {
                                 <p className="text-gray-600 mb-6">
                                     Your order total is ₹0. Click below to complete your order.
                                 </p>
+                                
+                                {error && (
+                                    <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                                        <p className="text-red-800">{error}</p>
+                                    </div>
+                                )}
+
+                                <button
+                                    onClick={handleFreeOrder}
+                                    disabled={loading}
+                                    className="w-full bg-blue-600 text-white py-2 sm:py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium text-sm sm:text-base"
+                                >
+                                    {loading ? (
+                                        <div className="flex items-center justify-center gap-2">
+                                            <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                            <span className="text-sm sm:text-base">Processing...</span>
+                                        </div>
+                                    ) : (
+                                        'Complete Order'
+                                    )}
+                                </button>
                             </div>
                         ) : (
-                            <div className="space-y-4 mb-6">
-                                <div className="p-4 border border-gray-200 rounded-lg">
-                                    <div className="flex items-center gap-3 mb-2">
-                                        <CreditCard className="w-5 h-5 text-gray-600" />
-                                        <span className="font-medium">Demo Payment</span>
-                                    </div>
-                                    <p className="text-sm text-gray-600">
-                                        This is a demo payment system. In production, this would integrate with 
-                                        payment gateways like Razorpay, Stripe, or PayPal.
-                                    </p>
-                                </div>
-                                
-                                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                                    <div className="flex items-center gap-2 text-blue-800 mb-1">
-                                        <Shield size={16} />
-                                        <span className="font-medium">Secure Payment</span>
-                                    </div>
-                                    <p className="text-sm text-blue-700">
-                                        Your payment information is encrypted and secure.
-                                    </p>
-                                </div>
-                            </div>
+                            <PaymentGateway
+                                orderId={currentOrderId}
+                                amount={finalAmount}
+                                onSuccess={handlePaymentSuccess}
+                                onError={handlePaymentError}
+                                preferredGateway="razorpay"
+                                promoCode={promoCode}
+                            />
                         )}
-
-                        {error && (
-                            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                                <p className="text-red-800">{error}</p>
-                            </div>
-                        )}
-
-                        <button
-                            onClick={handlePayment}
-                            disabled={loading}
-                            className="w-full bg-blue-600 text-white py-2 sm:py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium text-sm sm:text-base"
-                        >
-                            {loading ? (
-                                <div className="flex items-center justify-center gap-2">
-                                    <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                    <span className="text-sm sm:text-base">Processing...</span>
-                                </div>
-                            ) : (
-                                `${finalAmount === 0 ? 'Complete Order' : `Pay ₹${finalAmount}`}`
-                            )}
-                        </button>
 
                         <p className="text-xs text-gray-500 text-center mt-4 px-2">
                             By completing this purchase, you agree to our Terms of Service and Privacy Policy.
