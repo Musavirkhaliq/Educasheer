@@ -20,6 +20,7 @@ import {
 import { quizAPI } from '../services/quizAPI';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
+import QuizLeaderboard from './QuizLeaderboard';
 
 const QuizDetails = () => {
   const { courseId, testSeriesId, quizId } = useParams();
@@ -27,15 +28,12 @@ const QuizDetails = () => {
   const { currentUser } = useAuth();
   const [quiz, setQuiz] = useState(null);
   const [userAttempts, setUserAttempts] = useState([]);
-  const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [leaderboardLoading, setLeaderboardLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
     fetchQuizDetails();
     fetchUserAttempts();
-    fetchLeaderboard();
   }, [quizId]);
 
   const fetchQuizDetails = async () => {
@@ -69,22 +67,7 @@ const QuizDetails = () => {
     }
   };
 
-  const fetchLeaderboard = async () => {
-    try {
-      setLeaderboardLoading(true);
-      // Use public endpoint for logged out users, authenticated endpoint for logged in users
-      const response = currentUser 
-        ? await quizAPI.getQuizLeaderboard(quizId)
-        : await quizAPI.getPublicQuizLeaderboard(quizId);
-      setLeaderboard(response.data.data);
-    } catch (err) {
-      console.error('Error fetching leaderboard:', err);
-      // Don't show error for leaderboard as it's not critical
-      setLeaderboard([]);
-    } finally {
-      setLeaderboardLoading(false);
-    }
-  };
+
 
   const handleStartQuiz = () => {
     if (courseId) {
@@ -460,120 +443,10 @@ const QuizDetails = () => {
               </div>
 
               {/* Leaderboard Section */}
-              <div className="mb-8">
-                <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                  <FaTrophy className="text-yellow-500" />
-                  Top Performers
-                </h3>
-
-                {leaderboardLoading ? (
-                  <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
-                    <div className="animate-pulse space-y-3">
-                      {[...Array(5)].map((_, i) => (
-                        <div key={i} className="flex items-center gap-3">
-                          <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
-                          <div className="flex-1">
-                            <div className="h-4 bg-gray-200 rounded w-1/3 mb-1"></div>
-                            <div className="h-3 bg-gray-200 rounded w-1/4"></div>
-                          </div>
-                          <div className="h-4 bg-gray-200 rounded w-16"></div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : leaderboard.length === 0 ? (
-                  <div className="bg-gray-50 rounded-xl p-6 border border-gray-200 text-center">
-                    <FaTrophy className="text-gray-300 text-4xl mx-auto mb-3" />
-                    <p className="text-gray-600">No completed attempts yet</p>
-                    <p className="text-gray-500 text-sm">Be the first to complete this {quiz.quizType}!</p>
-                  </div>
-                ) : (
-                  <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl p-4 sm:p-6 border border-yellow-200">
-                    <div className="space-y-2 sm:space-y-3">
-                      {leaderboard.map((entry, index) => {
-                        const getRankIcon = (rank) => {
-                          if (rank === 1) return <FaCrown className="text-yellow-500 text-sm sm:text-base" />;
-                          if (rank === 2) return <FaMedal className="text-gray-400 text-sm sm:text-base" />;
-                          if (rank === 3) return <FaAward className="text-amber-600 text-sm sm:text-base" />;
-                          return <span className="text-gray-600 font-bold text-sm sm:text-base">{rank}</span>;
-                        };
-
-                        const getRankBg = (rank) => {
-                          if (rank === 1) return 'bg-gradient-to-r from-yellow-400 to-yellow-500';
-                          if (rank === 2) return 'bg-gradient-to-r from-gray-300 to-gray-400';
-                          if (rank === 3) return 'bg-gradient-to-r from-amber-400 to-amber-500';
-                          return 'bg-gradient-to-r from-blue-400 to-blue-500';
-                        };
-
-                        const isCurrentUser = entry.user._id === currentUser?._id;
-
-                        const getSpecialStyling = (rank) => {
-                          if (isCurrentUser) {
-                            return 'bg-gradient-to-r from-[#00bcd4]/10 to-[#0097a7]/10 border-2 border-[#00bcd4] shadow-lg ring-2 ring-[#00bcd4]/20';
-                          }
-                          if (rank === 1) return 'bg-gradient-to-r from-yellow-100 to-yellow-50 border-2 border-yellow-300 shadow-lg';
-                          if (rank === 2) return 'bg-gradient-to-r from-gray-100 to-gray-50 border-2 border-gray-300 shadow-md';
-                          if (rank === 3) return 'bg-gradient-to-r from-amber-100 to-amber-50 border-2 border-amber-300 shadow-md';
-                          return 'bg-white/70 border border-gray-200';
-                        };
-
-                        return (
-                          <div
-                            key={entry._id}
-                            className={`flex items-center gap-2 sm:gap-4 p-3 sm:p-4 rounded-lg ${getSpecialStyling(entry.rank)} transition-all duration-200 hover:shadow-lg hover:scale-[1.02]`}
-                          >
-                            {/* Rank */}
-                            <div className={`w-8 h-8 sm:w-10 sm:h-10 ${getRankBg(entry.rank)} rounded-full flex items-center justify-center text-white font-bold shadow-lg flex-shrink-0`}>
-                              {entry.rank <= 3 ? getRankIcon(entry.rank) : entry.rank}
-                            </div>
-
-                            {/* User Info */}
-                            <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                              <div className={`w-8 h-8 sm:w-10 sm:h-10 ${isCurrentUser ? 'bg-[#00bcd4] ring-2 ring-white' : 'bg-[#00bcd4]'} rounded-full flex items-center justify-center text-white font-medium text-sm sm:text-base flex-shrink-0`}>
-                                {entry.user.fullName?.charAt(0) || entry.user.username?.charAt(0) || 'U'}
-                              </div>
-                              <div className="min-w-0 flex-1">
-                                <div className={`font-semibold truncate text-sm sm:text-base ${isCurrentUser ? 'text-[#00bcd4]' : 'text-gray-800'}`}>
-                                  {entry.user.fullName || entry.user.username}
-                                  {isCurrentUser && <span className="ml-1 text-xs">(You)</span>}
-                                </div>
-                                <div className="text-xs sm:text-sm text-gray-600">
-                                  {entry.totalAttempts} {entry.totalAttempts === 1 ? 'attempt' : 'attempts'}
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Score */}
-                            <div className="text-right flex-shrink-0">
-                              <div className="text-base sm:text-lg font-bold text-gray-800">
-                                {entry.bestPercentage.toFixed(1)}%
-                              </div>
-                              <div className="text-xs sm:text-sm text-gray-600">
-                                {entry.bestScore} pts
-                              </div>
-                            </div>
-
-                            {/* Trophy for top 3 */}
-                            {entry.rank <= 3 && (
-                              <div className="ml-1 sm:ml-2 flex-shrink-0">
-                                {entry.rank === 1 && <FaTrophy className="text-yellow-500 text-lg sm:text-xl animate-pulse" />}
-                                {entry.rank === 2 && <FaMedal className="text-gray-400 text-lg sm:text-xl" />}
-                                {entry.rank === 3 && <FaAward className="text-amber-600 text-lg sm:text-xl" />}
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    {leaderboard.length === 10 && (
-                      <div className="mt-4 text-center text-sm text-gray-600">
-                        Showing top 10 performers
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
+              <QuizLeaderboard 
+                quizId={quizId}
+                className="mb-8"
+              />
 
               {/* Access Control and Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center">

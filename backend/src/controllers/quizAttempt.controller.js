@@ -604,6 +604,7 @@ const getUserQuizAttempts = asyncHandler(async (req, res) => {
 const getQuizLeaderboard = asyncHandler(async (req, res) => {
     try {
         const { quizId } = req.params;
+        const { limit = 5, page = 1 } = req.query; // Default to 5 items per page
 
         // Find the quiz
         const quiz = await Quiz.findById(quizId);
@@ -655,17 +656,46 @@ const getQuizLeaderboard = asyncHandler(async (req, res) => {
                 }
             },
             { $sort: { bestPercentage: -1, bestScore: -1, completedAt: 1 } },
-            { $limit: 10 }
+            { $skip: (parseInt(page) - 1) * parseInt(limit) },
+            { $limit: parseInt(limit) }
         ]);
 
-        // Add ranking
+        // Get total count for pagination
+        const totalCountPipeline = [
+            {
+                $match: {
+                    quiz: new mongoose.Types.ObjectId(quizId),
+                    isCompleted: true
+                }
+            },
+            {
+                $group: {
+                    _id: "$user"
+                }
+            },
+            { $count: "total" }
+        ];
+        const totalCountResult = await QuizAttempt.aggregate(totalCountPipeline);
+        const totalEntries = totalCountResult.length > 0 ? totalCountResult[0].total : 0;
+
+        // Add ranking based on position in sorted results
+        const skip = (parseInt(page) - 1) * parseInt(limit);
         const rankedLeaderboard = leaderboard.map((entry, index) => ({
             ...entry,
-            rank: index + 1
+            rank: skip + index + 1
         }));
 
         return res.status(200).json(
-            new ApiResponse(200, rankedLeaderboard, "Quiz leaderboard fetched successfully")
+            new ApiResponse(200, {
+                leaderboard: rankedLeaderboard,
+                pagination: {
+                    currentPage: parseInt(page),
+                    totalPages: Math.ceil(totalEntries / parseInt(limit)),
+                    totalEntries,
+                    hasNext: parseInt(page) * parseInt(limit) < totalEntries,
+                    hasPrev: parseInt(page) > 1
+                }
+            }, "Quiz leaderboard fetched successfully")
         );
     } catch (error) {
         throw new ApiError(error.statusCode || 500, error.message || "Failed to fetch quiz leaderboard");

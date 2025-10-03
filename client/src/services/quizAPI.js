@@ -171,13 +171,24 @@ export const quizAPI = {
   // Get user's attempts for a quiz
   getUserQuizAttempts: (quizId) => api.get(`/quizzes/${quizId}/my-attempts`),
 
-  // Get quiz leaderboard (top 10 performers) - authenticated
-  getQuizLeaderboard: (quizId) => api.get(`/quizzes/${quizId}/leaderboard`),
+  // Get quiz leaderboard with pagination support - authenticated
+  getQuizLeaderboard: (quizId, params = {}) => {
+    const queryParams = new URLSearchParams(params);
+    const queryString = queryParams.toString();
+    const url = queryString ? `/quizzes/${quizId}/leaderboard?${queryString}` : `/quizzes/${quizId}/leaderboard`;
+    return api.get(url);
+  },
 
   // Get quiz leaderboard (public - for logged out users)
-  getPublicQuizLeaderboard: async (quizId) => {
+  getPublicQuizLeaderboard: async (quizId, params = {}) => {
     try {
-      const response = await axios.get(`/api/public/quizzes/${quizId}/leaderboard`);
+      const queryParams = new URLSearchParams(params);
+      const queryString = queryParams.toString();
+      const url = queryString 
+        ? `/api/public/quizzes/${quizId}/leaderboard?${queryString}` 
+        : `/api/public/quizzes/${quizId}/leaderboard`;
+
+      const response = await axios.get(url);
       return response;
     } catch (error) {
       console.error('Error fetching public quiz leaderboard:', error);
