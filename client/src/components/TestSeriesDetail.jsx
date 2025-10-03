@@ -205,50 +205,67 @@ const TestSeriesDetail = () => {
           <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-6">
             <button
               onClick={() => setShowLeaderboard(!showLeaderboard)}
-              className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors border-b border-gray-200"
+              className="w-full px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between hover:bg-gray-50 active:bg-gray-100 transition-colors border-b border-gray-200 touch-manipulation"
             >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-lg flex items-center justify-center">
-                  <FaTrophy className="text-white text-lg" />
+              <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <FaTrophy className="text-white text-sm sm:text-lg" />
                 </div>
-                <div className="text-left">
-                  <h3 className="text-lg font-semibold text-gray-800">Test Series Leaderboard</h3>
-                  <p className="text-sm text-gray-600">
+                <div className="text-left flex-1 min-w-0">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-800">
+                    <span className="hidden sm:inline">Test Series Leaderboard</span>
+                    <span className="sm:hidden">Leaderboard</span>
+                  </h3>
+                  <p className="text-xs sm:text-sm text-gray-600 truncate">
                     {leaderboardData.participantCount > 0 ? (
                       <>
-                        {leaderboardData.participantCount} participants
-                        {leaderboardData.userRank && (
-                          <span className="ml-2 text-[#00bcd4] font-medium">
-                            • You're #{leaderboardData.userRank}
-                          </span>
-                        )}
+                        <span className="hidden sm:inline">
+                          {leaderboardData.participantCount} participants
+                          {leaderboardData.userRank && (
+                            <span className="ml-2 text-[#00bcd4] font-medium">
+                              • You're #{leaderboardData.userRank}
+                            </span>
+                          )}
+                        </span>
+                        <span className="sm:hidden">
+                          {leaderboardData.participantCount} active
+                          {leaderboardData.userRank && (
+                            <span className="ml-1 text-[#00bcd4] font-medium">
+                              • #{leaderboardData.userRank}
+                            </span>
+                          )}
+                        </span>
                       </>
                     ) : (
-                      'See how you rank against other participants'
+                      <>
+                        <span className="hidden sm:inline">See how you rank against other participants</span>
+                        <span className="sm:hidden">View rankings</span>
+                      </>
                     )}
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
                 {leaderboardData.participantCount > 0 && (
-                  <span className="bg-yellow-100 text-yellow-800 text-xs font-medium px-2 py-1 rounded-full">
-                    {leaderboardData.participantCount} active
+                  <span className="bg-yellow-100 text-yellow-800 text-xs font-medium px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full">
+                    <span className="hidden sm:inline">{leaderboardData.participantCount} active</span>
+                    <span className="sm:hidden">{leaderboardData.participantCount}</span>
                   </span>
                 )}
-                <span className="text-sm text-gray-500 hidden sm:inline">
+                <span className="text-xs sm:text-sm text-gray-500 hidden md:inline">
                   {showLeaderboard ? 'Hide' : 'Show'} Rankings
                 </span>
                 {showLeaderboard ? (
-                  <FaChevronUp className="text-gray-400" />
+                  <FaChevronUp className="text-gray-400 text-sm sm:text-base" />
                 ) : (
-                  <FaChevronDown className="text-gray-400" />
+                  <FaChevronDown className="text-gray-400 text-sm sm:text-base" />
                 )}
               </div>
             </button>
             
             <div className={`transition-all duration-300 ease-in-out overflow-hidden ${showLeaderboard ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'}`}>
               <div className="border-t border-gray-100">
-                <div className="p-6">
+                <div className="p-3 sm:p-6">
                   <TestSeriesLeaderboard 
                     testSeriesId={testSeriesId} 
                     className="shadow-none border-0" 
