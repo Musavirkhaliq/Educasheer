@@ -19,7 +19,14 @@ import {
     reorderSections,
     fixTestSeriesQuizzes
 } from "../controllers/testSeries.controller.js";
-import { verifyJWT } from "../middlewares/auth.middleware.js";
+import {
+    getTestSeriesLeaderboard,
+    updateUserLeaderboard,
+    getUserPerformance,
+    refreshLeaderboard,
+    ensureLeaderboardEntries
+} from "../controllers/leaderboard.controller.js";
+import { verifyJWT, optionalVerifyJWT } from "../middlewares/auth.middleware.js";
 import { isAdmin } from "../middlewares/role.middleware.js";
 import { TestSeries } from "../models/testSeries.model.js";
 
@@ -69,6 +76,22 @@ router.route("/:testSeriesId/sections/:sectionId/quizzes/:quizId")
 // Enrollment routes
 router.route("/:testSeriesId/enroll")
     .post(enrollInTestSeries);
+
+// Leaderboard routes
+router.route("/:testSeriesId/leaderboard")
+    .get(optionalVerifyJWT, getTestSeriesLeaderboard);
+
+router.route("/:testSeriesId/leaderboard/update")
+    .post(updateUserLeaderboard);
+
+router.route("/:testSeriesId/leaderboard/user")
+    .get(getUserPerformance);
+
+router.route("/:testSeriesId/leaderboard/refresh")
+    .post(isAdmin, refreshLeaderboard);
+
+router.route("/:testSeriesId/leaderboard/ensure")
+    .post(isAdmin, ensureLeaderboardEntries);
 
 // Migration/fix routes
 router.route("/fix-quizzes")

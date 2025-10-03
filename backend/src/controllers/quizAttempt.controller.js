@@ -7,6 +7,75 @@ import { awardPoints } from "../services/gamification.service.js";
 import mongoose from "mongoose";
 
 /**
+ * Helper function to update leaderboard stats directly using quiz IDs
+ * This is used as a fallback when the main updateStats method fails due to data corruption
+ */
+async function updateLeaderboardStatsDirectly(leaderboardEntry, validQuizIds) {
+    try {
+        // Get all attempts for this user in this test series
+        const attempts = await QuizAttempt.find({
+            user: leaderboardEntry.user,
+            quiz: { $in: validQuizIds },
+            isCompleted: true
+        }).populate('quiz', 'title');
+        
+        console.log(`Found ${attempts.length} completed attempts for user ${leaderboardEntry.user}`);
+
+        // Group attempts by quiz and get best attempt for each
+        const bestAttemptsByQuiz = {};
+        let totalScore = 0;
+        let totalMaxScore = 0;
+        let totalTimeSpent = 0;
+        
+        attempts.forEach(attempt => {
+            const quizId = attempt.quiz._id.toString();
+            
+            if (!bestAttemptsByQuiz[quizId] || attempt.percentage > bestAttemptsByQuiz[quizId].percentage) {
+                bestAttemptsByQuiz[quizId] = attempt;
+            }
+        });
+
+        // Calculate stats from best attempts
+        const bestAttempts = Object.values(bestAttemptsByQuiz);
+        console.log(`Processing ${bestAttempts.length} best attempts`);
+        
+        bestAttempts.forEach(attempt => {
+            totalScore += attempt.score || 0;
+            totalMaxScore += attempt.maxScore || 0;
+            totalTimeSpent += attempt.timeSpent || 0;
+        });
+
+        console.log(`Calculated totals: score=${totalScore}, maxScore=${totalMaxScore}, time=${totalTimeSpent}`);
+
+        // Update leaderboard entry
+        leaderboardEntry.totalScore = totalScore;
+        leaderboardEntry.totalMaxScore = totalMaxScore;
+        leaderboardEntry.averagePercentage = totalMaxScore > 0 ? Math.round((totalScore / totalMaxScore) * 100) : 0;
+        leaderboardEntry.completedQuizzes = bestAttempts.length;
+        leaderboardEntry.totalQuizzes = validQuizIds.length;
+        leaderboardEntry.completionPercentage = validQuizIds.length > 0 ? Math.round((bestAttempts.length / validQuizIds.length) * 100) : 0;
+        leaderboardEntry.totalTimeSpent = totalTimeSpent;
+        leaderboardEntry.averageTimePerQuiz = bestAttempts.length > 0 ? Math.round(totalTimeSpent / bestAttempts.length) : 0;
+        leaderboardEntry.bestAttempts = bestAttempts.map(attempt => ({
+            quiz: attempt.quiz._id,
+            attempt: attempt._id,
+            score: attempt.score || 0,
+            percentage: attempt.percentage || 0,
+            timeSpent: attempt.timeSpent || 0
+        }));
+        leaderboardEntry.lastUpdated = new Date();
+
+        console.log(`Saving leaderboard entry with ${leaderboardEntry.completedQuizzes} completed quizzes`);
+        await leaderboardEntry.save();
+        
+        return leaderboardEntry;
+    } catch (error) {
+        console.error('Error updating leaderboard stats directly:', error);
+        throw error;
+    }
+}
+
+/**
  * Start a quiz attempt
  * @route POST /api/v1/quizzes/:quizId/attempts
  * @access Authenticated
@@ -338,6 +407,57 @@ const submitQuizAttempt = asyncHandler(async (req, res) => {
             } catch (gamificationError) {
                 console.error("Error awarding points:", gamificationError);
                 // Continue with quiz submission even if gamification fails
+            }
+        }
+
+        // Update leaderboard if quiz belongs to a test series
+        if (quiz.testSeries) {
+            try {
+                const { LeaderboardEntry } = await import("../models/leaderboard.model.js");
+                
+                // Find or create leaderboard entry
+                let leaderboardEntry = await LeaderboardEntry.findOne({
+                    testSeries: quiz.testSeries,
+                    user: userId
+                });
+
+                if (!leaderboardEntry) {
+                    // Get total quiz count for this test series
+                    const { Quiz } = await import("../models/quiz.model.js");
+                    const totalQuizzes = await Quiz.countDocuments({ testSeries: quiz.testSeries });
+                    
+                    leaderboardEntry = new LeaderboardEntry({
+                        testSeries: quiz.testSeries,
+                        user: userId,
+                        totalQuizzes: totalQuizzes
+                    });
+                    await leaderboardEntry.save();
+                    console.log(`Created new leaderboard entry for user ${userId} in test series ${quiz.testSeries}`);
+                }
+
+                // Update stats using robust approach
+                try {
+                    await leaderboardEntry.updateStats();
+                    console.log(`Updated leaderboard stats for user ${userId}: ${leaderboardEntry.completedQuizzes} completed quizzes`);
+                } catch (updateError) {
+                    console.error("Error in updateStats, trying direct approach:", updateError.message);
+                    
+                    // Fallback: use direct approach if updateStats fails due to data corruption
+                    const { Quiz } = await import("../models/quiz.model.js");
+                    const quizzesInSeries = await Quiz.find({ testSeries: quiz.testSeries }).select('_id');
+                    const validQuizIds = quizzesInSeries.map(q => q._id.toString());
+                    
+                    // Use the direct update function (we'll need to import it)
+                    await updateLeaderboardStatsDirectly(leaderboardEntry, validQuizIds);
+                    console.log(`Updated leaderboard stats using direct approach for user ${userId}`);
+                }
+
+                // Update ranks for the entire test series
+                await LeaderboardEntry.updateRanks(quiz.testSeries);
+                console.log(`Updated ranks for test series ${quiz.testSeries}`);
+            } catch (leaderboardError) {
+                console.error("Error updating leaderboard:", leaderboardError.message);
+                // Continue with quiz submission even if leaderboard update fails
             }
         }
         

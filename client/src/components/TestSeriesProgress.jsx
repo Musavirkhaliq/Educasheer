@@ -214,12 +214,34 @@ const TestSeriesProgress = ({ testSeriesId, testSeries, onProgressUpdate }) => {
           </div>
         </div>
 
-        {/* Best Performance */}
-        {stats.bestScore > 0 && (
-          <div className="mt-4 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-            <div className="flex items-center gap-2 text-yellow-800">
+        {/* Performance & Leaderboard Info */}
+        {stats.completedQuizzes > 0 && (
+          <div className="mt-4 p-3 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-yellow-800">
+                <FaTrophy />
+                <span className="font-medium">
+                  {stats.bestScore > 0 ? `Best Performance: ${stats.bestScore}%` : 'Great start!'}
+                </span>
+              </div>
+              <div className="text-sm text-yellow-700">
+                You're on the leaderboard! 🎉
+              </div>
+            </div>
+            <div className="text-xs text-yellow-600 mt-1">
+              Your ranking considers all {stats.completedQuizzes} completed test{stats.completedQuizzes !== 1 ? 's' : ''} • Keep going to improve your position!
+            </div>
+          </div>
+        )}
+        
+        {stats.completedQuizzes === 0 && (
+          <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="flex items-center gap-2 text-blue-800">
               <FaTrophy />
-              <span className="font-medium">Best Performance: {stats.bestScore}%</span>
+              <span className="font-medium">Ready to join the leaderboard?</span>
+            </div>
+            <div className="text-xs text-blue-600 mt-1">
+              Complete your first test to appear on the leaderboard and compete with others!
             </div>
           </div>
         )}

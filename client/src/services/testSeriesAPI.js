@@ -149,5 +149,61 @@ export const testSeriesAPI = {
 
   reorderSections: async (testSeriesId, sectionOrders) => {
     return await customFetch.put(`/test-series/${testSeriesId}/sections/reorder`, { sectionOrders });
+  },
+
+  // Leaderboard methods
+  getTestSeriesLeaderboard: async (testSeriesId, params = {}) => {
+    const queryParams = new URLSearchParams(params);
+    const queryString = queryParams.toString();
+    const url = queryString ? `/test-series/${testSeriesId}/leaderboard?${queryString}` : `/test-series/${testSeriesId}/leaderboard`;
+    return await customFetch.get(url);
+  },
+
+  // Get test series leaderboard (public - for logged out users)
+  getPublicTestSeriesLeaderboard: async (testSeriesId, params = {}) => {
+    try {
+      const queryParams = new URLSearchParams(params);
+      const queryString = queryParams.toString();
+      const url = queryString 
+        ? `/api/public/test-series/${testSeriesId}/leaderboard?${queryString}` 
+        : `/api/public/test-series/${testSeriesId}/leaderboard`;
+
+      const response = await fetch(url, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to fetch test series leaderboard');
+      }
+      
+      return { data };
+    } catch (error) {
+      console.error('Error fetching public test series leaderboard:', error);
+      throw error;
+    }
+  },
+
+  // Get user performance in test series
+  getUserPerformance: async (testSeriesId) => {
+    return await customFetch.get(`/test-series/${testSeriesId}/leaderboard/user`);
+  },
+
+  // Update user leaderboard (internal use)
+  updateUserLeaderboard: async (testSeriesId) => {
+    return await customFetch.post(`/test-series/${testSeriesId}/leaderboard/update`);
+  },
+
+  // Refresh leaderboard (admin only)
+  refreshLeaderboard: async (testSeriesId) => {
+    return await customFetch.post(`/test-series/${testSeriesId}/leaderboard/refresh`);
+  },
+
+  // Debug leaderboard (admin only)
+  debugLeaderboard: async (testSeriesId) => {
+    return await customFetch.get(`/leaderboard/test-series/${testSeriesId}/debug`);
   }
 };

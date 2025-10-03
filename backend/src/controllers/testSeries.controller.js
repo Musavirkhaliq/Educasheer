@@ -3,6 +3,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { TestSeries } from "../models/testSeries.model.js";
 import { Quiz } from "../models/quiz.model.js";
+import { LeaderboardEntry } from "../models/leaderboard.model.js";
 import mongoose from "mongoose";
 
 /**
@@ -629,6 +630,25 @@ const enrollInTestSeries = asyncHandler(async (req, res) => {
         // Add user to enrolled students (only for free test series)
         testSeries.enrolledStudents.push(req.user._id);
         await testSeries.save();
+
+        // Create leaderboard entry for the user (with initial stats)
+        try {
+            let leaderboardEntry = await LeaderboardEntry.findOne({
+                testSeries: testSeriesId,
+                user: req.user._id
+            });
+
+            if (!leaderboardEntry) {
+                leaderboardEntry = new LeaderboardEntry({
+                    testSeries: testSeriesId,
+                    user: req.user._id
+                });
+                await leaderboardEntry.save();
+            }
+        } catch (leaderboardError) {
+            console.error('Error creating leaderboard entry:', leaderboardError);
+            // Don't fail enrollment if leaderboard creation fails
+        }
 
         return res.status(200).json(
             new ApiResponse(200, {}, "Successfully enrolled in test series")

@@ -99,6 +99,7 @@ app.get("/api/public/quizzes/:quizId/leaderboard", optionalVerifyJWT, getQuizLea
 // Public test series endpoints under /api/public/
 app.get("/api/public/test-series", getPublishedTestSeries);
 app.get("/api/public/test-series/:testSeriesId", optionalVerifyJWT, getTestSeriesById);
+app.get("/api/public/test-series/:testSeriesId/leaderboard", optionalVerifyJWT, getTestSeriesLeaderboard);
 
 
 
@@ -135,12 +136,15 @@ import imageUploadRouter from "./routes/imageUpload.routes.js";
 import cartRouter from "./routes/cart.routes.js";
 import promocodeRouter from "./routes/promocode.routes.js";
 import paymentRouter from "./routes/payment.routes.js";
+import leaderboardRouter from "./routes/leaderboard.routes.js";
 
 // Import public quiz routes
 import { getPublishedQuizzes, getEnrolledQuizzes, getQuizCategories, getQuizTags, getQuizById } from "./controllers/quiz.controller.js";
 import { getQuizLeaderboard } from "./controllers/quizAttempt.controller.js";
 // Import public test series routes
 import { getPublishedTestSeries, getEnrolledTestSeries, getTestSeriesById } from "./controllers/testSeries.controller.js";
+// Import leaderboard routes
+import { getTestSeriesLeaderboard } from "./controllers/leaderboard.controller.js";
 // Import public testimonial routes
 import { getApprovedTestimonials } from "./controllers/testimonial.controller.js";
 
@@ -192,6 +196,7 @@ app.use("/api/v1/images", imageUploadRouter);
 app.use("/api/v1/cart", cartRouter);
 app.use("/api/v1/promocodes", promocodeRouter);
 app.use("/api/v1/payments", paymentRouter);
+app.use("/api/v1/leaderboard", leaderboardRouter);
 
 // Serve frontend for all non-API routes
 app.get("*", (req, res, next) => {

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FaClock, FaExclamationTriangle, FaCheck, FaTimes, FaArrowLeft, FaArrowRight, FaQuestionCircle, FaListAlt, FaTrophy, FaEdit, FaFileAlt, FaBookmark, FaRegBookmark, FaEye, FaFlag, FaChevronLeft, FaChevronRight, FaHome, FaCalculator, FaPause, FaPlay } from 'react-icons/fa';
 import { quizAPI } from '../services/quizAPI';
+import { testSeriesAPI } from '../services/testSeriesAPI';
 import { toast } from 'react-hot-toast';
 import '../styles/quiz-enhancements.css';
 
@@ -436,6 +437,18 @@ const QuizTaker = () => {
 
       // Mark as submitted
       setIsSubmitted(true);
+
+      // Update test series leaderboard if this quiz is part of a test series
+      if (testSeriesId) {
+        try {
+          console.log('Updating leaderboard for test series:', testSeriesId);
+          const leaderboardResponse = await testSeriesAPI.updateUserLeaderboard(testSeriesId);
+          console.log('Leaderboard update response:', leaderboardResponse.data);
+        } catch (leaderboardError) {
+          console.error('Error updating leaderboard:', leaderboardError);
+          // Don't fail the submission if leaderboard update fails
+        }
+      }
 
       // Navigate to results page
       if (courseId) {

@@ -13,7 +13,10 @@ import {
   FaTag,
   FaStar,
   FaCalendarAlt,
-  FaEye
+  FaEye,
+  FaTrophy,
+  FaChevronDown,
+  FaChevronUp
 } from 'react-icons/fa';
 import { testSeriesAPI } from '../services/testSeriesAPI';
 import { quizAPI } from '../services/quizAPI';
@@ -21,6 +24,7 @@ import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
 import TestSeriesProgress from './TestSeriesProgress';
 import AddToCartButton from './cart/AddToCartButton';
+import TestSeriesLeaderboard from './TestSeriesLeaderboard';
 
 const TestSeriesDetail = () => {
   const { testSeriesId } = useParams();
@@ -33,6 +37,8 @@ const TestSeriesDetail = () => {
   const [loading, setLoading] = useState(true);
   const [enrolling, setEnrolling] = useState(false);
   const [error, setError] = useState('');
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [leaderboardData, setLeaderboardData] = useState({ participantCount: 0, userRank: null });
 
   useEffect(() => {
     fetchTestSeriesDetails();
@@ -193,6 +199,64 @@ const TestSeriesDetail = () => {
               <FaArrowLeft />
               <span>Back to Test Series</span>
             </Link>
+          </div>
+
+          {/* Leaderboard Toggle Section */}
+          <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-6">
+            <button
+              onClick={() => setShowLeaderboard(!showLeaderboard)}
+              className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors border-b border-gray-200"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-lg flex items-center justify-center">
+                  <FaTrophy className="text-white text-lg" />
+                </div>
+                <div className="text-left">
+                  <h3 className="text-lg font-semibold text-gray-800">Test Series Leaderboard</h3>
+                  <p className="text-sm text-gray-600">
+                    {leaderboardData.participantCount > 0 ? (
+                      <>
+                        {leaderboardData.participantCount} participants
+                        {leaderboardData.userRank && (
+                          <span className="ml-2 text-[#00bcd4] font-medium">
+                            • You're #{leaderboardData.userRank}
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      'See how you rank against other participants'
+                    )}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {leaderboardData.participantCount > 0 && (
+                  <span className="bg-yellow-100 text-yellow-800 text-xs font-medium px-2 py-1 rounded-full">
+                    {leaderboardData.participantCount} active
+                  </span>
+                )}
+                <span className="text-sm text-gray-500 hidden sm:inline">
+                  {showLeaderboard ? 'Hide' : 'Show'} Rankings
+                </span>
+                {showLeaderboard ? (
+                  <FaChevronUp className="text-gray-400" />
+                ) : (
+                  <FaChevronDown className="text-gray-400" />
+                )}
+              </div>
+            </button>
+            
+            <div className={`transition-all duration-300 ease-in-out overflow-hidden ${showLeaderboard ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'}`}>
+              <div className="border-t border-gray-100">
+                <div className="p-6">
+                  <TestSeriesLeaderboard 
+                    testSeriesId={testSeriesId} 
+                    className="shadow-none border-0" 
+                    onDataLoad={setLeaderboardData}
+                  />
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Test Series Details Card */}
@@ -549,6 +613,8 @@ const TestSeriesDetail = () => {
                       </div>
                     </div>
                   )}
+
+
                 </div>
               </div>
             </div>
