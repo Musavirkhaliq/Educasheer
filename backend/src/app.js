@@ -94,6 +94,7 @@ app.get("/api/public/quizzes", getPublishedQuizzes);
 app.get("/api/public/quiz-categories", getQuizCategories);
 app.get("/api/public/quiz-tags", getQuizTags);
 app.get("/api/public/quizzes/:quizId", optionalVerifyJWT, getQuizById);
+app.get("/api/public/quizzes/:quizId/leaderboard", optionalVerifyJWT, getQuizLeaderboard);
 
 // Public test series endpoints under /api/public/
 app.get("/api/public/test-series", getPublishedTestSeries);
@@ -137,6 +138,7 @@ import paymentRouter from "./routes/payment.routes.js";
 
 // Import public quiz routes
 import { getPublishedQuizzes, getEnrolledQuizzes, getQuizCategories, getQuizTags, getQuizById } from "./controllers/quiz.controller.js";
+import { getQuizLeaderboard } from "./controllers/quizAttempt.controller.js";
 // Import public test series routes
 import { getPublishedTestSeries, getEnrolledTestSeries, getTestSeriesById } from "./controllers/testSeries.controller.js";
 // Import public testimonial routes

@@ -755,19 +755,31 @@ const QuizResults = () => {
 
       {/* Action Buttons */}
       <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row justify-between gap-3 sm:gap-4">
-        <Link
-          to={courseId ? `/courses/${courseId}` : testSeriesId ? `/test-series/${testSeriesId}` : currentUser?.role === 'admin' ? '/admin/quiz-attempts' : '/profile'}
-          className="px-4 py-2 sm:py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-center text-sm sm:text-base order-2 sm:order-1"
-        >
-          {courseId ? 'Return to Course' : testSeriesId ? 'Return to Test Series' : currentUser?.role === 'admin' ? 'Back to Quiz Attempts' : 'Return to Profile'}
-        </Link>
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 order-2 sm:order-1">
+          <Link
+            to={courseId ? `/courses/${courseId}` : testSeriesId ? `/test-series/${testSeriesId}` : currentUser?.role === 'admin' ? '/admin/quiz-attempts' : '/profile'}
+            className="px-4 py-2 sm:py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-center text-sm sm:text-base"
+          >
+            {courseId ? 'Return to Course' : testSeriesId ? 'Return to Test Series' : currentUser?.role === 'admin' ? 'Back to Quiz Attempts' : 'Return to Profile'}
+          </Link>
+
+          {(courseId || testSeriesId) && quizId && (
+            <Link
+              to={courseId ? `/courses/${courseId}/quizzes/${quizId}` : `/test-series/${testSeriesId}/quiz/${quizId}`}
+              className="px-4 py-2 sm:py-3 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors text-center text-sm sm:text-base flex items-center justify-center gap-2"
+            >
+              <FaEye className="text-sm" />
+              View Test Details
+            </Link>
+          )}
+        </div>
 
         {(courseId || testSeriesId) && quizId && (
           <Link
             to={courseId ? `/courses/${courseId}/quizzes/${quizId}` : `/test-series/${testSeriesId}/quiz/${quizId}`}
-            className="px-4 py-2 sm:py-3 bg-[#00bcd4] text-white rounded-lg hover:bg-[0097a7] transition-colors text-center text-sm sm:text-base order-1 sm:order-2"
+            className="px-4 py-2 sm:py-3 bg-gradient-to-r from-[#00bcd4] to-[#0097a7] text-white rounded-lg hover:from-[#0097a7] hover:to-[#00838f] transition-all duration-300 text-center text-sm sm:text-base font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 order-1 sm:order-2"
           >
-            Retake Quiz
+            Retake Test
           </Link>
         )}
       </div>

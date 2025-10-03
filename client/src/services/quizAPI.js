@@ -171,8 +171,19 @@ export const quizAPI = {
   // Get user's attempts for a quiz
   getUserQuizAttempts: (quizId) => api.get(`/quizzes/${quizId}/my-attempts`),
 
-  // Get quiz leaderboard (top 10 performers)
+  // Get quiz leaderboard (top 10 performers) - authenticated
   getQuizLeaderboard: (quizId) => api.get(`/quizzes/${quizId}/leaderboard`),
+
+  // Get quiz leaderboard (public - for logged out users)
+  getPublicQuizLeaderboard: async (quizId) => {
+    try {
+      const response = await axios.get(`/api/public/quizzes/${quizId}/leaderboard`);
+      return response;
+    } catch (error) {
+      console.error('Error fetching public quiz leaderboard:', error);
+      throw error;
+    }
+  },
 
   // Admin: Get all quiz attempts across all quizzes
   getAllQuizAttempts: (params = {}) => {

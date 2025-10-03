@@ -13,7 +13,9 @@ import {
   FaInfoCircle,
   FaCrown,
   FaMedal,
-  FaAward
+  FaAward,
+  FaExclamationTriangle,
+  FaFileAlt
 } from 'react-icons/fa';
 import { quizAPI } from '../services/quizAPI';
 import { toast } from 'react-hot-toast';
@@ -70,7 +72,10 @@ const QuizDetails = () => {
   const fetchLeaderboard = async () => {
     try {
       setLeaderboardLoading(true);
-      const response = await quizAPI.getQuizLeaderboard(quizId);
+      // Use public endpoint for logged out users, authenticated endpoint for logged in users
+      const response = currentUser 
+        ? await quizAPI.getQuizLeaderboard(quizId)
+        : await quizAPI.getPublicQuizLeaderboard(quizId);
       setLeaderboard(response.data.data);
     } catch (err) {
       console.error('Error fetching leaderboard:', err);
@@ -209,56 +214,117 @@ const QuizDetails = () => {
 
             {/* Content Section */}
             <div className="p-4 sm:p-6 lg:p-8">
-              {/* Quiz Information Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
-                <div className="bg-blue-50 rounded-xl p-3 sm:p-4 border border-blue-200">
-                  <div className="flex flex-col sm:flex-row items-center sm:items-center gap-2 sm:gap-3">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-500 rounded-lg flex items-center justify-center">
-                      <FaQuestionCircle className="text-white text-sm sm:text-base" />
+              {/* Test Overview Section */}
+              <div className="mb-8">
+                <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                  <FaInfoCircle className="text-[#00bcd4]" />
+                  Test Overview
+                </h3>
+                
+                {/* Quiz Information Grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6">
+                  <div className="bg-blue-50 rounded-xl p-3 sm:p-4 border border-blue-200">
+                    <div className="flex flex-col sm:flex-row items-center sm:items-center gap-2 sm:gap-3">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+                        <FaQuestionCircle className="text-white text-sm sm:text-base" />
+                      </div>
+                      <div className="text-center sm:text-left">
+                        <p className="text-blue-700 text-xs sm:text-sm font-medium">Questions</p>
+                        <p className="text-blue-900 text-lg sm:text-xl font-bold">
+                          {Array.isArray(quiz.questions) ? quiz.questions.length : (quiz.questions?.length || 0)}
+                        </p>
+                      </div>
                     </div>
-                    <div className="text-center sm:text-left">
-                      <p className="text-blue-700 text-xs sm:text-sm font-medium">Questions</p>
-                      <p className="text-blue-900 text-lg sm:text-xl font-bold">
-                        {Array.isArray(quiz.questions) ? quiz.questions.length : (quiz.questions?.length || 0)}
-                      </p>
+                  </div>
+
+                  <div className="bg-green-50 rounded-xl p-3 sm:p-4 border border-green-200">
+                    <div className="flex flex-col sm:flex-row items-center sm:items-center gap-2 sm:gap-3">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 bg-green-500 rounded-lg flex items-center justify-center">
+                        <FaClock className="text-white text-sm sm:text-base" />
+                      </div>
+                      <div className="text-center sm:text-left">
+                        <p className="text-green-700 text-xs sm:text-sm font-medium">Time Limit</p>
+                        <p className="text-green-900 text-lg sm:text-xl font-bold">{quiz.timeLimit} min</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-yellow-50 rounded-xl p-3 sm:p-4 border border-yellow-200">
+                    <div className="flex flex-col sm:flex-row items-center sm:items-center gap-2 sm:gap-3">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 bg-yellow-500 rounded-lg flex items-center justify-center">
+                        <FaTrophy className="text-white text-sm sm:text-base" />
+                      </div>
+                      <div className="text-center sm:text-left">
+                        <p className="text-yellow-700 text-xs sm:text-sm font-medium">Passing Score</p>
+                        <p className="text-yellow-900 text-lg sm:text-xl font-bold">{quiz.passingScore}%</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-purple-50 rounded-xl p-3 sm:p-4 border border-purple-200">
+                    <div className="flex flex-col sm:flex-row items-center sm:items-center gap-2 sm:gap-3">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-500 rounded-lg flex items-center justify-center">
+                        <FaHistory className="text-white text-sm sm:text-base" />
+                      </div>
+                      <div className="text-center sm:text-left">
+                        <p className="text-purple-700 text-xs sm:text-sm font-medium">Max Attempts</p>
+                        <p className="text-purple-900 text-lg sm:text-xl font-bold">
+                          {quiz.maxAttempts || 'Unlimited'}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-green-50 rounded-xl p-3 sm:p-4 border border-green-200">
-                  <div className="flex flex-col sm:flex-row items-center sm:items-center gap-2 sm:gap-3">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-green-500 rounded-lg flex items-center justify-center">
-                      <FaClock className="text-white text-sm sm:text-base" />
+                {/* Test Details */}
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 sm:p-6 border border-blue-200">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                    <div>
+                      <h4 className="font-semibold text-blue-900 mb-3">Test Information</h4>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-blue-700">Type:</span>
+                          <span className="font-medium text-blue-900 capitalize">{quiz.quizType || 'Quiz'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-blue-700">Difficulty:</span>
+                          <span className="font-medium text-blue-900 capitalize">{quiz.difficulty || 'Medium'}</span>
+                        </div>
+                        {quiz.category && (
+                          <div className="flex justify-between">
+                            <span className="text-blue-700">Category:</span>
+                            <span className="font-medium text-blue-900">{quiz.category}</span>
+                          </div>
+                        )}
+                        {quiz.subject && (
+                          <div className="flex justify-between">
+                            <span className="text-blue-700">Subject:</span>
+                            <span className="font-medium text-blue-900">{quiz.subject}</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <div className="text-center sm:text-left">
-                      <p className="text-green-700 text-xs sm:text-sm font-medium">Time Limit</p>
-                      <p className="text-green-900 text-lg sm:text-xl font-bold">{quiz.timeLimit} min</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-yellow-50 rounded-xl p-3 sm:p-4 border border-yellow-200">
-                  <div className="flex flex-col sm:flex-row items-center sm:items-center gap-2 sm:gap-3">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-yellow-500 rounded-lg flex items-center justify-center">
-                      <FaTrophy className="text-white text-sm sm:text-base" />
-                    </div>
-                    <div className="text-center sm:text-left">
-                      <p className="text-yellow-700 text-xs sm:text-sm font-medium">Passing Score</p>
-                      <p className="text-yellow-900 text-lg sm:text-xl font-bold">{quiz.passingScore}%</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-purple-50 rounded-xl p-3 sm:p-4 border border-purple-200">
-                  <div className="flex flex-col sm:flex-row items-center sm:items-center gap-2 sm:gap-3">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-500 rounded-lg flex items-center justify-center">
-                      <FaHistory className="text-white text-sm sm:text-base" />
-                    </div>
-                    <div className="text-center sm:text-left">
-                      <p className="text-purple-700 text-xs sm:text-sm font-medium">Max Attempts</p>
-                      <p className="text-purple-900 text-lg sm:text-xl font-bold">
-                        {quiz.maxAttempts || 'Unlimited'}
-                      </p>
+                    
+                    <div>
+                      <h4 className="font-semibold text-blue-900 mb-3">Test Settings</h4>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-blue-700">Review Allowed:</span>
+                          <span className="font-medium text-blue-900">{quiz.allowReview ? 'Yes' : 'No'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-blue-700">Show Answers:</span>
+                          <span className="font-medium text-blue-900">{quiz.showCorrectAnswers ? 'Yes' : 'No'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-blue-700">Randomize Questions:</span>
+                          <span className="font-medium text-blue-900">{quiz.randomizeQuestions ? 'Yes' : 'No'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-blue-700">Randomize Options:</span>
+                          <span className="font-medium text-blue-900">{quiz.randomizeOptions ? 'Yes' : 'No'}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -302,47 +368,95 @@ const QuizDetails = () => {
                 </div>
               )}
 
-              {/* Quiz Rules and Information */}
+              {/* Important Instructions */}
               <div className="mb-8">
                 <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                   <FaInfoCircle className="text-[#00bcd4]" />
-                  Quiz Information
+                  Important Instructions
                 </h3>
 
-                <div className="bg-blue-50 rounded-xl p-4 sm:p-6 border border-blue-200">
-                  <ul className="space-y-3 text-gray-700">
-                    <li className="flex items-start gap-3">
-                      <FaCheckCircle className="text-blue-500 mt-1 flex-shrink-0" />
-                      <span>You have <strong>{quiz.timeLimit} minutes</strong> to complete this {quiz.quizType}</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <FaCheckCircle className="text-blue-500 mt-1 flex-shrink-0" />
-                      <span>You need to score at least <strong>{quiz.passingScore}%</strong> to pass</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <FaCheckCircle className="text-blue-500 mt-1 flex-shrink-0" />
-                      <span>This {quiz.quizType} contains <strong>{Array.isArray(quiz.questions) ? quiz.questions.length : (quiz.questions?.length || 0)} questions</strong></span>
-                    </li>
-                    {quiz.maxAttempts > 0 && (
-                      <li className="flex items-start gap-3">
-                        <FaCheckCircle className="text-blue-500 mt-1 flex-shrink-0" />
-                        <span>You can attempt this {quiz.quizType} up to <strong>{quiz.maxAttempts} times</strong></span>
-                      </li>
-                    )}
-                    {quiz.allowReview && (
-                      <li className="flex items-start gap-3">
-                        <FaCheckCircle className="text-blue-500 mt-1 flex-shrink-0" />
-                        <span>You can review your answers after submission</span>
-                      </li>
-                    )}
-                    {quiz.showCorrectAnswers && (
-                      <li className="flex items-start gap-3">
-                        <FaCheckCircle className="text-blue-500 mt-1 flex-shrink-0" />
-                        <span>Correct answers will be shown after submission</span>
-                      </li>
-                    )}
-                  </ul>
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 sm:p-6 border border-blue-200 mb-4">
+                  <div className="flex items-start gap-3 mb-4">
+                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                      <FaExclamationTriangle className="text-white text-sm" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-blue-900 mb-2">Before You Start</h4>
+                      <p className="text-blue-800 text-sm">
+                        Please read all instructions carefully. Once you start the test, the timer will begin and cannot be paused unless you use the pause feature.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <h5 className="font-semibold text-blue-900 mb-3">Test Rules</h5>
+                      <ul className="space-y-2 text-sm text-blue-800">
+                        <li className="flex items-start gap-2">
+                          <FaCheckCircle className="text-blue-500 mt-0.5 flex-shrink-0 text-xs" />
+                          <span>You have <strong>{quiz.timeLimit} minutes</strong> to complete this {quiz.quizType}</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <FaCheckCircle className="text-blue-500 mt-0.5 flex-shrink-0 text-xs" />
+                          <span>Minimum passing score: <strong>{quiz.passingScore}%</strong></span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <FaCheckCircle className="text-blue-500 mt-0.5 flex-shrink-0 text-xs" />
+                          <span>Total questions: <strong>{Array.isArray(quiz.questions) ? quiz.questions.length : (quiz.questions?.length || 0)}</strong></span>
+                        </li>
+                        {quiz.maxAttempts > 0 && (
+                          <li className="flex items-start gap-2">
+                            <FaCheckCircle className="text-blue-500 mt-0.5 flex-shrink-0 text-xs" />
+                            <span>Maximum attempts: <strong>{quiz.maxAttempts}</strong></span>
+                          </li>
+                        )}
+                      </ul>
+                    </div>
+
+                    <div>
+                      <h5 className="font-semibold text-blue-900 mb-3">Features Available</h5>
+                      <ul className="space-y-2 text-sm text-blue-800">
+                        <li className="flex items-start gap-2">
+                          <FaCheckCircle className="text-blue-500 mt-0.5 flex-shrink-0 text-xs" />
+                          <span>Mark questions for review</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <FaCheckCircle className="text-blue-500 mt-0.5 flex-shrink-0 text-xs" />
+                          <span>Navigate between questions freely</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <FaCheckCircle className="text-blue-500 mt-0.5 flex-shrink-0 text-xs" />
+                          <span>Pause and resume test</span>
+                        </li>
+                        {quiz.allowReview && (
+                          <li className="flex items-start gap-2">
+                            <FaCheckCircle className="text-blue-500 mt-0.5 flex-shrink-0 text-xs" />
+                            <span>Review answers after submission</span>
+                          </li>
+                        )}
+                        {quiz.showCorrectAnswers && (
+                          <li className="flex items-start gap-2">
+                            <FaCheckCircle className="text-blue-500 mt-0.5 flex-shrink-0 text-xs" />
+                            <span>View correct answers after submission</span>
+                          </li>
+                        )}
+                      </ul>
+                    </div>
+                  </div>
                 </div>
+
+                {/* Custom Instructions */}
+                {quiz.instructions && (
+                  <div className="bg-yellow-50 rounded-xl p-4 sm:p-6 border border-yellow-200">
+                    <h4 className="font-semibold text-yellow-900 mb-3 flex items-center gap-2">
+                      <FaFileAlt className="text-yellow-600" />
+                      Additional Instructions
+                    </h4>
+                    <div className="text-yellow-800 text-sm whitespace-pre-line">
+                      {quiz.instructions}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Leaderboard Section */}
@@ -538,13 +652,21 @@ const QuizDetails = () => {
                     )}
 
                     {canRetake && (
-                      <button
-                        onClick={handleStartQuiz}
-                        className="bg-[#00bcd4] text-white px-6 sm:px-8 py-2 sm:py-3 rounded-lg hover:bg-[#0097a7] transition-colors inline-flex items-center justify-center gap-2 font-semibold text-base sm:text-lg w-full sm:w-auto"
-                      >
-                        <FaPlay />
-                        {hasAttempted ? `Retake ${quiz.quizType}` : `Start ${quiz.quizType}`}
-                      </button>
+                      <div className="flex flex-col gap-3">
+                        <button
+                          onClick={handleStartQuiz}
+                          className="bg-gradient-to-r from-[#00bcd4] to-[#0097a7] text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl hover:from-[#0097a7] hover:to-[#00838f] transition-all duration-300 inline-flex items-center justify-center gap-3 font-bold text-base sm:text-lg w-full sm:w-auto shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                        >
+                          <FaPlay className="text-lg" />
+                          {hasAttempted ? `Retake ${quiz.quizType}` : `Start ${quiz.quizType}`}
+                        </button>
+                        <p className="text-sm text-gray-600 text-center">
+                          {hasAttempted 
+                            ? `You have attempted this ${quiz.quizType} ${attemptCount} time${attemptCount > 1 ? 's' : ''}`
+                            : `Ready to begin? The timer will start immediately.`
+                          }
+                        </p>
+                      </div>
                     )}
 
                     {!canRetake && (courseId || testSeriesId) && (

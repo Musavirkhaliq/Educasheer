@@ -11,7 +11,8 @@ import {
   FaBook,
   FaListOl,
   FaTrophy,
-  FaChartLine
+  FaChartLine,
+  FaEye
 } from 'react-icons/fa';
 
 const TestSeriesSections = ({ testSeries, testSeriesId, userAttempts = {}, onQuizStart }) => {
@@ -418,6 +419,13 @@ const TestSeriesSections = ({ testSeries, testSeriesId, userAttempts = {}, onQui
                         </div>
                         <div className="flex items-center gap-2 flex-shrink-0">
                           <Link
+                            to={`/test-series/${testSeriesId}/quiz/${quiz._id}`}
+                            className="text-xs sm:text-sm font-medium px-2 sm:px-3 py-1.5 sm:py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-1 sm:gap-2 whitespace-nowrap"
+                          >
+                            <FaEye className="text-xs" />
+                            Details
+                          </Link>
+                          <Link
                             to={`/test-series/${testSeriesId}/quiz/${quiz._id}/take`}
                             className="text-xs sm:text-sm font-medium px-3 sm:px-4 py-2 bg-[#00bcd4] text-white rounded-lg hover:bg-[#0097a7] transition-colors flex items-center gap-1 sm:gap-2 shadow-sm hover:shadow-md whitespace-nowrap"
                           >
@@ -487,6 +495,13 @@ const TestSeriesSections = ({ testSeries, testSeriesId, userAttempts = {}, onQui
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
+                    <Link
+                      to={`/test-series/${testSeriesId}/quiz/${quiz._id}`}
+                      className="text-xs sm:text-sm font-medium px-2 sm:px-3 py-1.5 sm:py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-1 sm:gap-2 whitespace-nowrap"
+                    >
+                      <FaEye className="text-xs" />
+                      Details
+                    </Link>
                     <Link
                       to={`/test-series/${testSeriesId}/quiz/${quiz._id}/take`}
                       className="text-xs sm:text-sm font-medium px-3 sm:px-4 py-2 bg-[#00bcd4] text-white rounded-lg hover:bg-[#0097a7] transition-colors flex items-center gap-1 sm:gap-2 shadow-sm hover:shadow-md whitespace-nowrap"

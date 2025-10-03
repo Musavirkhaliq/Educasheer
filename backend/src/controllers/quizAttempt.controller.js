@@ -492,7 +492,7 @@ const getQuizLeaderboard = asyncHandler(async (req, res) => {
         }
 
         // Check if quiz is published (unless user is admin)
-        if (!quiz.isPublished && req.user.role !== "admin") {
+        if (!quiz.isPublished && (!req.user || req.user.role !== "admin")) {
             throw new ApiError(403, "This quiz is not available");
         }
 
