@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { 
   FaBook, 
   FaClock, 
@@ -21,183 +20,149 @@ const TestSeriesCard = ({ testSeries, index, getDifficultyColor }) => {
   const isPremium = testSeries.price > 0;
   
   return (
-    <motion.div
-      key={testSeries._id}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: index * 0.1 }}
-      className={`relative bg-white rounded-3xl shadow-lg border-2 overflow-hidden hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 group ${
-        isEnrolled 
-          ? 'border-[#00bcd4]/30 bg-gradient-to-br from-[#00bcd4]/10 to-white' 
-          : isPremium 
-            ? 'border-[#01427a]/30 bg-gradient-to-br from-[#01427a]/10 to-white'
-            : 'border-[#00bcd4]/20 bg-gradient-to-br from-[#00bcd4]/5 to-white'
-      }`}
-    >
-      {/* Premium Badge */}
-      {isPremium && !isEnrolled && (
-        <div className="absolute top-4 right-4 z-10">
-          <div className="bg-gradient-to-r from-[#01427a] to-[#00bcd4] text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-lg">
-            <FaCrown className="text-xs" />
-            Premium
-          </div>
-        </div>
-      )}
-
-      {/* Enrolled Badge */}
-      {isEnrolled && (
-        <div className="absolute top-4 right-4 z-10">
-          <div className="bg-gradient-to-r from-[#00bcd4] to-[#01427a] text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-lg">
-            <FaCheck className="text-xs" />
-            Enrolled
-          </div>
-        </div>
-      )}
-
-      {/* Header with Gradient Background */}
-      <div className={`relative p-6 pb-4 ${
-        isEnrolled 
-          ? 'bg-gradient-to-br from-[#00bcd4] to-[#01427a]' 
-          : isPremium 
-            ? 'bg-gradient-to-br from-[#01427a] to-[#00bcd4]'
-            : 'bg-gradient-to-br from-[#00bcd4] to-[#01427a]'
-      }`}>
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 left-0 w-32 h-32 bg-white rounded-full -translate-x-16 -translate-y-16"></div>
-          <div className="absolute bottom-0 right-0 w-24 h-24 bg-white rounded-full translate-x-12 translate-y-12"></div>
-        </div>
-
-        <div className="relative z-10">
-          {/* Icon and Title */}
-          <div className="flex items-start gap-4 mb-4">
-            <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center flex-shrink-0">
-              <FaGraduationCap className="text-white text-xl" />
+    <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 group">
+      <Link to={`/test-series/${testSeries._id}`} className="block">
+        {/* Header */}
+        <div className="p-4 bg-gradient-to-r from-[#01427a] to-[#00bcd4] text-white relative overflow-hidden">
+          <div className="absolute inset-0 bg-black/10"></div>
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <FaGraduationCap className="text-white" />
+                <span className="text-xs font-medium bg-white/20 px-2 py-1 rounded-full">
+                  TEST SERIES
+                </span>
+              </div>
+              
+              {/* Status Badges */}
+              <div className="flex gap-2">
+                {isEnrolled && (
+                  <span className="text-xs bg-green-500 px-2 py-1 rounded-full flex items-center gap-1">
+                    <FaCheck className="text-xs" />
+                    Enrolled
+                  </span>
+                )}
+                {isPremium && !isEnrolled && (
+                  <span className="text-xs bg-yellow-500 px-2 py-1 rounded-full flex items-center gap-1">
+                    <FaCrown className="text-xs" />
+                    Premium
+                  </span>
+                )}
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-bold text-white text-lg leading-tight mb-2 group-hover:text-yellow-100 transition-colors">
-                {testSeries.title}
-              </h3>
-              <p className="text-white/90 text-sm leading-relaxed line-clamp-2">
-                {testSeries.description}
-              </p>
-            </div>
+            
+            <h3 className="font-semibold text-lg mb-2 line-clamp-2 group-hover:text-yellow-100 transition-colors">
+              {testSeries.title}
+            </h3>
+            
+            <p className="text-white/80 text-sm line-clamp-2">
+              {testSeries.description}
+            </p>
           </div>
+        </div>
 
-          {/* Price Section */}
+        {/* Content */}
+        <div className="p-4">
+          {/* Price */}
           <div className="flex items-center justify-between mb-4">
             <div>
               {isFree ? (
-                <div className="bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-xl font-bold text-lg">
-                  FREE
-                </div>
+                <span className="text-lg font-bold text-green-600">Free</span>
               ) : (
                 <div className="flex items-baseline gap-2">
-                  <span className="text-white font-bold text-2xl">₹{testSeries.price}</span>
+                  <span className="text-lg font-bold text-[#01427a]">₹{testSeries.price}</span>
                   {testSeries.originalPrice > testSeries.price && (
-                    <span className="text-white/70 text-sm line-through">₹{testSeries.originalPrice}</span>
+                    <span className="text-sm text-gray-400 line-through">₹{testSeries.originalPrice}</span>
                   )}
                 </div>
               )}
             </div>
             
-            {/* Difficulty Badge */}
-            <div className="bg-white/20 backdrop-blur-sm text-white px-3 py-1 rounded-xl text-xs font-medium">
-              {testSeries.difficulty?.charAt(0).toUpperCase() + testSeries.difficulty?.slice(1)}
+            {testSeries.difficulty && (
+              <span className={`px-2 py-1 rounded-full text-xs ${getDifficultyColor(testSeries.difficulty)}`}>
+                {testSeries.difficulty.charAt(0).toUpperCase() + testSeries.difficulty.slice(1)}
+              </span>
+            )}
+          </div>
+
+          {/* Stats */}
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="text-center p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center justify-center w-8 h-8 bg-blue-100 rounded-lg mx-auto mb-1">
+                <FaBook className="text-blue-600 text-sm" />
+              </div>
+              <div className="text-sm font-semibold text-gray-800">{testSeries.totalQuizzes || 0}</div>
+              <div className="text-xs text-gray-500">Tests</div>
             </div>
+            
+            <div className="text-center p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center justify-center w-8 h-8 bg-green-100 rounded-lg mx-auto mb-1">
+                <FaQuestionCircle className="text-green-600 text-sm" />
+              </div>
+              <div className="text-sm font-semibold text-gray-800">{testSeries.totalQuestions || 0}</div>
+              <div className="text-xs text-gray-500">Questions</div>
+            </div>
+            
+            <div className="text-center p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center justify-center w-8 h-8 bg-purple-100 rounded-lg mx-auto mb-1">
+                <FaClock className="text-purple-600 text-sm" />
+              </div>
+              <div className="text-sm font-semibold text-gray-800">{testSeries.estimatedDuration || 0}</div>
+              <div className="text-xs text-gray-500">Minutes</div>
+            </div>
+            
+            <div className="text-center p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center justify-center w-8 h-8 bg-orange-100 rounded-lg mx-auto mb-1">
+                <FaUsers className="text-orange-600 text-sm" />
+              </div>
+              <div className="text-sm font-semibold text-gray-800">{testSeries.enrolledStudentsCount || 0}</div>
+              <div className="text-xs text-gray-500">Enrolled</div>
+            </div>
+          </div>
+
+          {/* Tags */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            {testSeries.examType && (
+              <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">
+                {testSeries.examType}
+              </span>
+            )}
+            {testSeries.category && (
+              <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">
+                {testSeries.category}
+              </span>
+            )}
+            {testSeries.tags && testSeries.tags.slice(0, 2).map((tag, tagIndex) => (
+              <span
+                key={tagIndex}
+                className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs flex items-center gap-1"
+              >
+                <FaTag className="text-xs" />
+                {tag}
+              </span>
+            ))}
+            {testSeries.tags && testSeries.tags.length > 2 && (
+              <span className="text-gray-500 text-xs px-2 py-1">
+                +{testSeries.tags.length - 2} more
+              </span>
+            )}
+          </div>
+
+          {/* Action Button */}
+          <div className="w-full bg-[#00bcd4] text-white py-3 rounded-lg font-medium hover:bg-[#01427a] transition-colors duration-200 flex items-center justify-center gap-2">
+            <FaPlay className="text-sm" />
+            <span>{isEnrolled ? 'Continue Learning' : 'View Details'}</span>
+          </div>
+
+          {/* Creator Info */}
+          <div className="mt-3 text-center">
+            <p className="text-xs text-gray-500">
+              Created by {testSeries.creator?.fullName || testSeries.creator?.username || 'Unknown'}
+            </p>
           </div>
         </div>
-      </div>
-
-      {/* Content Section */}
-      <div className="p-6">
-        {/* Stats Grid - Test Series with Orange/Amber Theme */}
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <div className="bg-gradient-to-br from-orange-100 to-amber-200 rounded-2xl p-4 text-center border-2 border-orange-300 shadow-lg">
-            <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-amber-600 rounded-xl flex items-center justify-center mx-auto mb-2 shadow-md">
-              <FaBook className="text-white text-sm" />
-            </div>
-            <div className="text-xl font-bold text-orange-800">{testSeries.totalQuizzes || 0}</div>
-            <div className="text-orange-600 text-xs font-medium">Tests</div>
-          </div>
-          
-          <div className="bg-gradient-to-br from-amber-100 to-yellow-200 rounded-2xl p-4 text-center border-2 border-amber-300 shadow-lg">
-            <div className="w-8 h-8 bg-gradient-to-r from-amber-500 to-yellow-600 rounded-xl flex items-center justify-center mx-auto mb-2 shadow-md">
-              <FaQuestionCircle className="text-white text-sm" />
-            </div>
-            <div className="text-xl font-bold text-amber-800">{testSeries.totalQuestions || 0}</div>
-            <div className="text-amber-600 text-xs font-medium">Questions</div>
-          </div>
-          
-          <div className="bg-gradient-to-br from-yellow-100 to-orange-200 rounded-2xl p-4 text-center border-2 border-yellow-300 shadow-lg">
-            <div className="w-8 h-8 bg-gradient-to-r from-yellow-500 to-orange-600 rounded-xl flex items-center justify-center mx-auto mb-2 shadow-md">
-              <FaClock className="text-white text-sm" />
-            </div>
-            <div className="text-xl font-bold text-yellow-800">{testSeries.estimatedDuration || 0}</div>
-            <div className="text-yellow-600 text-xs font-medium">Minutes</div>
-          </div>
-          
-          <div className="bg-gradient-to-br from-orange-100 to-red-200 rounded-2xl p-4 text-center border-2 border-orange-300 shadow-lg">
-            <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-600 rounded-xl flex items-center justify-center mx-auto mb-2 shadow-md">
-              <FaUsers className="text-white text-sm" />
-            </div>
-            <div className="text-xl font-bold text-orange-800">{testSeries.enrolledStudentsCount || 0}</div>
-            <div className="text-orange-600 text-xs font-medium">Enrolled</div>
-          </div>
-        </div>
-
-        {/* Tags */}
-        <div className="flex flex-wrap gap-2 mb-6">
-          {testSeries.examType && (
-            <span className="bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-800 px-3 py-1 rounded-xl text-xs font-medium border border-indigo-200">
-              {testSeries.examType}
-            </span>
-          )}
-          {testSeries.category && (
-            <span className="bg-gradient-to-r from-pink-100 to-rose-100 text-pink-800 px-3 py-1 rounded-xl text-xs font-medium border border-pink-200">
-              {testSeries.category}
-            </span>
-          )}
-          {testSeries.tags && testSeries.tags.slice(0, 2).map((tag, tagIndex) => (
-            <span
-              key={tagIndex}
-              className="bg-gradient-to-r from-slate-100 to-gray-100 text-slate-700 px-3 py-1 rounded-xl text-xs font-medium border border-slate-200 flex items-center gap-1"
-            >
-              <FaTag className="text-xs" />
-              {tag}
-            </span>
-          ))}
-          {testSeries.tags && testSeries.tags.length > 2 && (
-            <span className="text-slate-500 text-xs font-medium px-2 py-1">
-              +{testSeries.tags.length - 2} more
-            </span>
-          )}
-        </div>
-
-        {/* Action Button */}
-        <Link
-          to={`/test-series/${testSeries._id}`}
-          className={`w-full flex items-center justify-center gap-3 px-6 py-4 rounded-2xl font-bold text-white transition-all duration-300 group-hover:shadow-lg transform group-hover:scale-105 ${
-            isEnrolled 
-              ? 'bg-gradient-to-r from-[#00bcd4] to-[#01427a] hover:from-[#00bcd4]/90 hover:to-[#01427a]/90' 
-              : isPremium 
-                ? 'bg-gradient-to-r from-[#01427a] to-[#00bcd4] hover:from-[#01427a]/90 hover:to-[#00bcd4]/90'
-                : 'bg-gradient-to-r from-[#00bcd4] to-[#01427a] hover:from-[#00bcd4]/90 hover:to-[#01427a]/90'
-          }`}
-        >
-          <FaPlay className="text-sm" />
-          <span>{isEnrolled ? 'Continue Learning' : 'View Details'}</span>
-          <FaArrowRight className="text-sm group-hover:translate-x-1 transition-transform" />
-        </Link>
-
-        {/* Creator Info */}
-        <div className="mt-4 text-center">
-          <div className="text-xs text-slate-500">
-            Created by {testSeries.creator?.fullName || testSeries.creator?.username || 'Unknown'}
-          </div>
-        </div>
-      </div>
-    </motion.div>
+      </Link>
+    </div>
   );
 };
 
