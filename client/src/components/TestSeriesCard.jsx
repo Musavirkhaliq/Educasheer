@@ -19,6 +19,10 @@ const TestSeriesCard = ({ testSeries, index, getDifficultyColor, currentCategory
   const isFree = testSeries.price === 0;
   const isPremium = testSeries.price > 0;
   const isEnrolledMode = currentCategory === 'enrolled';
+
+    console.log("Test Series Data:", testSeries);
+  
+ 
   
   return (
     <div className={`bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border group ${
