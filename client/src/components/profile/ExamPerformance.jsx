@@ -232,8 +232,10 @@ const ExamPerformance = () => {
             className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#00bcd4]"
           >
             <option value="">All Types</option>
-            <option value="quiz">Quizzes</option>
-            <option value="exam">Exams</option>
+            <option value="Topic Test">Topic Tests</option>
+            <option value="Subject Test">Subject Tests</option>
+            <option value="Multi Subject">Multi Subject</option>
+            <option value="Full Test">Full Tests</option>
           </select>
 
           <button
@@ -304,11 +306,17 @@ const ExamPerformance = () => {
                         </div>
                         <div className="text-sm text-gray-500">
                           <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            attempt.quiz.quizType === 'exam' 
-                              ? 'bg-purple-100 text-purple-800' 
-                              : 'bg-blue-100 text-blue-800'
+                            attempt.quiz.quizType === 'Topic Test' 
+                              ? 'bg-blue-100 text-blue-800' 
+                              : attempt.quiz.quizType === 'Subject Test'
+                              ? 'bg-green-100 text-green-800'
+                              : attempt.quiz.quizType === 'Multi Subject'
+                              ? 'bg-purple-100 text-purple-800'
+                              : attempt.quiz.quizType === 'Full Test'
+                              ? 'bg-red-100 text-red-800'
+                              : 'bg-gray-100 text-gray-800'
                           }`}>
-                            {attempt.quiz.quizType === 'exam' ? 'Exam' : 'Quiz'}
+                            {attempt.quiz.quizType}
                           </span>
                         </div>
                       </div>

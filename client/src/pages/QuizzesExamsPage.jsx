@@ -83,7 +83,17 @@ const QuizzesExamsPage = () => {
                   : quiz.description}
               </div>
               <div className="flex flex-wrap gap-2 text-xs mb-2">
-                <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded">{quiz.quizType === 'quiz' ? 'Quiz' : 'Exam'}</span>
+                <span className={`px-2 py-0.5 rounded ${
+                  quiz.quizType === 'Topic Test' 
+                    ? 'bg-blue-100 text-blue-700' 
+                    : quiz.quizType === 'Subject Test'
+                    ? 'bg-green-100 text-green-700'
+                    : quiz.quizType === 'Multi Subject'
+                    ? 'bg-purple-100 text-purple-700'
+                    : quiz.quizType === 'Full Test'
+                    ? 'bg-red-100 text-red-700'
+                    : 'bg-gray-100 text-gray-700'
+                }`}>{quiz.quizType}</span>
                 {quiz.category && <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded">{quiz.category}</span>}
                 <span className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded">{quiz.questions?.length || 0} questions</span>
                 <span className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded">{quiz.timeLimit} min</span>

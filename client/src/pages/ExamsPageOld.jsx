@@ -18,6 +18,7 @@ import {
   FaUsers,
   FaListAlt,
   FaTag,
+  FaLayerGroup,
   FaFire,
   FaChartLine,
 
@@ -466,8 +467,10 @@ const ExamsPage = () => {
                   <div className="space-y-2">
                     {[
                       { value: '', label: 'All Types', icon: FaBook },
-                      { value: 'exam', label: 'Exams', icon: FaGraduationCap },
-                      { value: 'quiz', label: 'Quizzes', icon: FaQuestionCircle }
+                      { value: 'Topic Test', label: 'Topic Tests', icon: FaBookOpen },
+                      { value: 'Subject Test', label: 'Subject Tests', icon: FaGraduationCap },
+                      { value: 'Multi Subject', label: 'Multi Subject', icon: FaLayerGroup },
+                      { value: 'Full Test', label: 'Full Tests', icon: FaTrophy }
                     ].map((type) => (
                       <button
                         key={type.value}
@@ -810,26 +813,55 @@ const ExamsPage = () => {
                       onClick={() => handleQuizClick(quiz)}
                     >
                       {/* Header with beautiful gradient */}
-                      <div className={`relative p-6 ${quiz.quizType === 'exam'
-                        ? 'bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 border-l-4 border-l-amber-400'
-                        : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border-l-4 border-l-blue-400'
+                      <div className={`relative p-6 ${
+                        quiz.quizType === 'Topic Test'
+                          ? 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border-l-4 border-l-blue-400'
+                          : quiz.quizType === 'Subject Test'
+                          ? 'bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 border-l-4 border-l-green-400'
+                          : quiz.quizType === 'Multi Subject'
+                          ? 'bg-gradient-to-br from-purple-50 via-violet-50 to-indigo-50 border-l-4 border-l-purple-400'
+                          : quiz.quizType === 'Full Test'
+                          ? 'bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 border-l-4 border-l-amber-400'
+                          : 'bg-gradient-to-br from-gray-50 via-slate-50 to-zinc-50 border-l-4 border-l-gray-400'
                         }`}>
                         <div className="flex items-start justify-between mb-4">
                           <div className="flex-1">
                             {/* Quiz Type Badge */}
-                            <div className={`inline-flex items-center gap-2 rounded-full px-3 py-1 mb-3 ${quiz.quizType === 'exam'
-                              ? 'bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border border-amber-200'
-                              : 'bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 border border-blue-200'
+                            <div className={`inline-flex items-center gap-2 rounded-full px-3 py-1 mb-3 ${
+                              quiz.quizType === 'Topic Test'
+                                ? 'bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 border border-blue-200'
+                                : quiz.quizType === 'Subject Test'
+                                ? 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200'
+                                : quiz.quizType === 'Multi Subject'
+                                ? 'bg-gradient-to-r from-purple-100 to-violet-100 text-purple-800 border border-purple-200'
+                                : quiz.quizType === 'Full Test'
+                                ? 'bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border border-amber-200'
+                                : 'bg-gradient-to-r from-gray-100 to-slate-100 text-gray-800 border border-gray-200'
                               }`}>
-                              {quiz.quizType === 'exam' ? (
+                              {quiz.quizType === 'Topic Test' ? (
+                                <>
+                                  <FaBookOpen className="text-blue-600 text-sm" />
+                                  <span className="text-xs font-bold">TOPIC TEST</span>
+                                </>
+                              ) : quiz.quizType === 'Subject Test' ? (
+                                <>
+                                  <FaGraduationCap className="text-green-600 text-sm" />
+                                  <span className="text-xs font-bold">SUBJECT TEST</span>
+                                </>
+                              ) : quiz.quizType === 'Multi Subject' ? (
+                                <>
+                                  <FaLayerGroup className="text-purple-600 text-sm" />
+                                  <span className="text-xs font-bold">MULTI SUBJECT</span>
+                                </>
+                              ) : quiz.quizType === 'Full Test' ? (
                                 <>
                                   <FaTrophy className="text-amber-600 text-sm" />
-                                  <span className="text-xs font-bold">EXAM</span>
+                                  <span className="text-xs font-bold">FULL TEST</span>
                                 </>
                               ) : (
                                 <>
-                                  <FaBookOpen className="text-blue-600 text-sm" />
-                                  <span className="text-xs font-bold">QUIZ</span>
+                                  <FaQuestionCircle className="text-gray-600 text-sm" />
+                                  <span className="text-xs font-bold">{quiz.quizType?.toUpperCase() || 'TEST'}</span>
                                 </>
                               )}
                             </div>
@@ -839,7 +871,13 @@ const ExamsPage = () => {
                               : quiz.title.length > 30
                                 ? 'text-lg line-clamp-2 min-h-[3.5rem]'
                                 : 'text-xl min-h-[2.5rem]'
-                              } ${quiz.quizType === 'exam' ? 'text-amber-900' : 'text-indigo-900'}`}>
+                              } ${
+                                quiz.quizType === 'Topic Test' ? 'text-blue-900' 
+                                : quiz.quizType === 'Subject Test' ? 'text-green-900'
+                                : quiz.quizType === 'Multi Subject' ? 'text-purple-900'
+                                : quiz.quizType === 'Full Test' ? 'text-amber-900'
+                                : 'text-gray-900'
+                              }`}>
                               {quiz.title}
                             </h3>
 
@@ -858,14 +896,27 @@ const ExamsPage = () => {
 
                           {/* Type Icon */}
                           <div className="ml-4">
-                            <div className={`p-3 rounded-xl border ${quiz.quizType === 'exam'
-                              ? 'bg-gradient-to-br from-amber-100 to-orange-100 text-amber-700 border-amber-200'
-                              : 'bg-gradient-to-br from-blue-100 to-indigo-100 text-blue-700 border-blue-200'
+                            <div className={`p-3 rounded-xl border ${
+                              quiz.quizType === 'Topic Test'
+                                ? 'bg-gradient-to-br from-blue-100 to-indigo-100 text-blue-700 border-blue-200'
+                                : quiz.quizType === 'Subject Test'
+                                ? 'bg-gradient-to-br from-green-100 to-emerald-100 text-green-700 border-green-200'
+                                : quiz.quizType === 'Multi Subject'
+                                ? 'bg-gradient-to-br from-purple-100 to-violet-100 text-purple-700 border-purple-200'
+                                : quiz.quizType === 'Full Test'
+                                ? 'bg-gradient-to-br from-amber-100 to-orange-100 text-amber-700 border-amber-200'
+                                : 'bg-gradient-to-br from-gray-100 to-slate-100 text-gray-700 border-gray-200'
                               }`}>
-                              {quiz.quizType === 'exam' ? (
+                              {quiz.quizType === 'Topic Test' ? (
+                                <FaBookOpen className="text-xl" />
+                              ) : quiz.quizType === 'Subject Test' ? (
+                                <FaGraduationCap className="text-xl" />
+                              ) : quiz.quizType === 'Multi Subject' ? (
+                                <FaLayerGroup className="text-xl" />
+                              ) : quiz.quizType === 'Full Test' ? (
                                 <FaTrophy className="text-xl" />
                               ) : (
-                                <FaBookOpen className="text-xl" />
+                                <FaQuestionCircle className="text-xl" />
                               )}
                             </div>
                           </div>
@@ -979,9 +1030,16 @@ const ExamsPage = () => {
                                 <FaHeart className="text-rose-600 text-xs" />
                               </button>
 
-                              <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 ${quiz.quizType === 'exam'
-                                ? 'bg-gradient-to-br from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600'
-                                : 'bg-gradient-to-br from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600'
+                              <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 ${
+                                quiz.quizType === 'Topic Test'
+                                  ? 'bg-gradient-to-br from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600'
+                                  : quiz.quizType === 'Subject Test'
+                                  ? 'bg-gradient-to-br from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600'
+                                  : quiz.quizType === 'Multi Subject'
+                                  ? 'bg-gradient-to-br from-purple-500 to-violet-500 hover:from-purple-600 hover:to-violet-600'
+                                  : quiz.quizType === 'Full Test'
+                                  ? 'bg-gradient-to-br from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600'
+                                  : 'bg-gradient-to-br from-gray-500 to-slate-500 hover:from-gray-600 hover:to-slate-600'
                                 } shadow-lg hover:shadow-xl`}>
                                 <FaPlay className="text-white text-sm ml-0.5" />
                               </div>

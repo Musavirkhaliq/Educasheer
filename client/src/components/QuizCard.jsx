@@ -14,7 +14,7 @@ import {
 const QuizCard = ({ quiz, index, onQuizClick, getDifficultyColor, isAuthenticated, currentCategory }) => {
   const requiresEnrollment = quiz.testSeries && !quiz.isEnrolledInTestSeries && currentCategory === 'all';
   const isAccessible = quiz.isEnrolledInTestSeries || !quiz.testSeries;
-  const isExam = quiz.quizType === 'exam';
+  const isFullTest = quiz.quizType === 'Full Test';
   const isEnrolledMode = currentCategory === 'enrolled';
   
   return (

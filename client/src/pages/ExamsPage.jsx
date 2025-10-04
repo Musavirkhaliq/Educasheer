@@ -13,10 +13,13 @@ import {
   FaCheckCircle,
   FaInfoCircle,
   FaEye,
-  FaUserCheck
+  FaUserCheck,
+  FaChartLine
 } from 'react-icons/fa';
 import QuizCard from '../components/QuizCard';
 import TestSeriesCard from '../components/TestSeriesCard';
+import EnhancedContainer from '../components/layout/EnhancedContainer';
+import ResponsiveGrid from '../components/layout/ResponsiveGrid';
 
 const ExamsPage = () => {
   const [search, setSearch] = useState('');
@@ -158,15 +161,25 @@ const ExamsPage = () => {
     <div className="bg-gray-50 min-h-screen">
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-[#01427a] to-[#00bcd4] text-white">
-        <div className="container mx-auto px-4 py-8 sm:py-12 md:py-16">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 sm:mb-4">Exams & Quizzes</h1>
-          <p className="text-base sm:text-lg md:text-xl text-white/80 max-w-2xl">
-            Master your subjects with expertly crafted assessments. Track progress and achieve excellence.
-          </p>
-        </div>
+        <EnhancedContainer maxWidth="11xl" padding="responsive">
+          <div className="py-8 sm:py-12 md:py-16 lg:py-20">
+            <div className="max-w-4xl">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-2 sm:mb-4 lg:mb-6">
+                Exams & Quizzes
+              </h1>
+              <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-white/80 max-w-3xl leading-relaxed">
+                Master your subjects with expertly crafted assessments. Track progress and achieve excellence.
+              </p>
+            </div>
+          </div>
+        </EnhancedContainer>
       </div>
 
-      <div className="container mx-auto px-4 py-6 sm:py-8">
+      <EnhancedContainer 
+        maxWidth="10xl" 
+        padding="responsive"
+        className="py-6 sm:py-8 lg:py-12"
+      >
         {/* Search Bar */}
         <div className="mb-6 sm:mb-8 bg-white rounded-xl shadow-sm p-4 -mt-6 sm:-mt-8">
           <div className="relative">
@@ -229,6 +242,15 @@ const ExamsPage = () => {
                 )}
               </button>
             )}
+
+            {/* Exam Performance Link - Always visible */}
+            <button
+              onClick={() => navigate('/exam-performance')}
+              className="flex items-center gap-1 sm:gap-2 py-2 sm:py-3 px-3 sm:px-5 rounded-lg font-medium text-xs sm:text-sm whitespace-nowrap transition-all duration-200 bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100"
+            >
+              <FaChartLine className="text-purple-600" />
+              <span className="font-semibold">Exam Performance</span>
+            </button>
           </nav>
         </div>
 
@@ -492,7 +514,15 @@ const ExamsPage = () => {
                 )}
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
+              <ResponsiveGrid
+                cols={{
+                  xs: 1,
+                  sm: 2,
+                  lg: 3,
+                  xl: 4
+                }}
+                gap="responsive"
+              >
                 {quizzes.map((quiz, index) => (
                   <QuizCard
                     key={quiz._id}
@@ -504,7 +534,7 @@ const ExamsPage = () => {
                     currentCategory={currentCategory}
                   />
                 ))}
-              </div>
+              </ResponsiveGrid>
             )}
 
             {/* Pagination */}
@@ -575,7 +605,15 @@ const ExamsPage = () => {
                 )}
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
+              <ResponsiveGrid
+                cols={{
+                  xs: 1,
+                  sm: 2,
+                  lg: 3,
+                  xl: 4
+                }}
+                gap="responsive"
+              >
                 {testSeries.map((series, index) => (
                   <TestSeriesCard
                     key={series._id}
@@ -585,11 +623,11 @@ const ExamsPage = () => {
                     currentCategory={currentCategory}
                   />
                 ))}
-              </div>
+              </ResponsiveGrid>
             )}
           </>
         )}
-      </div>
+      </EnhancedContainer>
     </div>
   );
 };

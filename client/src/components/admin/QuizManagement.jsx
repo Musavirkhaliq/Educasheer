@@ -428,11 +428,17 @@ const QuizManagement = () => {
                       </div>
                       <div className="flex flex-wrap gap-1">
                         <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                          quiz.quizType === 'exam' 
-                            ? 'bg-red-100 text-red-800' 
-                            : 'bg-blue-100 text-blue-800'
+                          quiz.quizType === 'Topic Test' 
+                            ? 'bg-blue-100 text-blue-800' 
+                            : quiz.quizType === 'Subject Test'
+                            ? 'bg-green-100 text-green-800'
+                            : quiz.quizType === 'Multi Subject'
+                            ? 'bg-purple-100 text-purple-800'
+                            : quiz.quizType === 'Full Test'
+                            ? 'bg-red-100 text-red-800'
+                            : 'bg-gray-100 text-gray-800'
                         }`}>
-                          {quiz.quizType === 'exam' ? 'Exam' : 'Quiz'}
+                          {quiz.quizType}
                         </span>
                         {quiz.category && (
                           <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">

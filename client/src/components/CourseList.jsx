@@ -5,6 +5,7 @@ import { BiTime } from 'react-icons/bi';
 import { FiVideo } from 'react-icons/fi';
 import { FaEdit, FaTrash, FaMapMarkerAlt, FaCalendarAlt, FaGraduationCap } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
+import CardGrid from './layout/CardGrid';
 
 const CourseCard = ({ course, showControls, onDelete }) => {
   const { currentUser } = useAuth();
@@ -352,7 +353,7 @@ const CourseList = ({
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
+        <CardGrid variant="default" gap="responsive">
           {courses.map((course) => (
             <CourseCard
               key={course._id}
@@ -361,7 +362,7 @@ const CourseList = ({
               onDelete={handleDeleteCourse}
             />
           ))}
-        </div>
+        </CardGrid>
       )}
     </div>
   );

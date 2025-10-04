@@ -6,6 +6,43 @@ export default {
   ],
   theme: {
     extend: {
+      screens: {
+        'xs': '475px',
+        '3xl': '1600px',
+        '4xl': '1920px',
+        '5xl': '2560px',
+      },
+      maxWidth: {
+        '8xl': '88rem',
+        '9xl': '96rem',
+        '10xl': '104rem',
+        '11xl': '112rem',
+      },
+      gridTemplateColumns: {
+        '13': 'repeat(13, minmax(0, 1fr))',
+        '14': 'repeat(14, minmax(0, 1fr))',
+        '15': 'repeat(15, minmax(0, 1fr))',
+        '16': 'repeat(16, minmax(0, 1fr))',
+        'auto-fit-xs': 'repeat(auto-fit, minmax(200px, 1fr))',
+        'auto-fit-sm': 'repeat(auto-fit, minmax(250px, 1fr))',
+        'auto-fit-md': 'repeat(auto-fit, minmax(300px, 1fr))',
+        'auto-fit-lg': 'repeat(auto-fit, minmax(350px, 1fr))',
+        'auto-fit-xl': 'repeat(auto-fit, minmax(400px, 1fr))',
+        // Sidebar layouts - left sidebar
+        'sidebar-sm-left': '256px 1fr',
+        'sidebar-md-left': '288px 1fr', 
+        'sidebar-lg-left': '320px 1fr',
+        'sidebar-xl-left': '384px 1fr',
+        // Sidebar layouts - right sidebar
+        'sidebar-sm-right': '1fr 256px',
+        'sidebar-md-right': '1fr 288px',
+        'sidebar-lg-right': '1fr 320px',
+        'sidebar-xl-right': '1fr 384px',
+        // Three column layouts
+        'three-column': '250px 1fr 250px',
+        'three-column-lg': '300px 1fr 300px',
+        'three-column-xl': '350px 1fr 350px',
+      },
       colors: {
         primary: {
           DEFAULT: '#00bcd4',

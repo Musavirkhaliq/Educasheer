@@ -610,3 +610,138 @@ p {
     scroll-behavior: smooth;
   }
 }
+
+/* Enhanced Layout Utilities for Better Horizontal Space Utilization */
+@layer utilities {
+  /* Wide container utilities */
+  .container-wide {
+    @apply max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16;
+  }
+
+  .container-ultra-wide {
+    @apply max-w-11xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 3xl:px-20;
+  }
+
+  /* Enhanced grid utilities for larger screens */
+  .grid-responsive-cards {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 3xl:grid-cols-6 4xl:grid-cols-7 5xl:grid-cols-8;
+  }
+
+  .grid-responsive-wide {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 3xl:grid-cols-8;
+  }
+
+  /* Sidebar layout utilities */
+  .layout-with-sidebar {
+    @apply grid grid-cols-1 lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_384px] gap-6 lg:gap-8 xl:gap-12;
+  }
+
+  .layout-with-left-sidebar {
+    @apply grid grid-cols-1 lg:grid-cols-[320px_1fr] xl:grid-cols-[384px_1fr] gap-6 lg:gap-8 xl:gap-12;
+  }
+
+  .layout-three-column {
+    @apply grid grid-cols-1 xl:grid-cols-[280px_1fr_280px] 2xl:grid-cols-[320px_1fr_320px] 3xl:grid-cols-[384px_1fr_384px] gap-6 lg:gap-8 xl:gap-12;
+  }
+
+  /* Enhanced spacing for larger screens */
+  .space-y-responsive {
+    @apply space-y-6 lg:space-y-8 xl:space-y-12 2xl:space-y-16;
+  }
+
+  .gap-responsive {
+    @apply gap-4 sm:gap-5 md:gap-6 lg:gap-7 xl:gap-8 2xl:gap-10;
+  }
+
+  /* Enhanced padding for larger screens */
+  .p-responsive {
+    @apply p-4 sm:p-6 lg:p-8 xl:p-12 2xl:p-16;
+  }
+
+  .px-responsive {
+    @apply px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 3xl:px-20;
+  }
+
+  .py-responsive {
+    @apply py-6 sm:py-8 lg:py-12 xl:py-16 2xl:py-20;
+  }
+
+  /* Enhanced text sizing for larger screens */
+  .text-responsive-xl {
+    @apply text-xl sm:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl;
+  }
+
+  .text-responsive-lg {
+    @apply text-lg sm:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl;
+  }
+
+  .text-responsive-md {
+    @apply text-base sm:text-lg lg:text-xl xl:text-2xl;
+  }
+
+  /* Card enhancements for larger screens */
+  .card-enhanced {
+    @apply bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300;
+  }
+
+  .card-enhanced-lg {
+    @apply bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 lg:p-8 xl:p-10;
+  }
+
+  /* Button enhancements for larger screens */
+  .btn-enhanced {
+    @apply px-6 py-3 lg:px-8 lg:py-4 xl:px-10 xl:py-5 rounded-lg lg:rounded-xl font-medium transition-all duration-300;
+  }
+
+  /* Navigation enhancements */
+  .nav-enhanced {
+    @apply flex items-center gap-4 lg:gap-6 xl:gap-8 2xl:gap-10;
+  }
+
+  /* Form enhancements for larger screens */
+  .form-enhanced {
+    @apply space-y-4 lg:space-y-6 xl:space-y-8;
+  }
+
+  .input-enhanced {
+    @apply w-full px-4 py-3 lg:px-6 lg:py-4 xl:px-8 xl:py-5 rounded-lg lg:rounded-xl border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300;
+  }
+}
+
+/* Enhanced responsive breakpoints for ultra-wide screens */
+@media (min-width: 1600px) {
+  .container {
+    max-width: 1536px;
+  }
+}
+
+@media (min-width: 1920px) {
+  .container {
+    max-width: 1792px;
+  }
+}
+
+@media (min-width: 2560px) {
+  .container {
+    max-width: 2304px;
+  }
+}
+
+/* Enhanced grid layouts for ultra-wide screens */
+@media (min-width: 1600px) {
+  .grid-ultra-wide {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+}
+
+@media (min-width: 1920px) {
+  .grid-ultra-wide {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+}
+
+@media (min-width: 2560px) {
+  .grid-ultra-wide {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  }
+}

@@ -182,11 +182,17 @@ const CourseQuizzes = ({ courseId, courseName, isInstructor = false }) => {
 
                     <div className="flex items-center gap-1 text-sm text-gray-500">
                       <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                        quiz.quizType === 'quiz'
+                        quiz.quizType === 'Topic Test'
                           ? 'bg-blue-100 text-blue-700'
-                          : 'bg-purple-100 text-purple-700'
+                          : quiz.quizType === 'Subject Test'
+                          ? 'bg-green-100 text-green-700'
+                          : quiz.quizType === 'Multi Subject'
+                          ? 'bg-purple-100 text-purple-700'
+                          : quiz.quizType === 'Full Test'
+                          ? 'bg-red-100 text-red-700'
+                          : 'bg-gray-100 text-gray-700'
                       }`}>
-                        {quiz.quizType === 'quiz' ? 'Quiz' : 'Exam'}
+                        {quiz.quizType}
                       </span>
                     </div>
 

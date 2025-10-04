@@ -4,7 +4,7 @@ import { gamificationAPI } from '../../services/api';
 import { FaStar, FaFire, FaTrophy, FaMedal } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 
-const GamificationWidget = () => {
+const GamificationWidget = ({ compact = false }) => {
   const [gamificationData, setGamificationData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -54,6 +54,51 @@ const GamificationWidget = () => {
   const { points, streak, badges = [] } = gamificationData;
   const displayBadges = badges.slice(0, 3);
   const progressPercentage = Math.min(100, Math.round((points?.currentLevelPoints / points?.pointsToNextLevel) * 100));
+
+  if (compact) {
+    return (
+      <motion.div
+        className="bg-white rounded-lg shadow-sm overflow-hidden"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="bg-gradient-to-r from-[#00bcd4] to-[#01427a] p-3 text-white">
+          <div className="flex justify-between items-center">
+            <h3 className="font-medium text-sm">Level {points?.level || 1}</h3>
+            <div className="flex items-center">
+              <FaStar className="text-yellow-300 mr-1 text-sm" />
+              <span className="text-sm">{points?.totalPoints || 0}</span>
+            </div>
+          </div>
+          {/* Compact Progress bar */}
+          <div className="mt-2">
+            <div className="w-full bg-white/20 rounded-full h-1.5">
+              <div
+                className="bg-white h-1.5 rounded-full"
+                style={{ width: `${progressPercentage}%` }}
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-3">
+          <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center">
+              <FaFire className="text-orange-500 mr-1 text-sm" />
+              <span className="text-gray-600">{streak?.currentStreak || 0} day streak</span>
+            </div>
+            <Link
+              to="/gamification"
+              className="text-[#00bcd4] hover:text-[#01427a] font-medium"
+            >
+              View More
+            </Link>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div

@@ -376,7 +376,7 @@ const QuizAttemptsOverview = () => {
                         {attempt.quiz.title}
                       </div>
                       <div className="text-sm text-gray-500">
-                        {attempt.quiz.quizType === 'quiz' ? 'Quiz' : 'Exam'}
+                        {attempt.quiz.quizType}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">

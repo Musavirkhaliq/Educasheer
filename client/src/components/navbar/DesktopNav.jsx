@@ -79,7 +79,7 @@ const DesktopNav = () => {
           </Link>
 
           {/* Navigation Links */}
-          <div className="hidden xl:flex items-center space-x-6">
+          <div className="hidden xl:flex items-center space-x-4 2xl:space-x-6 3xl:space-x-8">
             {/* Main navigation links */}
             <Link
               to="/"

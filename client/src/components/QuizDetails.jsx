@@ -185,7 +185,7 @@ const QuizDetails = () => {
                     </div>
                     <div>
                       <span className="bg-white/20 text-white px-3 py-1 rounded-full text-sm font-medium">
-                        {quiz.quizType === 'quiz' ? 'Quiz' : 'Exam'}
+                        {quiz.quizType}
                       </span>
                     </div>
                   </div>
@@ -267,7 +267,7 @@ const QuizDetails = () => {
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
                           <span className="text-blue-700">Type:</span>
-                          <span className="font-medium text-blue-900 capitalize">{quiz.quizType || 'Quiz'}</span>
+                          <span className="font-medium text-blue-900">{quiz.quizType || 'Topic Test'}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-blue-700">Difficulty:</span>

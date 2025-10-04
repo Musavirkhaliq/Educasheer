@@ -37,7 +37,7 @@ const QuizForm = ({ isEditing = false }) => {
     difficulty: 'medium',
     timeLimit: 30,
     passingScore: 70,
-    quizType: 'quiz',
+    quizType: 'Topic Test',
     maxAttempts: 0,
     allowReview: true,
     showCorrectAnswers: true,
@@ -89,7 +89,7 @@ const QuizForm = ({ isEditing = false }) => {
             difficulty: quizData.difficulty || 'medium',
             timeLimit: quizData.timeLimit || 30,
             passingScore: quizData.passingScore || 70,
-            quizType: quizData.quizType || 'quiz',
+            quizType: quizData.quizType || 'Topic Test',
             maxAttempts: quizData.maxAttempts || 0,
             allowReview: quizData.allowReview !== false,
             showCorrectAnswers: quizData.showCorrectAnswers !== false,
@@ -660,8 +660,10 @@ const QuizForm = ({ isEditing = false }) => {
                 onChange={handleInputChange}
                 className="w-full border border-gray-300 rounded-md px-3 py-2"
               >
-                <option value="quiz">Quiz</option>
-                <option value="exam">Exam</option>
+                <option value="Topic Test">Topic Test</option>
+                <option value="Subject Test">Subject Test</option>
+                <option value="Multi Subject">Multi Subject</option>
+                <option value="Full Test">Full Test</option>
               </select>
             </div>
 

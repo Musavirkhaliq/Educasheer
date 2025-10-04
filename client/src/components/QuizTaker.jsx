@@ -70,7 +70,7 @@ const QuizTaker = () => {
   // FIX: Created a dedicated function to start the timer
   const startTimer = useCallback(() => {
     if (timerRef.current) {
-        clearInterval(timerRef.current);
+      clearInterval(timerRef.current);
     }
     timerRef.current = setInterval(() => {
       setTimeLeft(prevTime => {
@@ -633,7 +633,7 @@ const QuizTaker = () => {
         </div>
       )}
 
-      <div className="relative flex max-w-7xl mx-auto p-4 sm:p-6 gap-6">
+      <div className="relative flex max-w-11xl mx-auto p-4 sm:p-6 lg:p-8 xl:p-12 gap-6 lg:gap-8 xl:gap-12">
         {/* Main Content Area */}
         <div className={`flex-1 transition-all duration-300 ${showQuestionPalette ? 'lg:mr-0' : ''}`}>
           {/* Quiz Header Card */}
@@ -675,13 +675,12 @@ const QuizTaker = () => {
 
                 {/* Timer */}
                 {timeLeft !== null && (
-                  <div className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 rounded-xl shadow-lg flex-shrink-0 ${
-                    timeLeft < 60
-                      ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white animate-pulse shadow-red-200'
-                      : timeLeft < 300
+                  <div className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 rounded-xl shadow-lg flex-shrink-0 ${timeLeft < 60
+                    ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white animate-pulse shadow-red-200'
+                    : timeLeft < 300
                       ? 'bg-gradient-to-r from-orange-400 to-yellow-500 text-white shadow-orange-200'
                       : 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-blue-200'
-                  }`}>
+                    }`}>
                     <FaClock className="text-sm sm:text-lg" />
                     <div className="text-center">
                       <div className="font-bold text-sm sm:text-lg">{formatTime(timeLeft)}</div>
@@ -774,11 +773,10 @@ const QuizTaker = () => {
                 {/* Mark for Review Button */}
                 <button
                   onClick={() => toggleMarkForReview()}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-300 font-medium text-sm ${
-                    markedForReview.has(currentQuestionIndex)
-                      ? 'bg-gradient-to-r from-orange-400 to-red-500 text-white shadow-lg'
-                      : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                  }`}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-300 font-medium text-sm ${markedForReview.has(currentQuestionIndex)
+                    ? 'bg-gradient-to-r from-orange-400 to-red-500 text-white shadow-lg'
+                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                    }`}
                 >
                   {markedForReview.has(currentQuestionIndex) ? <FaBookmark /> : <FaRegBookmark />}
                   <span className="hidden sm:inline">
@@ -843,24 +841,21 @@ const QuizTaker = () => {
                       <div
                         key={option._id}
                         onClick={() => handleOptionSelect(option._id)}
-                        className={`group p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 transform active:scale-95 sm:hover:scale-[1.02] touch-manipulation ${
-                          isSelected
-                            ? 'border-blue-400 bg-gradient-to-r from-blue-50 to-indigo-50 shadow-lg shadow-blue-100'
-                            : 'border-gray-200 hover:border-blue-300 hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 hover:shadow-md'
-                        }`}
+                        className={`group p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 transform active:scale-95 sm:hover:scale-[1.02] touch-manipulation ${isSelected
+                          ? 'border-blue-400 bg-gradient-to-r from-blue-50 to-indigo-50 shadow-lg shadow-blue-100'
+                          : 'border-gray-200 hover:border-blue-300 hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 hover:shadow-md'
+                          }`}
                       >
                         <div className="flex items-start gap-3 sm:gap-4">
-                          <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl border-2 flex items-center justify-center font-bold transition-all duration-300 flex-shrink-0 mt-1 ${
-                            isSelected
-                              ? 'bg-gradient-to-r from-blue-500 to-indigo-600 border-blue-500 text-white shadow-lg'
-                              : 'border-gray-300 text-gray-600 group-hover:border-blue-400 group-hover:text-blue-600'
-                          }`}>
+                          <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl border-2 flex items-center justify-center font-bold transition-all duration-300 flex-shrink-0 mt-1 ${isSelected
+                            ? 'bg-gradient-to-r from-blue-500 to-indigo-600 border-blue-500 text-white shadow-lg'
+                            : 'border-gray-300 text-gray-600 group-hover:border-blue-400 group-hover:text-blue-600'
+                            }`}>
                             {isSelected ? <FaCheck size={12} className="sm:w-3.5 sm:h-3.5" /> : optionLetter}
                           </div>
                           <div className="flex-1">
-                            <span className={`text-base sm:text-lg transition-colors duration-300 leading-relaxed block ${
-                              isSelected ? 'text-gray-800 font-medium' : 'text-gray-700 group-hover:text-gray-800'
-                            }`}>
+                            <span className={`text-base sm:text-lg transition-colors duration-300 leading-relaxed block ${isSelected ? 'text-gray-800 font-medium' : 'text-gray-700 group-hover:text-gray-800'
+                              }`}>
                               {option.text}
                             </span>
                             {/* Option Image */}
@@ -900,28 +895,25 @@ const QuizTaker = () => {
                         <div
                           key={option._id}
                           onClick={() => handleOptionSelect(option._id)}
-                          className={`group p-4 sm:p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 transform active:scale-95 sm:hover:scale-105 touch-manipulation ${
-                            isSelected
-                              ? isTrue
-                                ? 'border-green-400 bg-gradient-to-r from-green-50 to-emerald-50 shadow-lg shadow-green-100'
-                                : 'border-red-400 bg-gradient-to-r from-red-50 to-pink-50 shadow-lg shadow-red-100'
-                              : 'border-gray-200 hover:border-gray-300 hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 hover:shadow-md'
-                          }`}
+                          className={`group p-4 sm:p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 transform active:scale-95 sm:hover:scale-105 touch-manipulation ${isSelected
+                            ? isTrue
+                              ? 'border-green-400 bg-gradient-to-r from-green-50 to-emerald-50 shadow-lg shadow-green-100'
+                              : 'border-red-400 bg-gradient-to-r from-red-50 to-pink-50 shadow-lg shadow-red-100'
+                            : 'border-gray-200 hover:border-gray-300 hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 hover:shadow-md'
+                            }`}
                         >
                           <div className="flex flex-col items-center gap-3 sm:gap-4">
                             <div className="flex items-center gap-3 sm:gap-4">
-                              <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 flex items-center justify-center font-bold text-base sm:text-lg transition-all duration-300 flex-shrink-0 ${
-                                isSelected
-                                  ? isTrue
-                                    ? 'bg-gradient-to-r from-green-500 to-emerald-600 border-green-500 text-white shadow-lg'
-                                    : 'bg-gradient-to-r from-red-500 to-pink-600 border-red-500 text-white shadow-lg'
-                                  : 'border-gray-300 text-gray-600 group-hover:border-blue-400 group-hover:text-blue-600'
-                              }`}>
+                              <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 flex items-center justify-center font-bold text-base sm:text-lg transition-all duration-300 flex-shrink-0 ${isSelected
+                                ? isTrue
+                                  ? 'bg-gradient-to-r from-green-500 to-emerald-600 border-green-500 text-white shadow-lg'
+                                  : 'bg-gradient-to-r from-red-500 to-pink-600 border-red-500 text-white shadow-lg'
+                                : 'border-gray-300 text-gray-600 group-hover:border-blue-400 group-hover:text-blue-600'
+                                }`}>
                                 {isSelected ? <FaCheck size={14} className="sm:w-4 sm:h-4" /> : (isTrue ? 'T' : 'F')}
                               </div>
-                              <span className={`text-lg sm:text-xl font-medium transition-colors duration-300 text-center sm:text-left ${
-                                isSelected ? 'text-gray-800' : 'text-gray-700 group-hover:text-gray-800'
-                              }`}>
+                              <span className={`text-lg sm:text-xl font-medium transition-colors duration-300 text-center sm:text-left ${isSelected ? 'text-gray-800' : 'text-gray-700 group-hover:text-gray-800'
+                                }`}>
                                 {option.text}
                               </span>
                             </div>
@@ -996,11 +988,10 @@ const QuizTaker = () => {
             <div className="flex justify-between items-center gap-4">
               <button
                 onClick={goToPreviousQuestion}
-                className={`flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 sm:py-3 rounded-xl font-medium transition-all duration-300 transform touch-manipulation ${
-                  currentQuestionIndex > 0
-                    ? 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 hover:from-gray-200 hover:to-gray-300 active:scale-95 sm:hover:scale-105 shadow-md'
-                    : 'bg-gray-50 text-gray-400 cursor-not-allowed'
-                }`}
+                className={`flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 sm:py-3 rounded-xl font-medium transition-all duration-300 transform touch-manipulation ${currentQuestionIndex > 0
+                  ? 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 hover:from-gray-200 hover:to-gray-300 active:scale-95 sm:hover:scale-105 shadow-md'
+                  : 'bg-gray-50 text-gray-400 cursor-not-allowed'
+                  }`}
                 disabled={currentQuestionIndex === 0}
               >
                 <FaArrowLeft className="text-sm sm:text-base" />
@@ -1014,11 +1005,10 @@ const QuizTaker = () => {
 
               <button
                 onClick={isLastQuestion ? () => setShowConfirmSubmit(true) : goToNextQuestion}
-                className={`flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 sm:py-3 rounded-xl font-medium transition-all duration-300 transform active:scale-95 sm:hover:scale-105 shadow-lg touch-manipulation ${
-                  isLastQuestion
-                    ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 shadow-green-200'
-                    : 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700 shadow-blue-200'
-                }`}
+                className={`flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 sm:py-3 rounded-xl font-medium transition-all duration-300 transform active:scale-95 sm:hover:scale-105 shadow-lg touch-manipulation ${isLastQuestion
+                  ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 shadow-green-200'
+                  : 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700 shadow-blue-200'
+                  }`}
               >
                 {isLastQuestion ? (
                   <>

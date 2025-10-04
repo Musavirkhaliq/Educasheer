@@ -196,8 +196,12 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">Admin Dashboard</h1>
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-11xl mx-auto py-8 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 3xl:px-20">
+        <div className="mb-8 lg:mb-12">
+          <h1 className="text-3xl lg:text-4xl xl:text-5xl font-bold text-gray-800 mb-2">Admin Dashboard</h1>
+          <p className="text-gray-600 text-lg">Manage your platform efficiently with comprehensive admin tools</p>
+        </div>
 
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
@@ -211,156 +215,159 @@ const AdminDashboard = () => {
         </div>
       )}
 
-      {/* Tabs */}
-      <div className="flex border-b border-gray-200 mb-6 overflow-x-auto">
-        <button
-          className={`py-2 px-4 font-medium ${
-            activeTab === "applications"
-              ? "text-[#00bcd4] border-b-2 border-[#00bcd4]"
-              : "text-gray-500 hover:text-gray-700"
-          }`}
-          onClick={() => setActiveTab("applications")}
-        >
-          Tutor Applications
-        </button>
-        <button
-          className={`py-2 px-4 font-medium ${
-            activeTab === "users"
-              ? "text-[#00bcd4] border-b-2 border-[#00bcd4]"
-              : "text-gray-500 hover:text-gray-700"
-          }`}
-          onClick={() => setActiveTab("users")}
-        >
-          Manage Users
-        </button>
-        <button
-          className={`py-2 px-4 font-medium ${
-            activeTab === "centers"
-              ? "text-[#00bcd4] border-b-2 border-[#00bcd4]"
-              : "text-gray-500 hover:text-gray-700"
-          }`}
-          onClick={() => setActiveTab("centers")}
-        >
-          Manage Centers
-        </button>
-        <button
-          className={`py-2 px-4 font-medium ${
-            activeTab === "fees"
-              ? "text-[#00bcd4] border-b-2 border-[#00bcd4]"
-              : "text-gray-500 hover:text-gray-700"
-          }`}
-          onClick={() => setActiveTab("fees")}
-        >
-          Fee Management
-        </button>
-        <button
-          className={`py-2 px-4 font-medium ${
-            activeTab === "testimonials"
-              ? "text-[#00bcd4] border-b-2 border-[#00bcd4]"
-              : "text-gray-500 hover:text-gray-700"
-          }`}
-          onClick={() => setActiveTab("testimonials")}
-        >
-          Testimonials
-        </button>
-        <button
-          className={`py-2 px-4 font-medium ${
-            activeTab === "quizzes"
-              ? "text-[#00bcd4] border-b-2 border-[#00bcd4]"
-              : "text-gray-500 hover:text-gray-700"
-          }`}
-          onClick={() => setActiveTab("quizzes")}
-        >
-          Quizzes & Exams
-        </button>
-        <button
-          className={`py-2 px-4 font-medium ${
-            activeTab === "test-series"
-              ? "text-[#00bcd4] border-b-2 border-[#00bcd4]"
-              : "text-gray-500 hover:text-gray-700"
-          }`}
-          onClick={() => setActiveTab("test-series")}
-        >
-          Test Series
-        </button>
-        <button
-          className={`py-2 px-4 font-medium ${
-            activeTab === "debug-sections"
-              ? "text-[#00bcd4] border-b-2 border-[#00bcd4]"
-              : "text-gray-500 hover:text-gray-700"
-          }`}
-          onClick={() => setActiveTab("debug-sections")}
-        >
-          Debug Sections
-        </button>
-        <button
-          className={`py-2 px-4 font-medium ${
-            activeTab === "quiz-attempts"
-              ? "text-[#00bcd4] border-b-2 border-[#00bcd4]"
-              : "text-gray-500 hover:text-gray-700"
-          }`}
-          onClick={() => setActiveTab("quiz-attempts")}
-        >
-          Quiz Attempts
-        </button>
-        <button
-          className={`py-2 px-4 font-medium ${
-            activeTab === "gamification"
-              ? "text-[#00bcd4] border-b-2 border-[#00bcd4]"
-              : "text-gray-500 hover:text-gray-700"
-          }`}
-          onClick={() => setActiveTab("gamification")}
-        >
-          Gamification
-        </button>
-        <button
-          className={`py-2 px-4 font-medium ${
-            activeTab === "seat-bookings"
-              ? "text-[#00bcd4] border-b-2 border-[#00bcd4]"
-              : "text-gray-500 hover:text-gray-700"
-          }`}
-          onClick={() => setActiveTab("seat-bookings")}
-        >
-          Seat Bookings
-        </button>
-        <button
-          className={`py-2 px-4 font-medium ${
-            activeTab === "quiz-cleanup"
-              ? "text-[#00bcd4] border-b-2 border-[#00bcd4]"
-              : "text-gray-500 hover:text-gray-700"
-          }`}
-          onClick={() => setActiveTab("quiz-cleanup")}
-        >
-          Quiz Cleanup
-        </button>
-        <button
-          className={`py-2 px-4 font-medium ${
-            activeTab === "promocodes"
-              ? "text-[#00bcd4] border-b-2 border-[#00bcd4]"
-              : "text-gray-500 hover:text-gray-700"
-          }`}
-          onClick={() => setActiveTab("promocodes")}
-        >
-          Promo Codes
-        </button>
-        <button
-          className={`py-2 px-4 font-medium ${
-            activeTab === "orders"
-              ? "text-[#00bcd4] border-b-2 border-[#00bcd4]"
-              : "text-gray-500 hover:text-gray-700"
-          }`}
-          onClick={() => setActiveTab("orders")}
-        >
-          Orders
-        </button>
-      </div>
-
-      {/* Content */}
-      {loading ? (
-        <div className="text-center py-8">
-          <p className="text-gray-600">Loading...</p>
+        {/* Enhanced Tabs Navigation */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-8 lg:mb-12 overflow-hidden">
+          <div className="flex border-b border-gray-200 overflow-x-auto">
+            <button
+              className={`py-4 px-6 lg:px-8 font-medium text-sm lg:text-base whitespace-nowrap transition-all duration-200 ${
+                activeTab === "applications"
+                  ? "text-[#00bcd4] border-b-2 border-[#00bcd4] bg-[#00bcd4]/5"
+                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+              }`}
+              onClick={() => setActiveTab("applications")}
+            >
+              Tutor Applications
+            </button>
+            <button
+              className={`py-4 px-6 lg:px-8 font-medium text-sm lg:text-base whitespace-nowrap transition-all duration-200 ${
+                activeTab === "users"
+                  ? "text-[#00bcd4] border-b-2 border-[#00bcd4] bg-[#00bcd4]/5"
+                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+              }`}
+              onClick={() => setActiveTab("users")}
+            >
+              Manage Users
+            </button>
+            <button
+              className={`py-4 px-6 lg:px-8 font-medium text-sm lg:text-base whitespace-nowrap transition-all duration-200 ${
+                activeTab === "centers"
+                  ? "text-[#00bcd4] border-b-2 border-[#00bcd4] bg-[#00bcd4]/5"
+                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+              }`}
+              onClick={() => setActiveTab("centers")}
+            >
+              Manage Centers
+            </button>
+            <button
+              className={`py-4 px-6 lg:px-8 font-medium text-sm lg:text-base whitespace-nowrap transition-all duration-200 ${
+                activeTab === "fees"
+                  ? "text-[#00bcd4] border-b-2 border-[#00bcd4] bg-[#00bcd4]/5"
+                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+              }`}
+              onClick={() => setActiveTab("fees")}
+            >
+              Fee Management
+            </button>
+            <button
+              className={`py-4 px-6 lg:px-8 font-medium text-sm lg:text-base whitespace-nowrap transition-all duration-200 ${
+                activeTab === "testimonials"
+                  ? "text-[#00bcd4] border-b-2 border-[#00bcd4] bg-[#00bcd4]/5"
+                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+              }`}
+              onClick={() => setActiveTab("testimonials")}
+            >
+              Testimonials
+            </button>
+            <button
+              className={`py-4 px-6 lg:px-8 font-medium text-sm lg:text-base whitespace-nowrap transition-all duration-200 ${
+                activeTab === "quizzes"
+                  ? "text-[#00bcd4] border-b-2 border-[#00bcd4] bg-[#00bcd4]/5"
+                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+              }`}
+              onClick={() => setActiveTab("quizzes")}
+            >
+              Quizzes & Exams
+            </button>
+            <button
+              className={`py-4 px-6 lg:px-8 font-medium text-sm lg:text-base whitespace-nowrap transition-all duration-200 ${
+                activeTab === "test-series"
+                  ? "text-[#00bcd4] border-b-2 border-[#00bcd4] bg-[#00bcd4]/5"
+                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+              }`}
+              onClick={() => setActiveTab("test-series")}
+            >
+              Test Series
+            </button>
+            <button
+              className={`py-4 px-6 lg:px-8 font-medium text-sm lg:text-base whitespace-nowrap transition-all duration-200 ${
+                activeTab === "debug-sections"
+                  ? "text-[#00bcd4] border-b-2 border-[#00bcd4] bg-[#00bcd4]/5"
+                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+              }`}
+              onClick={() => setActiveTab("debug-sections")}
+            >
+              Debug Sections
+            </button>
+            <button
+              className={`py-4 px-6 lg:px-8 font-medium text-sm lg:text-base whitespace-nowrap transition-all duration-200 ${
+                activeTab === "quiz-attempts"
+                  ? "text-[#00bcd4] border-b-2 border-[#00bcd4] bg-[#00bcd4]/5"
+                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+              }`}
+              onClick={() => setActiveTab("quiz-attempts")}
+            >
+              Quiz Attempts
+            </button>
+            <button
+              className={`py-4 px-6 lg:px-8 font-medium text-sm lg:text-base whitespace-nowrap transition-all duration-200 ${
+                activeTab === "gamification"
+                  ? "text-[#00bcd4] border-b-2 border-[#00bcd4] bg-[#00bcd4]/5"
+                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+              }`}
+              onClick={() => setActiveTab("gamification")}
+            >
+              Gamification
+            </button>
+            <button
+              className={`py-4 px-6 lg:px-8 font-medium text-sm lg:text-base whitespace-nowrap transition-all duration-200 ${
+                activeTab === "seat-bookings"
+                  ? "text-[#00bcd4] border-b-2 border-[#00bcd4] bg-[#00bcd4]/5"
+                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+              }`}
+              onClick={() => setActiveTab("seat-bookings")}
+            >
+              Seat Bookings
+            </button>
+            <button
+              className={`py-4 px-6 lg:px-8 font-medium text-sm lg:text-base whitespace-nowrap transition-all duration-200 ${
+                activeTab === "quiz-cleanup"
+                  ? "text-[#00bcd4] border-b-2 border-[#00bcd4] bg-[#00bcd4]/5"
+                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+              }`}
+              onClick={() => setActiveTab("quiz-cleanup")}
+            >
+              Quiz Cleanup
+            </button>
+            <button
+              className={`py-4 px-6 lg:px-8 font-medium text-sm lg:text-base whitespace-nowrap transition-all duration-200 ${
+                activeTab === "promocodes"
+                  ? "text-[#00bcd4] border-b-2 border-[#00bcd4] bg-[#00bcd4]/5"
+                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+              }`}
+              onClick={() => setActiveTab("promocodes")}
+            >
+              Promo Codes
+            </button>
+            <button
+              className={`py-4 px-6 lg:px-8 font-medium text-sm lg:text-base whitespace-nowrap transition-all duration-200 ${
+                activeTab === "orders"
+                  ? "text-[#00bcd4] border-b-2 border-[#00bcd4] bg-[#00bcd4]/5"
+                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+              }`}
+              onClick={() => setActiveTab("orders")}
+            >
+              Orders
+            </button>
+          </div>
         </div>
-      ) : (
+
+        {/* Content */}
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#00bcd4] mb-4"></div>
+            <p className="text-gray-600 text-lg">Loading...</p>
+          </div>
+        ) : (
         <>
           {/* Tutor Applications Tab */}
           {activeTab === "applications" && (
@@ -627,8 +634,9 @@ const AdminDashboard = () => {
           {activeTab === "orders" && (
             <OrderManagement />
           )}
-        </>
-      )}
+          </>
+        )}
+      </div>
     </div>
   );
 };
