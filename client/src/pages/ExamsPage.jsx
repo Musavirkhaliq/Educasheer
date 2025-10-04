@@ -20,6 +20,7 @@ import QuizCard from '../components/QuizCard';
 import TestSeriesCard from '../components/TestSeriesCard';
 import EnhancedContainer from '../components/layout/EnhancedContainer';
 import ResponsiveGrid from '../components/layout/ResponsiveGrid';
+import ExamPerformance from '../components/profile/ExamPerformance';
 
 const ExamsPage = () => {
   const [search, setSearch] = useState('');
@@ -245,7 +246,7 @@ const ExamsPage = () => {
 
             {/* Exam Performance Link - Always visible */}
             <button
-              onClick={() => navigate('/exam-performance')}
+              onClick={() => navigate('/profile')}
               className="flex items-center gap-1 sm:gap-2 py-2 sm:py-3 px-3 sm:px-5 rounded-lg font-medium text-xs sm:text-sm whitespace-nowrap transition-all duration-200 bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100"
             >
               <FaChartLine className="text-purple-600" />
