@@ -109,8 +109,8 @@ const quizSchema = new Schema({
     },
     quizType: {
         type: String,
-        enum: ["quiz", "exam"],
-        default: "quiz"
+        enum: ["Topic Test", "Subject Test", "Multi Subject", "Full Test"],
+        default: "Topic Test"
     },
     category: {
         type: String,

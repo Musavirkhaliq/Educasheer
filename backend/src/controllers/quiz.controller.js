@@ -44,7 +44,7 @@ const createQuiz = asyncHandler(async (req, res) => {
             questions,
             timeLimit: timeLimit || 30,
             passingScore: passingScore || 70,
-            quizType: quizType || "quiz",
+            quizType: quizType || "Topic Test",
             maxAttempts: maxAttempts || 0,
             creator: req.user._id,
             isPublished: false,

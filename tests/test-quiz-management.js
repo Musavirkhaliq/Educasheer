@@ -45,7 +45,7 @@ async function createTestQuiz() {
             difficulty: 'medium',
             timeLimit: 30,
             passingScore: 70,
-            quizType: 'quiz',
+            quizType: 'Topic Test',
             maxAttempts: 0,
             allowReview: true,
             showCorrectAnswers: true,

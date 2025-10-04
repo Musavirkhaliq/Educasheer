@@ -987,21 +987,41 @@ const getUserAllQuizAttempts = asyncHandler(async (req, res) => {
                     totalAttempts: { $sum: 1 },
                     totalPassed: { $sum: { $cond: ["$isPassed", 1, 0] } },
                     averageScore: { $avg: "$percentage" },
-                    totalQuizzes: { $sum: { $cond: [{ $eq: ["$quiz.quizType", "quiz"] }, 1, 0] } },
-                    totalExams: { $sum: { $cond: [{ $eq: ["$quiz.quizType", "exam"] }, 1, 0] } },
-                    quizzesPassed: {
+                    totalTopicTests: { $sum: { $cond: [{ $eq: ["$quiz.quizType", "Topic Test"] }, 1, 0] } },
+                    totalSubjectTests: { $sum: { $cond: [{ $eq: ["$quiz.quizType", "Subject Test"] }, 1, 0] } },
+                    totalMultiSubjectTests: { $sum: { $cond: [{ $eq: ["$quiz.quizType", "Multi Subject"] }, 1, 0] } },
+                    totalFullTests: { $sum: { $cond: [{ $eq: ["$quiz.quizType", "Full Test"] }, 1, 0] } },
+                    topicTestsPassed: {
                         $sum: {
                             $cond: [
-                                { $and: [{ $eq: ["$quiz.quizType", "quiz"] }, "$isPassed"] },
+                                { $and: [{ $eq: ["$quiz.quizType", "Topic Test"] }, "$isPassed"] },
                                 1,
                                 0
                             ]
                         }
                     },
-                    examsPassed: {
+                    subjectTestsPassed: {
                         $sum: {
                             $cond: [
-                                { $and: [{ $eq: ["$quiz.quizType", "exam"] }, "$isPassed"] },
+                                { $and: [{ $eq: ["$quiz.quizType", "Subject Test"] }, "$isPassed"] },
+                                1,
+                                0
+                            ]
+                        }
+                    },
+                    multiSubjectTestsPassed: {
+                        $sum: {
+                            $cond: [
+                                { $and: [{ $eq: ["$quiz.quizType", "Multi Subject"] }, "$isPassed"] },
+                                1,
+                                0
+                            ]
+                        }
+                    },
+                    fullTestsPassed: {
+                        $sum: {
+                            $cond: [
+                                { $and: [{ $eq: ["$quiz.quizType", "Full Test"] }, "$isPassed"] },
                                 1,
                                 0
                             ]
